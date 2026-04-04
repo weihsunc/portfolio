@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShurePlus Channels — Wei-Hsun Chen</title>
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="chatbot.css" />
+
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+  <script>if(!sessionStorage.getItem('pw_ok'))window.location.replace('password.html');</script>
+
+  <style>
+    nav { padding: 64px 80px 0; }
+    .pp-content { padding: 0 80px; }
+
+    .pp-overview { display: flex; align-items: flex-start; padding: 64px 0 100px; }
+    .pp-overview-title { flex: 1 0 0; font-size: 48px; font-weight: 500; line-height: 1; max-width: 633px; }
+    .pp-overview-right { flex: 1 0 0; display: flex; flex-direction: column; gap: 20px; max-width: 633px; padding-right: 20px; }
+    .pp-overview-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-overview-desc { font-size: 20px; line-height: 28px; }
+
+    .pp-cover { width: 100%; overflow: hidden; border-radius: 4px; cursor: none !important; }
+    .pp-cover img { width: 100%; height: auto; display: block; }
+
+    .pp-meta { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 40px 0; padding: 64px 0; }
+    .pp-meta-item { flex: 1 0 0; min-width: 220px; display: flex; flex-direction: column; gap: 20px; padding-right: 20px; }
+    .pp-meta-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-meta-value { font-size: 20px; line-height: 28px; }
+
+    .pp-title-section { display: flex; align-items: flex-start; justify-content: space-between; padding: 64px 0; }
+    .pp-section-title { flex: 1 0 0; font-size: 48px; font-weight: 500; line-height: 1; }
+    .pp-section-desc { flex: 1 0 0; font-size: 20px; line-height: 28px; max-width: 720px; }
+
+    .pp-text { padding-bottom: 64px; }
+    .pp-text p { font-size: 20px; line-height: 28px; }
+    .pp-text p + p { margin-top: 24px; }
+    .pp-text ul { list-style: disc; padding-left: 30px; margin: 24px 0 0; }
+    .pp-text ul li { font-size: 20px; line-height: 28px; margin-bottom: 8px; }
+    .pp-text ul li:last-child { margin-bottom: 0; }
+    .pp-text strong { font-weight: 600; }
+
+    .pp-quote { position: relative; padding: 8px 0 8px 24px; margin: 0 0 64px; }
+    .pp-quote::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--foreground); border-radius: 999px; }
+    .pp-quote p { font-size: 20px; line-height: 28px; font-style: normal; color: var(--muted-foreground); }
+    .pp-quote cite { display: block; margin-top: 12px; font-size: 20px; line-height: 28px; font-style: normal; color: var(--muted-foreground); }
+
+    .pp-img-full { width: 100%; overflow: hidden; margin-bottom: 64px; border-radius: 4px; cursor: none !important; }
+    .pp-img-full img { width: 100%; height: auto; display: block; }
+
+    .pp-img-pair { display: flex; gap: 16px; padding-bottom: 64px; }
+    .pp-img-pair-item { flex: 1 0 0; overflow: hidden; border-radius: 4px; cursor: none !important; }
+    .pp-img-pair-item img { width: 100%; height: auto; display: block; }
+
+    /* Text + prototype GIF side by side */
+    .pp-text-gif { display: flex; gap: 16px; align-items: stretch; padding-bottom: 64px; }
+    .pp-text-gif-body { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+    .pp-text-gif-body p { font-size: 20px; line-height: 28px; }
+    .pp-text-gif-body p + p { margin-top: 24px; }
+    .pp-text-gif-body ul { list-style: disc; padding-left: 30px; margin: 24px 0 0; }
+    .pp-text-gif-body ul li { font-size: 20px; line-height: 28px; margin-bottom: 8px; }
+    .pp-text-gif-body ul li:last-child { margin-bottom: 0; }
+    /* Prototype GIF — grey background, phone-sized, centred */
+    .pp-gif-phone { flex: 1 1 0; background: #EBEBEB; border-radius: 4px; display: flex; justify-content: center; align-items: center; padding: 48px 24px; }
+    .pp-gif-phone img { width: 200px; height: auto; display: block; border-radius: 4px; }
+
+    /* YouTube thumbnail link */
+    .pp-youtube { position: relative; display: block; width: 100%; border-radius: 4px; overflow: hidden; margin-bottom: 64px; cursor: pointer; }
+    .pp-youtube img { width: 100%; height: auto; display: block; }
+    .pp-youtube-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); transition: background 200ms ease; }
+    .pp-youtube:hover .pp-youtube-play { background: rgba(0,0,0,0.1); }
+    .pp-youtube-play svg { width: 72px; height: 72px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
+
+    .pp-nav { display: flex; align-items: center; padding-bottom: 120px; padding-top: 32px; }
+    .pp-nav-back, .pp-nav-next { display: flex; gap: 4px; align-items: center; color: var(--muted-foreground); font-size: 20px; transition: color 150ms ease; }
+    .pp-nav-back:hover, .pp-nav-next:hover { color: var(--foreground); }
+    .pp-nav-spacer { flex: 1; }
+
+    footer { padding: 0 80px 120px; }
+    .footer-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; border-top: 1px solid var(--border); padding-top: 32px; }
+    .footer-cta { font-size: var(--text-body); font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+    .footer-social { display: flex; gap: 8px; justify-self: center; }
+    .footer-end { display: flex; align-items: baseline; justify-self: end; gap: 12px; }
+    .footer-credit { font-size: var(--text-body); color: var(--muted-foreground); }
+
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 600ms ease, transform 600ms ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      nav { padding: 40px 20px 0; }
+      .pp-content { padding: 0 20px; }
+      footer { padding: 0 20px 100px; }
+      .pp-overview { flex-direction: column; gap: 32px; padding: 48px 0 60px; }
+      .pp-title-section { flex-direction: column; gap: 24px; padding: 48px 0; }
+      .pp-img-pair { flex-direction: column; }
+      .pp-img-pair-item { flex: 0 0 auto; width: 100%; }
+      .pp-text-gif { flex-direction: column; }
+      .pp-gif-phone { width: 100%; }
+      .pp-gif-phone img { width: 160px; }
+      .footer-row { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+      .footer-social, .footer-end { justify-self: unset; }
+    }
+    @media (max-width: 480px) {
+      .pp-overview-title { font-size: 36px; }
+      .pp-section-title { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+    <button class="drawer-close" onclick="closeDrawer()">Close</button>
+    <a href="index.html" class="drawer-item" onclick="closeDrawer()">Work</a>
+    <a href="about.html" class="drawer-item" onclick="closeDrawer()">About</a>
+    <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="drawer-item" onclick="closeDrawer()">Resume ↗</a>
+  </div>
+
+  <nav>
+    <a href="mailto:weihsunc@gmail.com" class="nav-email" target="_blank" rel="noopener">weihsunc@gmail.com</a>
+    <div class="nav-tabs-group">
+      <a href="index.html" class="nav-tab">Work</a>
+      <a href="about.html" class="nav-tab">About</a>
+      <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="nav-tab">Resume ↗</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-menu" onclick="openDrawer()" aria-label="Open menu">Menu</button>
+      <button class="btn-ghost" onclick="toggleTheme()" aria-label="Toggle theme"><span class="theme-icon">◑</span></button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="pp-content">
+
+      <div class="pp-overview">
+        <h1 class="pp-overview-title">ShurePlus Channels</h1>
+        <div class="pp-overview-right">
+          <p class="pp-overview-label">Overview</p>
+          <p class="pp-overview-desc">End-to-end mobile app design for Shure's professional wireless system</p>
+        </div>
+      </div>
+
+      <div class="pp-cover">
+        <img src="images/sc-cover.webp" alt="ShurePlus Channels app and hardware ecosystem" />
+      </div>
+
+      <div class="pp-meta">
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">YEAR</p>
+          <p class="pp-meta-value">2018</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">TIMELINE</p>
+          <p class="pp-meta-value">2 months</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">COMPANY</p>
+          <p class="pp-meta-value">Shure</p>
+        </div>
+      </div>
+
+      <!-- App icons — after meta, before Role -->
+      <div class="pp-img-full reveal">
+        <img src="images/sc-logos.webp" alt="WirelessWorkBench and ShurePlus Channels app icons" />
+      </div>
+
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Role</h2>
+        <div class="pp-section-desc">
+          <p>As the lead UX designer in the team, I am in charge of user experience design and driving user research with our user researchers for upcoming features in the app. My responsibilities include ensuring Channels is intuitive in conjunction with WirelessWorkBench (Desktop App that controls hardware devices) and Shure hardware devices, as well as the consistentcy across platforms.</p>
+          <p style="margin-top:24px;">I am also responsible for leading the UX team in India to work on the Android version of Channels.</p>
+        </div>
+      </div>
+
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Target Audience</h2>
+        <p class="pp-section-desc">Our target audience is mainly audio engineers, who are in charge of monitoring channels, pre-show planning, doing sound checks and mixing. They are the key to your awesome concert experience!</p>
+      </div>
+
+      <blockquote class="pp-quote reveal">
+        <p>"A dropout of audio would ruin the whole performance. I make sure the wireless experience is safe and sound."</p>
+        <cite>— Audio Engineer</cite>
+      </blockquote>
+
+      <div class="pp-text reveal">
+        <p>ShurePlus™ Channels delivers time-saving convenience to roam the performance space while monitoring key Shure wireless system parameters from an iOS device. The app automatically discovers and easily connects over Wi-Fi to networked, compatible Shure hardware and relays critical channel information including RF signal strength, audio levels, and remaining battery life. Quickly switch between any of your wireless channels using the sortable channels list. Mobile control of wireless channel settings can be added via in-app purchase. Unlocking this feature allows remote adjustment of frequency assignments, audio gain, muting, and more. When combined with ShowLink® Remote Control for Axient and Axient Digital systems, transmitter and receiver settings can both be adjusted simultaneously, a powerful addition to the industry-leading Axient and Axient Digital feature set.</p>
+        <p>Currently there are two applications that support hardware configuration from Shure:</p>
+        <p>WirelessWorkBench is a desktop software for audio professionals to configure their wireless systems.</p>
+        <p>ShurePlus Channels is a simplified mobile version that provides monitoring and control of Shure wireless systems.</p>
+      </div>
+
+      <!-- YouTube demo — links out (embedding disabled by video owner) -->
+      <a class="pp-youtube reveal" href="https://www.youtube.com/watch?v=VcEi4rEUFZc" target="_blank" rel="noopener" aria-label="Watch ShurePlus Channels demo on YouTube">
+        <img src="https://img.youtube.com/vi/VcEi4rEUFZc/maxresdefault.jpg" alt="ShurePlus Channels demo video" />
+        <div class="pp-youtube-play">
+          <svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
+            <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="#ff0000"/>
+            <path d="M45 24 27 14v20" fill="#fff"/>
+          </svg>
+        </div>
+      </a>
+
+      <div class="pp-text reveal">
+        <p><strong>Timeline</strong> is currently a feature on WirelessWorkBench, which allows users to record their channel status over time, including channel quality, antenna status, interference, audio peak, battery status..etc. The goal is to provide an on-the-go Timeline experience for mobile(Channels) users while improving the current experience on desktop(Wireless Workbench).</p>
+      </div>
+
+
+      <div class="pp-img-full reveal">
+        <img src="images/sc-timeline.webp" alt="Timeline feature on WirelessWorkBench desktop" />
+      </div>
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Findings</h2>
+        <div class="pp-section-desc">
+          <p>We ran bi-weekly interviews with external audio engineers. We found out that for Timeline on WirelessWorkbench, they usually run it for days and with a large number of channels(30+). The current timeline experience is complex and requires steep learning time to onboard.</p>
+          <p style="margin-top: 24px;">Through qualitative research we found out that users who use Timeline on a mobile phone would use it for doing a walk-test — they would bring a receiver and walk around for 2 minutes to make sure the microphone is working great. They also would like to have the ability to export the file from phone to desktop, or vice versa.</p>
+          <p style="margin-top: 24px;">For further iterations, we pivoted our focus to helping users quickly record one channel at a time, and focusing flows to optimize the walk-test experience. e.g Mark the interesting time, and export the file to the desktop.</p>
+        </div>
+      </div>
+
+      <div class="pp-img-full reveal">
+        <img src="images/sc-usability.webp" alt="Usability testing session with audio engineers" />
+      </div>
+
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Design</h2>
+        <div class="pp-section-desc">
+          <p>I started tackling the information density of the current Timeline on desktop application by the following methods:</p>
+          <ul style="list-style: disc; padding-left: 30px; margin-top: 16px;">
+            <li style="font-size: 20px; line-height: 28px; margin-bottom: 8px;"><strong>Aesthetic and minimalist design:</strong> Clean up the information hierarchy by collapsing different channels at a time.</li>
+            <li style="font-size: 20px; line-height: 28px; margin-bottom: 8px;"><strong>Recognition rather than recall:</strong> Instead of ambiguous icons, use straightforward content to help users figure out different types of information.</li>
+            <li style="font-size: 20px; line-height: 28px; margin-bottom: 8px;"><strong>Visibility of system status:</strong> Use animated shapes and colors to help users identify errors.</li>
+            <li style="font-size: 20px; line-height: 28px;"><strong>Dark Mode:</strong> Users usually operate the application in dark (Backstage at the concert). Dark Mode helps users with ease of eyes.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pp-img-full reveal">
+        <img src="images/sc-before-after.webp" alt="Before and after comparison of the Timeline redesign" />
+      </div>
+
+      <!-- Text + prototype side by side -->
+      <div class="pp-text-gif reveal">
+        <div class="pp-text-gif-body">
+          <p>For mobile users, we know that users are:</p>
+          <ul>
+            <li>Not heavy Timeline users</li>
+            <li>Record last than 2 channels</li>
+            <li>Use it for a specific purpose: walk-test</li>
+            <li>Record for less than 3 mins</li>
+            <li>Need to export the file to the desktop</li>
+          </ul>
+          <p style="margin-top:24px;">The design focuses on the mobile use case with the ability to quick record, tag and share.</p>
+        </div>
+        <div class="pp-gif-phone">
+          <img src="images/sc-animation.gif" alt="ShurePlus Channels mobile prototype animation" />
+        </div>
+      </div>
+
+      <div class="pp-text reveal">
+        <p>The feature is currently under development on iOS(iPhone and iPad) and Android. Throughout the process, we also helped shape the monetization strategy for Channels. (You paid in the app to get mobile use cases!) Also, the feedback in the field helped shape the future of Wireless Workbench.</p>
+      </div>
+
+      <div class="pp-nav">
+        <a href="index.html" class="pp-nav-back">← Back to Home</a>
+        <span class="pp-nav-spacer"></span>
+        <a href="aivvy.html" class="pp-nav-next">Aivvy →</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer id="contact">
+    <div class="footer-row">
+      <span class="footer-cta">Let's get in touch</span>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/weiweistreet/" target="_blank" rel="noopener" class="btn">Instagram</a>
+        <a href="https://www.linkedin.com/in/weihsunchen/" target="_blank" rel="noopener" class="btn">Linkedin</a>
+        <a href="mailto:weihsunc@gmail.com" class="btn">Email</a>
+      </div>
+      <div class="footer-end">
+        <span class="footer-credit">Made by Figma + Claude</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+
+    const IMG_SEL = '.pp-cover, .pp-img-full, .pp-img-pair-item, .pp-gif-phone';
+    initViewCursor(IMG_SEL);
+    initLightbox(IMG_SEL);
+
+    initProjectAnimations();
+  </script>
+  <script src="chatbot.js"></script>
+
+</body>
+</html>

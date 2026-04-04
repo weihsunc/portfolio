@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wei-Hsun Chen — 404</title>
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="shared.css" />
+
+  <!-- Prevent theme flash -->
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .nf-header {
+      display: flex;
+      justify-content: flex-end;
+      padding: 32px 40px;
+    }
+
+    .nf-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 40px 80px;
+      gap: 24px;
+    }
+
+    .nf-title {
+      font-family: var(--font-sans);
+      font-size: 72px;
+      font-weight: 700;
+      color: var(--foreground);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .nf-label {
+      font-family: var(--font-sans);
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--foreground);
+      opacity: 0.6;
+    }
+
+    .nf-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 14px;
+      border: none;
+      padding: 14px 18px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.9);
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.3s ease;
+      box-shadow: none;
+    }
+
+    /* Gradient flash overlay */
+    .nf-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(223, 58, 88, 0.15) 15%,
+        rgba(244, 136, 74, 0.15) 35%,
+        rgba(252, 195, 92, 0.15) 55%,
+        rgba(74, 141, 168, 0.12) 80%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      background-position: -100% 0;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .nf-cta:hover::before {
+      opacity: 1;
+      animation: gradientFlash 0.8s ease-out forwards;
+    }
+    .nf-cta:hover {
+      transform: translateY(-1px);
+    }
+
+    @keyframes gradientFlash {
+      from { background-position: -100% 0; }
+      to   { background-position: 100% 0; }
+    }
+
+    .nf-cta-text {
+      position: relative;
+      z-index: 2;
+    }
+
+    .nf-cta-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+    }
+    .nf-cta-icon svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .nf-cta:hover .nf-cta-icon svg {
+      transform: rotate(90deg);
+    }
+
+    /* Light mode */
+    [data-theme="light"] .nf-cta {
+      background: rgba(23, 23, 23, 0.88);
+      color: rgba(255, 255, 255, 0.95);
+    }
+    [data-theme="light"] .nf-cta::before {
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(223, 58, 88, 0.25) 15%,
+        rgba(244, 136, 74, 0.25) 35%,
+        rgba(252, 195, 92, 0.25) 55%,
+        rgba(74, 141, 168, 0.2) 80%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      background-position: -100% 0;
+    }
+    [data-theme="light"] .nf-cta:hover {
+      background: rgba(23, 23, 23, 0.95);
+    }
+
+    /* Tunnel canvas */
+    #tunnelCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .nf-header, .nf-center { position: relative; z-index: 1; }
+
+    @media (max-width: 480px) {
+      .nf-header { padding: 24px 20px; }
+      .nf-center { padding: 0 20px 60px; }
+      .nf-title { font-size: 56px; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="tunnelCanvas"></canvas>
+
+  <div class="nf-header">
+    <button class="btn-ghost" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-icon">◑</span>
+    </button>
+  </div>
+
+  <div class="nf-center">
+    <span class="nf-title">404</span>
+    <span class="nf-label">Ooops. Nothing to see here</span>
+    <a class="nf-cta" href="index.html">
+      <span class="nf-cta-text">Take me back home</span>
+      <span class="nf-cta-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 17L17 7"/><path d="M7 7h10v10"/>
+        </svg>
+      </span>
+    </a>
+  </div>
+
+  <!-- 3D Dot Tunnel Effect -->
+  <script>
+    (function () {
+      var canvas = document.getElementById('tunnelCanvas');
+      var ctx = canvas.getContext('2d');
+      var w, h, cx, cy;
+      var speed = 0.00005;
+      var time = 0;
+      var numRings = 23;
+      var dotsPerRing = 18;
+
+      function resize() {
+        var dpr = window.devicePixelRatio || 1;
+        w = window.innerWidth;
+        h = window.innerHeight;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        cx = w / 2;
+        cy = h / 2;
+      }
+
+      function isDark() {
+        return document.documentElement.getAttribute('data-theme') !== 'light';
+      }
+
+      function draw(ts) {
+        time = ts * speed;
+        ctx.clearRect(0, 0, w, h);
+
+        var dark = isDark();
+        var dotColor = dark ? 'rgba(255, 255, 255,' : 'rgba(0, 0, 0,';
+        var maxR = Math.max(w, h) * 0.85;
+
+        for (var r = 0; r < numRings; r++) {
+          var phase = (r / numRings + time * 0.4) % 1;
+          var radius = phase * phase * maxR;
+
+          if (radius < 3) continue;
+
+          var dotSize = 0.8 + phase * 2.2;
+
+          var alpha = phase * phase * 0.14;
+          if (alpha < 0.005) continue;
+
+          for (var d = 0; d < dotsPerRing; d++) {
+            var a = (Math.PI * 2 / dotsPerRing) * d;
+
+            var x = cx + Math.cos(a) * radius;
+            var y = cy + Math.sin(a) * radius;
+
+            ctx.beginPath();
+            ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+            ctx.fillStyle = dotColor + alpha.toFixed(3) + ')';
+            ctx.fill();
+          }
+        }
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+        ctx.fillStyle = dotColor + '0.15)';
+        ctx.fill();
+
+        requestAnimationFrame(draw);
+      }
+
+      resize();
+      window.addEventListener('resize', resize);
+      requestAnimationFrame(draw);
+    })();
+  </script>
+
+  <script src="shared.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aivvy — Wei-Hsun Chen</title>
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="chatbot.css" />
+
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+  <script>if(!sessionStorage.getItem('pw_ok'))window.location.replace('password.html');</script>
+
+  <style>
+    nav { padding: 64px 80px 0; }
+    .pp-content { padding: 0 80px; }
+
+    .pp-overview { display: flex; align-items: flex-start; padding: 64px 0 100px; }
+    .pp-overview-title { flex: 1 0 0; font-size: 48px; font-weight: 500; line-height: 1; max-width: 633px; }
+    .pp-overview-right { flex: 1 0 0; display: flex; flex-direction: column; gap: 20px; max-width: 633px; padding-right: 20px; }
+    .pp-overview-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-overview-desc { font-size: 20px; line-height: 28px; }
+
+    .pp-cover { width: 100%; overflow: hidden; border-radius: 4px; cursor: none !important; }
+    .pp-cover img { width: 100%; height: auto; display: block; }
+
+    .pp-meta { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 40px 0; padding: 64px 0; }
+    .pp-meta-item { flex: 1 0 0; min-width: 220px; display: flex; flex-direction: column; gap: 20px; padding-right: 20px; }
+    .pp-meta-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-meta-value { font-size: 20px; line-height: 28px; }
+
+    /* Store badge row */
+    .pp-badges { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding-bottom: 64px; }
+    .pp-badge-ks {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #05CE78; color: #fff;
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      padding: 0 16px; border-radius: 4px;
+      text-decoration: none; white-space: nowrap;
+      line-height: 1;
+      height: 40px; box-sizing: border-box;
+    }
+    .pp-badge-ks svg { width: 16px; height: 16px; flex-shrink: 0; }
+    /* App Store: clean SVG, 40px = exact visual height */
+    .pp-badge-store.app-store img { height: 40px; width: auto; display: block; }
+    /* Google Play: PNG has ~20% built-in transparent padding, so scale up to match */
+    .pp-badge-store.google-play img { height: 60px; width: auto; display: block; }
+
+    .pp-title-section { display: flex; align-items: flex-start; justify-content: space-between; padding: 64px 0; }
+    .pp-section-title { flex: 1 0 0; font-size: 48px; font-weight: 500; line-height: 1; }
+    .pp-section-desc { flex: 1 0 0; font-size: 20px; line-height: 28px; max-width: 720px; }
+    .pp-section-desc p + p { margin-top: 24px; }
+    .pp-section-desc ol { list-style: decimal; padding-left: 28px; margin: 24px 0 0; }
+    .pp-section-desc ol li { font-size: 20px; line-height: 28px; margin-bottom: 8px; }
+    .pp-section-desc ol li:last-child { margin-bottom: 0; }
+
+    .pp-text { padding-bottom: 64px; }
+    .pp-text p { font-size: 20px; line-height: 28px; }
+    .pp-text p + p { margin-top: 24px; }
+    .pp-text a { color: #2563EB; text-decoration: none; }
+    .pp-text a:hover { text-decoration: underline; }
+
+    .pp-img-full { width: 100%; overflow: hidden; margin-bottom: 64px; border-radius: 4px; cursor: none !important; }
+    .pp-img-full img { width: 100%; height: auto; display: block; }
+
+    /* YouTube thumbnail */
+    .pp-youtube { position: relative; display: block; width: 100%; border-radius: 4px; overflow: hidden; margin-bottom: 64px; cursor: pointer; }
+    .pp-youtube img { width: 100%; height: auto; display: block; }
+    .pp-youtube-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); transition: background 200ms ease; }
+    .pp-youtube:hover .pp-youtube-play { background: rgba(0,0,0,0.1); }
+    .pp-youtube-play svg { width: 72px; height: 72px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
+
+    /* Usability photo carousel */
+    .pp-carousel { position: relative; padding-bottom: 64px; }
+    .pp-carousel-track-wrap { overflow: hidden; border-radius: 4px; }
+    .pp-carousel-track {
+      display: flex;
+      transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pp-carousel-slide { flex: 0 0 100%; }
+    .pp-carousel-slide img { width: 100%; height: auto; display: block; }
+    /* Dots */
+    .pp-carousel-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+    .pp-carousel-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border); border: none; padding: 0; cursor: pointer;
+      transition: background 200ms ease, transform 200ms ease;
+    }
+    .pp-carousel-dot.active { background: var(--foreground); transform: scale(1.4); }
+    /* Arrow buttons */
+    .pp-carousel-btn {
+      position: absolute; top: 50%; transform: translateY(calc(-50% - 23px));
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--background); border: 1px solid var(--border);
+      color: var(--foreground); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 150ms ease, opacity 150ms ease;
+      z-index: 1;
+    }
+    .pp-carousel-btn:hover { background: var(--muted); }
+    .pp-carousel-btn.disabled { opacity: 0.3; pointer-events: none; }
+    .pp-carousel-btn-prev { left: -20px; }
+    .pp-carousel-btn-next { right: -20px; }
+    @media (max-width: 900px) {
+      .pp-carousel-btn-prev { left: 8px; }
+      .pp-carousel-btn-next { right: 8px; }
+    }
+
+    /* Award badges */
+    .pp-awards { padding-bottom: 64px; }
+    .pp-awards img { max-width: 520px; height: auto; display: block; }
+
+    .pp-nav { display: flex; align-items: center; padding-bottom: 120px; padding-top: 32px; }
+    .pp-nav-back, .pp-nav-next { display: flex; gap: 4px; align-items: center; color: var(--muted-foreground); font-size: 20px; transition: color 150ms ease; }
+    .pp-nav-back:hover, .pp-nav-next:hover { color: var(--foreground); }
+    .pp-nav-spacer { flex: 1; }
+
+    footer { padding: 0 80px 120px; }
+    .footer-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; border-top: 1px solid var(--border); padding-top: 32px; }
+    .footer-cta { font-size: var(--text-body); font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+    .footer-social { display: flex; gap: 8px; justify-self: center; }
+    .footer-end { display: flex; align-items: baseline; justify-self: end; gap: 12px; }
+    .footer-credit { font-size: var(--text-body); color: var(--muted-foreground); }
+
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 600ms ease, transform 600ms ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      nav { padding: 40px 20px 0; }
+      .pp-content { padding: 0 20px; }
+      footer { padding: 0 20px 100px; }
+      .pp-overview { flex-direction: column; gap: 32px; padding: 48px 0 60px; }
+      .pp-title-section { flex-direction: column; gap: 24px; padding: 48px 0; }
+      .footer-row { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+      .footer-social, .footer-end { justify-self: unset; }
+    }
+    @media (max-width: 480px) {
+      .pp-overview-title { font-size: 36px; }
+      .pp-section-title { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+    <button class="drawer-close" onclick="closeDrawer()">Close</button>
+    <a href="index.html" class="drawer-item" onclick="closeDrawer()">Work</a>
+    <a href="about.html" class="drawer-item" onclick="closeDrawer()">About</a>
+    <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="drawer-item" onclick="closeDrawer()">Resume ↗</a>
+  </div>
+
+  <nav>
+    <a href="mailto:weihsunc@gmail.com" class="nav-email" target="_blank" rel="noopener">weihsunc@gmail.com</a>
+    <div class="nav-tabs-group">
+      <a href="index.html" class="nav-tab">Work</a>
+      <a href="about.html" class="nav-tab">About</a>
+      <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="nav-tab">Resume ↗</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-menu" onclick="openDrawer()" aria-label="Open menu">Menu</button>
+      <button class="btn-ghost" onclick="toggleTheme()" aria-label="Toggle theme"><span class="theme-icon">◑</span></button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="pp-content">
+
+      <div class="pp-overview">
+        <h1 class="pp-overview-title">Aivvy</h1>
+        <div class="pp-overview-right">
+          <p class="pp-overview-label">Overview</p>
+          <p class="pp-overview-desc">The world's first IOT music player</p>
+        </div>
+      </div>
+
+      <div class="pp-cover">
+        <img src="images/cover-aivvy.webp" alt="Aivvy smart headphones and companion app" />
+      </div>
+
+      <div class="pp-meta">
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">YEAR</p>
+          <p class="pp-meta-value">2016</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">ROLE</p>
+          <p class="pp-meta-value">UX Intern</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">COMPANY</p>
+          <p class="pp-meta-value">Aivvy</p>
+        </div>
+      </div>
+
+      <!-- Store links -->
+      <div class="pp-badges reveal">
+        <a href="#" class="pp-badge-ks" target="_blank" rel="noopener">
+          <!-- Kickstarter K mark -->
+          <svg viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm2.44 14.72L9.5 10.9v3.82H7V5.28h2.5v3.9l3-3.9H15l-3.37 4.28L15 14.72h-2.56z"/>
+          </svg>
+          Back this on Kickstarter
+        </a>
+        <a href="#" class="pp-badge-store app-store" target="_blank" rel="noopener">
+          <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" />
+        </a>
+        <a href="#" class="pp-badge-store google-play" target="_blank" rel="noopener">
+          <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" />
+        </a>
+      </div>
+
+      <div class="pp-text reveal">
+        <p>Aivvy makes smart headphones which learn your music tastes and stream personalized music for you. The headphones feature a built-in music player powered by a recommendation algorithm that adapts to your listening behavior — no phone required, no subscription necessary.</p>
+      </div>
+
+      <!-- YouTube: 60 Seconds with Aivvy -->
+      <a class="pp-youtube reveal" href="https://www.youtube.com/watch?v=tzVuwFgTJaI" target="_blank" rel="noopener" aria-label="Watch 60 Seconds with Aivvy on YouTube">
+        <img src="https://img.youtube.com/vi/tzVuwFgTJaI/maxresdefault.jpg" alt="60 Seconds with Aivvy" />
+        <div class="pp-youtube-play">
+          <svg viewBox="0 0 68 48" xmlns="http://www.w3.org/2000/svg">
+            <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="#ff0000"/>
+            <path d="M45.25 24L27 14v20z" fill="white"/>
+          </svg>
+        </div>
+      </a>
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Role</h2>
+        <div class="pp-section-desc">
+          <p>As a UX intern, I was responsible for designing the Aivvy companion app from end to end — covering wireframes, interaction design, and high-fidelity prototypes. I collaborated closely with the founding team to define the core user experience for pairing, personalization, and music playback control.</p>
+          <p>I also planned and facilitated usability testing sessions to validate the out-of-box setup experience, hardware LED feedback, and core app flows. Tools used included Sketch and InVision.</p>
+        </div>
+      </div>
+
+      <!-- App design mockup -->
+      <div class="pp-img-full reveal">
+        <img src="https://images.squarespace-cdn.com/content/v1/5a77d6d7a803bb706fe9f44e/1523044204666-A86O2IWKY8LW52AUW8A5/iPhone+X+375pt+White+Copy+5.png" alt="Aivvy companion app UI on iPhone" />
+      </div>
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Research</h2>
+        <div class="pp-section-desc">
+          <p>We recruited participants across two rounds of moderated usability testing, targeting early adopters interested in wearables and music streaming. Each session included task-based scenarios followed by open-ended feedback.</p>
+          <p>Our three main research goals were:</p>
+          <ol>
+            <li>Evaluate the open-box and first-time setup experience of the headphones</li>
+            <li>Determine whether users could interpret the LED status indicators without prior instruction</li>
+            <li>Assess the usability and learnability of the companion app</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Usability testing photos — carousel (3 slides) -->
+      <div class="pp-carousel reveal" id="testCarousel">
+        <button class="pp-carousel-btn pp-carousel-btn-prev disabled" id="carouselPrev" aria-label="Previous photo">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="pp-carousel-track-wrap">
+          <div class="pp-carousel-track" id="carouselTrack">
+            <div class="pp-carousel-slide"><img src="images/av-test-1.webp" alt="Usability testing session 1" /></div>
+            <div class="pp-carousel-slide"><img src="images/av-test-2.webp" alt="Usability testing session 2" /></div>
+            <div class="pp-carousel-slide"><img src="images/av-test-3.webp" alt="Usability testing session 3" /></div>
+            <div class="pp-carousel-slide"><img src="images/av-test-4.webp" alt="Usability testing session 4" /></div>
+            <div class="pp-carousel-slide"><img src="images/av-test-5.webp" alt="Usability testing session 5" /></div>
+          </div>
+        </div>
+        <button class="pp-carousel-btn pp-carousel-btn-next" id="carouselNext" aria-label="Next photo">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="pp-carousel-dots" id="carouselDots">
+          <button class="pp-carousel-dot active" data-index="0" aria-label="Photo 1"></button>
+          <button class="pp-carousel-dot" data-index="1" aria-label="Photo 2"></button>
+          <button class="pp-carousel-dot" data-index="2" aria-label="Photo 3"></button>
+          <button class="pp-carousel-dot" data-index="3" aria-label="Photo 4"></button>
+          <button class="pp-carousel-dot" data-index="4" aria-label="Photo 5"></button>
+        </div>
+      </div>
+
+      <div class="pp-text reveal">
+        <p>A key finding from testing was that users struggled to interpret LED status indicators — the colors and blink patterns were not intuitive without a reference guide. To address this, we introduced a voice prompt system that announces device status aloud at key moments (powering on, pairing, low battery), eliminating the need to memorize LED patterns.</p>
+      </div>
+
+      <div class="pp-text reveal">
+        <p>Aivvy was successfully funded on <a href="https://www.kickstarter.com/projects/186324738/aivvy" target="_blank" rel="noopener">Kickstarter</a> and proudly awarded by <a href="https://red-dot-21.com/p/design-products/consumer-electronics/headphones/aivvy-headphones/?ref=/manufacturer/aivvy-inc/&sp=0" target="_blank" rel="noopener">Red Dot Design Award</a> and <a href="https://www.prweb.com/releases/aivvy_launches_award_winning_smart_headphone_and_cloud_based_music_platform/prweb13228999.htm" target="_blank" rel="noopener">CES Innovation Awards</a>.</p>
+      </div>
+
+
+      <div class="pp-nav">
+        <a href="index.html" class="pp-nav-back">← Back to Home</a>
+        <span class="pp-nav-spacer"></span>
+        <a href="plan-and-pricing.html" class="pp-nav-next">Plan and Pricing →</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer id="contact">
+    <div class="footer-row">
+      <span class="footer-cta">Let's get in touch</span>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/weiweistreet/" target="_blank" rel="noopener" class="btn">Instagram</a>
+        <a href="https://www.linkedin.com/in/weihsunchen/" target="_blank" rel="noopener" class="btn">Linkedin</a>
+        <a href="mailto:weihsunc@gmail.com" class="btn">Email</a>
+      </div>
+      <div class="footer-end">
+        <span class="footer-credit">Made by Figma + Claude</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+
+    const IMG_SEL = '.pp-cover, .pp-img-full, .pp-photo-grid-item';
+    initViewCursor(IMG_SEL);
+    initLightbox(IMG_SEL);
+
+    // Carousel
+    (function() {
+      const track  = document.getElementById('carouselTrack');
+      const prev   = document.getElementById('carouselPrev');
+      const next   = document.getElementById('carouselNext');
+      const dots   = document.querySelectorAll('.pp-carousel-dot');
+      const total  = 5;
+      let current  = 0;
+
+      function goTo(n) {
+        current = Math.max(0, Math.min(n, total - 1));
+        track.style.transform = `translateX(-${current * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle('active', i === current));
+        prev.classList.toggle('disabled', current === 0);
+        next.classList.toggle('disabled', current === total - 1);
+      }
+
+      prev.addEventListener('click', () => goTo(current - 1));
+      next.addEventListener('click', () => goTo(current + 1));
+      dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.index)));
+
+      // Swipe support
+      let startX = 0;
+      track.parentElement.addEventListener('pointerdown', e => { startX = e.clientX; });
+      track.parentElement.addEventListener('pointerup',   e => {
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 40) goTo(dx < 0 ? current + 1 : current - 1);
+      });
+    })();
+
+    initProjectAnimations();
+  </script>
+  <script src="chatbot.js"></script>
+
+</body>
+</html>

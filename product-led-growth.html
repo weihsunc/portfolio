@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product-Led Growth Experiments — Wei-Hsun Chen</title>
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="chatbot.css" />
+
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+  <script>if(!sessionStorage.getItem('pw_ok'))window.location.replace('password.html');</script>
+
+  <style>
+    nav { padding: 64px 80px 0; }
+    .pp-content { padding: 0 80px; }
+
+    .pp-overview { display: flex; align-items: flex-start; padding: 64px 0 100px; }
+    .pp-overview-title { flex: 1 0 0; font-size: 48px; font-weight: 500; line-height: 1; max-width: 633px; }
+    .pp-overview-right { flex: 1 0 0; display: flex; flex-direction: column; gap: 20px; max-width: 633px; padding-right: 20px; }
+    .pp-overview-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-overview-desc { font-size: 20px; line-height: 28px; }
+
+    .pp-cover { width: 100%; overflow: hidden; border-radius: 4px; cursor: none !important; }
+    .pp-cover img { width: 100%; height: auto; display: block; }
+
+    .pp-meta { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 40px 0; padding: 64px 0; }
+    .pp-meta-item { flex: 1 0 0; min-width: 220px; display: flex; flex-direction: column; gap: 20px; padding-right: 20px; }
+    .pp-meta-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-meta-value { font-size: 20px; line-height: 28px; }
+
+    .pp-title-section { display: flex; align-items: flex-start; justify-content: space-between; padding: 64px 0; }
+    .pp-section-title { flex: 1 0 0; font-size: 48px; font-weight: 500; line-height: 1; }
+    .pp-section-desc { flex: 1 0 0; font-size: 20px; line-height: 28px; max-width: 720px; }
+
+    /* Experiment number heading */
+    .pp-experiment-label {
+      font-size: 14px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted-foreground);
+      margin-bottom: 16px;
+    }
+    .pp-experiment-title {
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 1.1;
+      margin-bottom: 40px;
+    }
+
+    .pp-text { padding-bottom: 64px; }
+    .pp-text p { font-size: 20px; line-height: 28px; }
+    .pp-text p + p { margin-top: 24px; }
+    .pp-text ul { list-style: disc; padding-left: 30px; margin: 24px 0 0; }
+    .pp-text ul li { font-size: 20px; line-height: 28px; margin-bottom: 8px; }
+    .pp-text ul li:last-child { margin-bottom: 0; }
+    .pp-text strong { font-weight: 600; }
+
+    .pp-img-full { width: 100%; overflow: hidden; margin-bottom: 64px; border-radius: 4px; cursor: none !important; }
+    .pp-img-full img { width: 100%; height: auto; display: block; }
+
+    .pp-img-pair { display: flex; gap: 16px; padding-bottom: 64px; }
+    .pp-img-pair-item { flex: 1 0 0; overflow: hidden; border-radius: 4px; cursor: none !important; }
+    .pp-img-pair-item img { width: 100%; height: auto; display: block; }
+
+    /* Inline metrics row (smaller stats within experiment sections) */
+    .pp-stats { display: flex; gap: 20px; padding: 32px 15px 64px; }
+    .pp-stat { flex: 1 0 0; display: flex; flex-direction: column; gap: 20px; padding: 16px 16px 16px 0; border-right: 1px solid var(--border); }
+    .pp-stat:last-child { border-right: none; }
+    .pp-stat-number { font-size: 96px; line-height: 1; font-weight: 400; letter-spacing: -0.03em; }
+    .pp-stat-label { font-size: 20px; line-height: 28px; }
+
+    .pp-nav { display: flex; align-items: center; padding-bottom: 120px; padding-top: 32px; }
+    .pp-nav-back, .pp-nav-next { display: flex; gap: 4px; align-items: center; color: var(--muted-foreground); font-size: 20px; transition: color 150ms ease; }
+    .pp-nav-back:hover, .pp-nav-next:hover { color: var(--foreground); }
+    .pp-nav-spacer { flex: 1; }
+
+    footer { padding: 0 80px 120px; }
+    .footer-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; border-top: 1px solid var(--border); padding-top: 32px; }
+    .footer-cta { font-size: var(--text-body); font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+    .footer-social { display: flex; gap: 8px; justify-self: center; }
+    .footer-end { display: flex; align-items: baseline; justify-self: end; gap: 12px; }
+    .footer-credit { font-size: var(--text-body); color: var(--muted-foreground); }
+
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 600ms ease, transform 600ms ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      nav { padding: 40px 20px 0; }
+      .pp-content { padding: 0 20px; }
+      footer { padding: 0 20px 100px; }
+      .pp-overview { flex-direction: column; gap: 32px; padding: 48px 0 60px; }
+      .pp-title-section { flex-direction: column; gap: 24px; padding: 48px 0; }
+      .pp-img-pair { flex-direction: column; }
+      .pp-img-pair-item { flex: 0 0 auto; width: 100%; }
+      .pp-stats { flex-direction: column; height: auto; padding: 24px 0; }
+      .pp-stat { border-right: none; border-bottom: 1px solid var(--border); padding: 16px 0; }
+      .pp-stat:last-child { border-bottom: none; }
+      .pp-stat-number { font-size: 64px; }
+      .footer-row { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+      .footer-social, .footer-end { justify-self: unset; }
+    }
+    @media (max-width: 480px) {
+      .pp-overview-title { font-size: 36px; }
+      .pp-section-title { font-size: 36px; }
+      .pp-experiment-title { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+    <button class="drawer-close" onclick="closeDrawer()">Close</button>
+    <a href="index.html" class="drawer-item" onclick="closeDrawer()">Work</a>
+    <a href="about.html" class="drawer-item" onclick="closeDrawer()">About</a>
+    <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="drawer-item" onclick="closeDrawer()">Resume ↗</a>
+  </div>
+
+  <nav>
+    <a href="mailto:weihsunc@gmail.com" class="nav-email" target="_blank" rel="noopener">weihsunc@gmail.com</a>
+    <div class="nav-tabs-group">
+      <a href="index.html" class="nav-tab">Work</a>
+      <a href="about.html" class="nav-tab">About</a>
+      <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="nav-tab">Resume ↗</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-menu" onclick="openDrawer()" aria-label="Open menu">Menu</button>
+      <button class="btn-ghost" onclick="toggleTheme()" aria-label="Toggle theme"><span class="theme-icon">◑</span></button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="pp-content">
+
+      <div class="pp-overview">
+        <h1 class="pp-overview-title">Docusign In-Product Growth</h1>
+        <div class="pp-overview-right">
+          <p class="pp-overview-label">Overview</p>
+          <p class="pp-overview-desc">Design experiments to improve in product upgrade and add-on attachment</p>
+        </div>
+      </div>
+
+      <div class="pp-cover">
+        <img src="images/ipg-cover.jpg" alt="Docusign in-product growth experiments" />
+      </div>
+
+      <div class="pp-meta">
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">YEAR</p>
+          <p class="pp-meta-value">2022</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">TIMELINE</p>
+          <p class="pp-meta-value">2 weeks - 1 month</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">COMPANY</p>
+          <p class="pp-meta-value">DOCUSIGN</p>
+        </div>
+      </div>
+
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Role</h2>
+        <div class="pp-section-desc">
+          <p>As the solo lead designer on the team, I collaborated with product managers on the design vision and MVP, conducted research with user researchers, and aligned with product marketing, content, legal, and product leaders on design directions and iterations.</p>
+          <p style="margin-top:24px;">Given the high traffic and payment volumes of in-product transactions on expansion side, I also collaborated with the accessibility team to ensure the flow was accessible to all users.</p>
+        </div>
+      </div>
+
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Target Audience</h2>
+        <p class="pp-section-desc">Our target users are typically individuals who either make purchase decisions or influence them. They may be admins for their teams and could be Docusign users or non-users. (Depending on where you enter the flow)</p>
+      </div>
+
+
+      <!-- Image pair — control vs challenger overview -->
+      <div class="pp-img-pair reveal">
+        <div class="pp-img-pair-item">
+          <img src="images/ipg-control.webp" alt="A/B test control — full plan selection page" />
+        </div>
+        <div class="pp-img-pair-item">
+          <img src="images/ipg-challenger.png" alt="A/B test challenger — personalized recommendation" />
+        </div>
+      </div>
+
+      <!-- Experiment 1 -->
+      <div class="reveal" style="padding: 64px 0 0;">
+        <p class="pp-experiment-label">#1 Experiment</p>
+        <h2 class="pp-experiment-title">In Product Plan Recommendation</h2>
+      </div>
+
+      <div class="pp-text reveal">
+        <p>Docusign customers spent a lot of time in the product sending documents for signature, preparing documents and analyzing results. People choose to upgrade when they feel like they need more powerful features, or when they reach their document sending limitation. Currently users go to a whole page contains of all the plans, then choose a plan they want to upgrade to.</p>
+        <p style="margin-top:24px;">Users can access the upgrade plan experience from the home page, within the product while preparing a document, and on the settings page. The plans and pricing page provides users with a comprehensive view of all our SKUs, a full feature comparison, and a Q&A section.</p>
+        <p style="margin-top:24px;">Our hypothesis... By offering a personalized, simplified, in-context plan recommendation experience when users are looking to upgrade, we can reduce friction and increase trial-to-paid conversions.</p>
+      </div>
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Goal Metric</h2>
+        <div class="pp-section-desc">
+          <p>We primarily monitor the conversion rate once users indicate their intent to upgrade, along with the Average Selling Price, time to complete checkout, and ultimately the impact on Monthly Recurring Revenue (MRR). We also track purchase error rates, upgrade error rates, and plan cancellations as indicators of whether the upgrade experience is effective.</p>
+        </div>
+      </div>
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Process</h2>
+        <div class="pp-section-desc">
+          <p>The end-to-end process took one month for design iteration and research. The team had to pivot midway to launch the plan recommendation step of the experiment initially to expedite the development timeline (without the checkout modal).</p>
+        </div>
+      </div>
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Experiment Result</h2>
+        <div class="pp-section-desc">
+          <p>The team conducted A/B testing over three weeks. The experiment concluded with a 15.3% improvement in purchase conversion rate, resulting in an additional ~$500k in NewCo MRR. Although we did not have the checkout out in the experiment, we anticipate that there will be a significant lift once we redesign a more streamlined in-product checkout experience.</p>
+        </div>
+      </div>
+
+      <div class="pp-stats reveal">
+        <div class="pp-stat">
+          <span class="pp-stat-number" data-target="15" data-suffix=".3%">0%</span>
+          <span class="pp-stat-label">Increase in conversion</span>
+        </div>
+        <div class="pp-stat">
+          <span class="pp-stat-number">$500k</span>
+          <span class="pp-stat-label">NewCo MRR</span>
+        </div>
+      </div>
+
+
+      <!-- Experiment 2 -->
+      <div class="reveal" style="padding: 64px 0 0;">
+        <p class="pp-experiment-label">#2 Pre-post</p>
+        <h2 class="pp-experiment-title">Self-service Add-on</h2>
+      </div>
+
+      <div class="pp-text reveal">
+        <p>As DocuSign expands its offerings beyond eSignature, features like SMS delivery and identity verification have proven to be highly valuable for customers' businesses. Previously, customers needed to contact sales to purchase these capabilities as add-ons. This initiative aims to provide users with a self-serve option to purchase add-ons when subscribing to a new plan, as well as empower users to trial add-ons directly within the product.</p>
+        <p style="margin-top:24px;">By offering a personalized, simplified, in-context plan recommendation experience when users are looking to upgrade, we can reduce friction and increase trial-to-paid conversions.</p>
+      </div>
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Goal Metric</h2>
+        <div class="pp-section-desc">
+          <p>The team tracked purchases and trials as primary metrics to measure add-on adoption. Since we were enabling free trials on the product's Send page, we also monitored product metrics to ensure the product experience isn't compromised.</p>
+        </div>
+      </div>
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Process</h2>
+        <div class="pp-section-desc">
+          <p>The add-on project involved multiple designers and interfaces, including the plan and pricing page, checkout, trial conversion, and settings page. I was responsible for connecting the in-product experience across these various touchpoints.</p>
+        </div>
+      </div>
+
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Experiment Result</h2>
+        <div class="pp-section-desc">
+          <p>By November, 56.3% of digital paid customers (~500k users) had unlocked the SMS delivery trial. The SMS delivery expansion contributed to a 53% week-over-week increase.</p>
+          <p style="margin-top:24px;">Overall, expansion metrics (plan upgrades, seats, and envelopes) grew 30% year-over-year. However, plan upgrades alone decreased by 12% year-over-year, indicating that there may be other issues or value gaps from the user's perspective that we haven't fully identified.</p>
+        </div>
+      </div>
+
+      <div class="pp-stats reveal">
+        <div class="pp-stat">
+          <span class="pp-stat-number" data-target="56" data-suffix=".3%">0%</span>
+          <span class="pp-stat-label">Paid users had unlocked the SMS trial</span>
+        </div>
+        <div class="pp-stat">
+          <span class="pp-stat-number" data-target="53">0</span>
+          <span class="pp-stat-label">Week-over-week SMS delivery expansion</span>
+        </div>
+        <div class="pp-stat">
+          <span class="pp-stat-number">500k</span>
+          <span class="pp-stat-label">Paid users had unlocked SMS trial</span>
+        </div>
+      </div>
+
+      <div class="pp-nav">
+        <a href="index.html" class="pp-nav-back">← Back to Home</a>
+        <span class="pp-nav-spacer"></span>
+        <a href="shure-channels.html" class="pp-nav-next">ShurePlus Channels →</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer id="contact">
+    <div class="footer-row">
+      <span class="footer-cta">Let's get in touch</span>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/weiweistreet/" target="_blank" rel="noopener" class="btn">Instagram</a>
+        <a href="https://www.linkedin.com/in/weihsunchen/" target="_blank" rel="noopener" class="btn">Linkedin</a>
+        <a href="mailto:weihsunc@gmail.com" class="btn">Email</a>
+      </div>
+      <div class="footer-end">
+        <span class="footer-credit">Made by Figma + Claude</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+
+    const IMG_SEL = '.pp-cover, .pp-img-full, .pp-img-pair-item';
+    initViewCursor(IMG_SEL);
+    initLightbox(IMG_SEL);
+
+    initProjectAnimations();
+
+    // Stats counter — handles "15.3%", "$500k", "500k" as static; animates numeric targets
+    const statNums = document.querySelectorAll('.pp-stat-number[data-target]');
+    const statsObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        const target = +el.dataset.target;
+        const suffix = el.dataset.suffix || '%';
+        const duration = 1200;
+        const start = performance.now();
+        function step(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.round(eased * target) + suffix;
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+        statsObs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    statNums.forEach(el => statsObs.observe(el));
+  </script>
+  <script src="chatbot.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metric Investigation — Wei-Hsun Chen</title>
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="chatbot.css" />
+
+  <!-- Prevent theme flash -->
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+  <script>if(!sessionStorage.getItem('pw_ok'))window.location.replace('password.html');</script>
+
+  <style>
+    /* ─── Wider nav + content for project pages ───────────── */
+    nav { padding: 64px 80px 0; }
+    .pp-content { padding: 0 80px; }
+
+    /* ─── 1. Overview ────────────────────────────────────── */
+    .pp-overview {
+      display: flex;
+      align-items: flex-start;
+      padding: 64px 0 100px;
+    }
+    .pp-overview-title {
+      flex: 1 0 0;
+      font-size: 48px;
+      font-weight: 500;
+      line-height: 1;
+      max-width: 633px;
+    }
+    .pp-overview-right {
+      flex: 1 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 633px;
+      padding-right: 20px;
+    }
+    .pp-overview-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-overview-desc  { font-size: 20px; line-height: 28px; }
+
+    /* ─── 2. Cover image ─────────────────────────────────── */
+    .pp-cover {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 4px;
+      cursor: none !important;
+    }
+    .pp-cover img { width: 100%; height: auto; display: block; }
+
+    /* ─── 3. Meta row ────────────────────────────────────── */
+    .pp-meta {
+      display: flex;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 40px 0;
+      padding: 64px 0;
+    }
+    .pp-meta-item {
+      flex: 1 0 0;
+      min-width: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding-right: 20px;
+    }
+    .pp-meta-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-meta-value { font-size: 20px; line-height: 28px; }
+
+    /* ─── Two-col section ────────────────────────────────── */
+    .pp-title-section {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 64px 0;
+    }
+    .pp-section-title {
+      flex: 1 0 0;
+      font-size: 48px;
+      font-weight: 500;
+      line-height: 1;
+    }
+    .pp-section-desc {
+      flex: 1 0 0;
+      font-size: 20px;
+      line-height: 28px;
+      max-width: 720px;
+    }
+
+    /* ─── Text blocks ────────────────────────────────────── */
+    .pp-text { padding-bottom: 64px; }
+    .pp-text p { font-size: 20px; line-height: 28px; }
+    .pp-text p + p { margin-top: 24px; }
+    .pp-text ul { list-style: disc; padding-left: 30px; margin: 24px 0 0; }
+    .pp-text ul li { font-size: 20px; line-height: 28px; margin-bottom: 8px; }
+    .pp-text ul li:last-child { margin-bottom: 0; }
+    .pp-text strong { font-weight: 600; }
+
+    /* ─── Blockquote / Pull quote ────────────────────────── */
+    .pp-quote {
+      position: relative;
+      padding: 8px 0 8px 24px;
+      margin: 0 0 64px;
+    }
+    .pp-quote::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--foreground);
+      border-radius: 999px;
+    }
+    .pp-quote p {
+      font-size: 20px;
+      line-height: 28px;
+      font-style: normal;
+      color: var(--muted-foreground);
+    }
+    .pp-quote cite {
+      display: block;
+      margin-top: 12px;
+      font-size: 20px;
+      line-height: 28px;
+      font-style: normal;
+      color: var(--muted-foreground);
+    }
+
+    /* ─── 3-up image trio (equal size) ──────────────────── */
+    .pp-img-trio {
+      display: flex;
+      gap: 16px;
+      padding-bottom: 64px;
+    }
+    .pp-img-trio-item {
+      flex: 1 0 0;
+      overflow: hidden;
+      border-radius: 4px;
+      cursor: none !important;
+      height: 260px;
+    }
+    .pp-img-trio-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ─── Prototype embed ───────────────────────────────── */
+    .pp-proto {
+      width: 100%;
+      margin-bottom: 64px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .pp-proto iframe {
+      display: block;
+      border-radius: 4px;
+    }
+
+    /* ─── Full-width image ───────────────────────────────── */
+    .pp-img-full {
+      width: 100%;
+      overflow: hidden;
+      margin-bottom: 64px;
+      border-radius: 4px;
+      cursor: none !important;
+    }
+    .pp-img-full img { width: 100%; height: auto; display: block; }
+
+    /* ─── Image pair ─────────────────────────────────────── */
+    .pp-img-pair {
+      display: flex;
+      gap: 16px;
+      padding-bottom: 64px;
+    }
+    .pp-img-pair-item {
+      flex: 1 0 0;
+      overflow: hidden;
+      border-radius: 4px;
+      cursor: none !important;
+    }
+    .pp-img-pair-item img { width: 100%; height: auto; display: block; }
+
+    /* ─── Stats row ──────────────────────────────────────── */
+    .pp-stats {
+      display: flex;
+      gap: 20px;
+      padding: 32px 15px 64px;
+    }
+    .pp-stat {
+      flex: 1 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 16px 16px 16px 0;
+      border-right: 1px solid var(--border);
+    }
+    .pp-stat:last-child { border-right: none; }
+    .pp-stat-number {
+      font-size: 96px;
+      line-height: 1;
+      font-weight: 400;
+      letter-spacing: -0.03em;
+    }
+    .pp-stat-label { font-size: 20px; line-height: 28px; }
+
+    /* ─── Bottom navigation ──────────────────────────────── */
+    .pp-nav {
+      display: flex;
+      align-items: center;
+      padding-bottom: 120px;
+      padding-top: 32px;
+    }
+    .pp-nav-back,
+    .pp-nav-next {
+      display: flex; gap: 4px; align-items: center;
+      color: var(--muted-foreground); font-size: 20px;
+      transition: color 150ms ease;
+    }
+    .pp-nav-back:hover,
+    .pp-nav-next:hover { color: var(--foreground); }
+    .pp-nav-spacer { flex: 1; }
+
+    /* ─── Footer ─────────────────────────────────────────── */
+    footer { padding: 0 80px 120px; }
+    .footer-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+    }
+    .footer-cta {
+      font-size: var(--text-body); font-weight: 400;
+      text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
+    }
+    .footer-social { display: flex; gap: 8px; justify-self: center; }
+    .footer-end {
+      display: flex; align-items: baseline;
+      justify-self: end; gap: 12px;
+    }
+    .footer-credit { font-size: var(--text-body); color: var(--muted-foreground); }
+
+    /* ─── Scroll reveal ──────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 600ms ease, transform 600ms ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── Responsive ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 40px 20px 0; }
+      .pp-content { padding: 0 20px; }
+      footer { padding: 0 20px 100px; }
+      .pp-overview { flex-direction: column; gap: 32px; padding: 48px 0 60px; }
+      .pp-title-section { flex-direction: column; gap: 24px; padding: 48px 0; }
+      .pp-img-pair { flex-direction: column; }
+      .pp-img-pair-item { flex: 0 0 auto; width: 100%; }
+      .pp-img-trio { flex-direction: column; }
+      .pp-img-trio-item { flex: 0 0 auto; width: 100%; height: auto; aspect-ratio: 16 / 9; }
+      .pp-proto iframe { height: 450px; }
+      .pp-stats { flex-direction: column; height: auto; padding: 24px 0; }
+      .pp-stat { border-right: none; border-bottom: 1px solid var(--border); padding: 16px 0; }
+      .pp-stat:last-child { border-bottom: none; }
+      .pp-stat-number { font-size: 64px; }
+      .footer-row { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+      .footer-social, .footer-end { justify-self: unset; }
+    }
+    @media (max-width: 480px) {
+      .pp-overview-title { font-size: 36px; }
+      .pp-section-title  { font-size: 36px; }
+      .pp-proto iframe { height: 350px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+    <button class="drawer-close" onclick="closeDrawer()">Close</button>
+    <a href="index.html" class="drawer-item" onclick="closeDrawer()">Work</a>
+    <a href="about.html" class="drawer-item" onclick="closeDrawer()">About</a>
+    <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="drawer-item" onclick="closeDrawer()">Resume ↗</a>
+  </div>
+
+  <!-- Navigation -->
+  <nav>
+    <a href="mailto:weihsunc@gmail.com" class="nav-email" target="_blank" rel="noopener">weihsunc@gmail.com</a>
+    <div class="nav-tabs-group">
+      <a href="index.html" class="nav-tab">Work</a>
+      <a href="about.html" class="nav-tab">About</a>
+      <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="nav-tab">Resume ↗</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-menu" onclick="openDrawer()" aria-label="Open menu">Menu</button>
+      <button class="btn-ghost" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span class="theme-icon">◑</span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="pp-content">
+
+      <!-- Overview -->
+      <div class="pp-overview">
+        <h1 class="pp-overview-title">Metric Investigation</h1>
+        <div class="pp-overview-right">
+          <p class="pp-overview-label">Overview</p>
+          <p class="pp-overview-desc">Redesign of Meta's root cause analysis tool to help people figure out what happened to their data. The team launched the e2e experience within five weeks with a 92% increase in users.</p>
+        </div>
+      </div>
+
+      <!-- Cover Image -->
+      <div class="pp-cover">
+        <img src="images/mi-cover.png" alt="Metric Investigation — two-panel investigation UI" />
+      </div>
+
+      <!-- Meta Row -->
+      <div class="pp-meta">
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">YEAR</p>
+          <p class="pp-meta-value">2023</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">TIMELINE</p>
+          <p class="pp-meta-value">1 month</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">COMPANY</p>
+          <p class="pp-meta-value">META(FACEBOOK)</p>
+        </div>
+      </div>
+
+
+      <!-- Goals -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Goals</h2>
+        <p class="pp-section-desc">Employees at Meta use many internal data tools to perform similar tasks. Data scientists spend hours every week on repetitive data analysis, which is time-consuming and tedious. We need an automated solution, rather than writing one-off SQL, so they can focus on more exploratory work. Additionally, the investigation process should be streamlined into a single, easy-to-use workflow that serves as the single source of truth across all internal tools.</p>
+      </div>
+
+
+      <!-- Target Audience -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Target Audience</h2>
+        <div class="pp-section-desc">
+          <p>Our target users are internal employees who utilize metrics to make decisions. From our foundational study, we categorized all the users into two personas:</p>
+          <ul style="list-style:disc; padding-left:30px; margin-top:16px;">
+            <li style="font-size:20px; line-height:28px; margin-bottom:8px;"><strong>Data Consumers</strong> — look at the analysis and consume reports to make better decisions.</li>
+            <li style="font-size:20px; line-height:28px;"><strong>Data Developers</strong> — building dashboards and pipelines to ensure the data is accurate and reliable.</li>
+          </ul>
+        </div>
+      </div>
+
+
+      <!-- Original Tool Image -->
+      <div class="pp-img-full reveal">
+        <img src="images/mi-old-tool.webp" alt="Original investigation tool UI" />
+      </div>
+
+      <!-- Heuristic Evaluation -->
+      <div class="pp-text reveal">
+        <p>We started by doing a round of heuristic evaluation on the current investigation tool. We talked to 8 users and categorized major problems:</p>
+        <ul>
+          <li><strong>Navigation</strong> — Users don't know where they are and it's hard to find actionable insights.</li>
+          <li><strong>Trust</strong> — Data scientists usually have a hypothesis in their mind (usually a country is the reason for the change). However, the tool hasn't defaulted to their liking and they can't customize it.</li>
+          <li><strong>Acquisition</strong> — Hard to set up root cause analysis. Users have to set up auto-run, which is a cumbersome process.</li>
+          <li><strong>Design and layout</strong> — Confusing headers, rarely-used sidebars and complex columns.</li>
+        </ul>
+        <p style="margin-top:24px;">I worked with the engineering team to brainstorm ideas for how we could make the most impact within the limited time frame. We decided to focus the project on making it easier for users to find actionable insights, as well as updating the design to provide meaningful insights in the context of what the users are doing, regardless of the tool they are using.</p>
+      </div>
+
+      <!-- Quote -->
+      <blockquote class="pp-quote reveal">
+        <p>"It's to complicated. I showed the results to our leadership and they were confused."</p>
+        <cite>— Data Analyst</cite>
+      </blockquote>
+
+      <!-- Design Flow Image -->
+      <div class="pp-img-full reveal">
+        <img src="images/mi-flow.webp" alt="First design iteration flow" />
+      </div>
+
+      <!-- First Design Iteration -->
+      <div class="pp-text reveal">
+        <p>The first design iteration focused on the following:</p>
+        <ul>
+          <li><strong>Match with our internal design system</strong> — Customized certain widgets (e.g. topline metric card) to show relevant information for users.</li>
+          <li><strong>Progressive disclosure</strong> — Show a few important columns so users can learn as they customize their layout.</li>
+          <li><strong>Summary section</strong> — A back-end powered summary that explains what happened to the metric and the potential reasons.</li>
+          <li><strong>Navigation</strong> — A tab structure to minimize the pain of long vertical scrolling.</li>
+        </ul>
+      </div>
+
+      <!-- Figma Prototype Embed -->
+      <div class="pp-proto reveal">
+        <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="100%" height="700" src="https://embed.figma.com/proto/liW9NNTvOBfggoucqXtOXi/Past-Portfolio---Assets?page-id=2666%3A39692&viewport=99%2C-112%2C0.66&scaling=scale-down-width&content-scaling=fixed&node-id=2666-43264&starting-point-node-id=2666%3A43264&embed-host=share" allowfullscreen></iframe>
+      </div>
+
+      <!-- Usability Testing Finding -->
+      <div class="pp-text reveal">
+        <p>Throughout the usability testing of the initial design, we realized that users wanted to see the summary section on other surfaces and tools, as their analysis often takes place in notebooks, dashboards, or presentations.</p>
+      </div>
+
+      <!-- Design 3-up Grid -->
+      <div class="pp-img-trio reveal">
+        <div class="pp-img-trio-item">
+          <img src="images/mi-dashboard.webp" alt="Redesigned investigation dashboard" />
+        </div>
+        <div class="pp-img-trio-item">
+          <img src="images/mi-visual.webp" alt="Visual analysis view" />
+        </div>
+        <div class="pp-img-trio-item">
+          <img src="images/mi-alert.webp" alt="Alert on dashboard" />
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="pp-stats reveal">
+        <div class="pp-stat">
+          <span class="pp-stat-number" data-target="178">0</span>
+          <span class="pp-stat-label">increase in metrics monitored</span>
+        </div>
+        <div class="pp-stat">
+          <span class="pp-stat-number" data-target="92">0</span>
+          <span class="pp-stat-label">engage users growth</span>
+        </div>
+        <div class="pp-stat">
+          <span class="pp-stat-number" data-target="50">0</span>
+          <span class="pp-stat-label">Impression growth</span>
+        </div>
+      </div>
+
+      <!-- Outcome -->
+      <div class="pp-text reveal">
+        <p>We launched the new design and got a promising impact within a month:</p>
+        <ul>
+          <li>178% increase in metrics monitored</li>
+          <li>92% service engage users growth</li>
+          <li>50% impression growth</li>
+          <li>UI used to be the top two complaints from previous surveys — now it's dropped to fifth</li>
+        </ul>
+      </div>
+
+      <!-- Bottom Nav -->
+      <div class="pp-nav">
+        <a href="index.html" class="pp-nav-back">← Back to Home</a>
+        <span class="pp-nav-spacer"></span>
+        <a href="shure-play.html" class="pp-nav-next">ShurePlus Play →</a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <div class="footer-row">
+      <span class="footer-cta">Let's get in touch</span>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/weiweistreet/" target="_blank" rel="noopener" class="btn">Instagram</a>
+        <a href="https://www.linkedin.com/in/weihsunchen/" target="_blank" rel="noopener" class="btn">Linkedin</a>
+        <a href="mailto:weihsunc@gmail.com" class="btn">Email</a>
+      </div>
+      <div class="footer-end">
+        <span class="footer-credit">Made by Figma + Claude</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+    // Lightbox + view cursor on images
+    const IMG_SEL = '.pp-cover, .pp-img-full, .pp-img-pair-item, .pp-img-trio-item';
+    initViewCursor(IMG_SEL);
+    initLightbox(IMG_SEL);
+
+    // Scroll reveal
+    initProjectAnimations();
+
+    // Stats counter
+    const statNums = document.querySelectorAll('.pp-stat-number[data-target]');
+    const statsObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        const target = +el.dataset.target;
+        const suffix = el.dataset.suffix || '%';
+        const duration = 1200;
+        const start = performance.now();
+        function step(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.round(eased * target) + suffix;
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+        statsObs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    statNums.forEach(el => statsObs.observe(el));
+  </script>
+  <script src="chatbot.js"></script>
+
+</body>
+</html>

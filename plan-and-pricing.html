@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plan and Pricing — Wei-Hsun Chen</title>
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="chatbot.css" />
+
+  <!-- Prevent theme flash -->
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+  <script>if(!sessionStorage.getItem('pw_ok'))window.location.replace('password.html');</script>
+
+  <style>
+    /* ─── Wider nav + content padding for project pages ──── */
+    nav { padding: 64px 80px 0; }
+
+    /* ─── Page content wrapper ───────────────────────────── */
+    .pp-content { padding: 0 80px; }
+
+    /* ─── 1. Overview ────────────────────────────────────── */
+    .pp-overview {
+      display: flex;
+      align-items: flex-start;
+      padding: 64px 0 100px;
+    }
+    .pp-overview-title {
+      flex: 1 0 0;
+      font-size: 48px;
+      font-weight: 500;
+      line-height: 1;
+      max-width: 633px;
+    }
+    .pp-overview-right {
+      flex: 1 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 633px;
+      padding-right: 20px;
+    }
+    .pp-overview-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-overview-desc  { font-size: 20px; line-height: 28px; }
+
+    /* ─── 2. Cover image ─────────────────────────────────── */
+    .pp-cover {
+      aspect-ratio: 1250 / 590;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 4px;
+      cursor: none !important;
+    }
+    .pp-cover img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ─── 3. Meta row ────────────────────────────────────── */
+    .pp-meta {
+      display: flex;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 40px 0;
+      padding: 64px 0;
+    }
+    .pp-meta-item {
+      flex: 1 0 0;
+      min-width: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding-right: 20px;
+    }
+    .pp-meta-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-meta-value { font-size: 20px; line-height: 28px; }
+
+    /* ─── Two-col section (Goals, Audience, etc.) ────────── */
+    .pp-title-section {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 64px 0;
+    }
+    .pp-section-title {
+      flex: 1 0 0;
+      font-size: 48px;
+      font-weight: 500;
+      line-height: 1;
+    }
+    .pp-section-desc {
+      flex: 1 0 0;
+      font-size: 20px;
+      line-height: 24px;
+      max-width: 720px;
+    }
+
+    /* ─── Text blocks ────────────────────────────────────── */
+    .pp-text { padding-bottom: 64px; }
+    .pp-text p { font-size: 20px; line-height: 24px; }
+    .pp-text p + p { margin-top: 24px; }
+    .pp-text ul { list-style: disc; padding-left: 30px; margin: 24px 0 0; }
+    .pp-text ul li { font-size: 20px; line-height: 24px; margin-bottom: 6px; }
+    .pp-text ul li:last-child { margin-bottom: 0; }
+    .pp-text strong { font-weight: 600; }
+    .pp-text.pt-sm  { padding-top: 24px; }
+
+    /* ─── Blockquote (for pull quotes) ──────────────────── */
+    .pp-quote {
+      position: relative;
+      padding: 8px 0 8px 24px;
+      margin: 0 0 64px;
+    }
+    .pp-quote::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--foreground);
+      border-radius: 999px;
+    }
+    .pp-quote p {
+      font-size: 20px;
+      line-height: 28px;
+      font-style: normal;
+      color: var(--muted-foreground);
+    }
+    .pp-quote cite {
+      display: block;
+      margin-top: 12px;
+      font-size: 20px;
+      line-height: 28px;
+      font-style: normal;
+      color: var(--muted-foreground);
+    }
+
+    /* ─── Full-width image ───────────────────────────────── */
+    .pp-img-full {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      overflow: hidden;
+      margin-bottom: 64px;
+      border-radius: 4px;
+      cursor: none !important;
+    }
+    .pp-img-full img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+    }
+
+    /* ─── Side-by-side image pair ────────────────────────── */
+    .pp-img-pair {
+      display: flex;
+      gap: 16px;
+      padding-top: 24px;
+      padding-bottom: 64px;
+    }
+    .pp-img-pair-item {
+      flex: 1 0 0;
+      aspect-ratio: 800 / 600;
+      overflow: hidden;
+      border-radius: 4px;
+      cursor: none !important;
+    }
+    .pp-img-pair-item img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top;
+    }
+    .pp-img-pair--portrait .pp-img-pair-item { aspect-ratio: 880 / 1765; }
+
+    /* ─── Three-col images ───────────────────────────────── */
+    .pp-img-triple {
+      display: flex;
+      gap: 16px;
+      padding-bottom: 64px;
+    }
+    .pp-img-triple-item {
+      flex: 1 0 0;
+      aspect-ratio: 617.5 / 590;
+      overflow: hidden;
+      border-radius: 4px;
+      cursor: none !important;
+    }
+    .pp-img-triple-item img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top;
+    }
+
+    /* ─── Prototype embed ────────────────────────────────── */
+    .pp-embed {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      margin-bottom: 64px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .pp-embed iframe {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      border: none; display: block;
+    }
+
+    /* ─── Stats row ──────────────────────────────────────── */
+    .pp-stats {
+      display: flex;
+      gap: 20px;
+      height: 346px;
+      padding: 32px 15px;
+    }
+    .pp-stat {
+      flex: 1 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      padding: 16px 16px 16px 0;
+      border-right: 1px solid var(--muted-foreground);
+    }
+    .pp-stat:last-child { border-right: none; }
+    .pp-stat-number {
+      font-size: 96px;
+      line-height: 96px;
+      font-weight: 400;
+      letter-spacing: -0.03em;
+    }
+    .pp-stat-label { font-size: 20px; line-height: 28px; }
+
+    /* ─── Bottom navigation ──────────────────────────────── */
+    .pp-nav {
+      display: flex;
+      align-items: center;
+      padding-bottom: 120px;
+      padding-top: 32px;
+    }
+    .pp-nav-back,
+    .pp-nav-next {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      color: var(--muted-foreground);
+      font-size: 20px;
+      transition: color 150ms ease;
+    }
+    .pp-nav-back:hover,
+    .pp-nav-next:hover { color: var(--foreground); }
+    .pp-nav-spacer { flex: 1; }
+
+    /* ─── Footer ─────────────────────────────────────────── */
+    footer { padding: 0 80px 120px; }
+    .footer-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+    }
+    .footer-cta {
+      font-size: var(--text-body);
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .footer-social { display: flex; gap: 8px; justify-self: center; }
+    .footer-end {
+      display: flex; align-items: baseline;
+      justify-self: end; gap: 12px;
+    }
+    .footer-credit { font-size: var(--text-body); color: var(--muted-foreground); }
+
+    /* ─── Image reveal animation ─────────────────────────── */
+    @keyframes imgReveal {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Responsive ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 40px 20px 0; }
+      .pp-content { padding: 0 20px; }
+      footer { padding: 0 20px 100px; }
+      .pp-overview { flex-direction: column; gap: 32px; padding: 48px 0 60px; }
+      .pp-title-section { flex-direction: column; gap: 24px; padding: 48px 0; }
+      .pp-img-pair { flex-direction: column; padding-top: 0; }
+      .pp-img-pair-item { flex: 0 0 auto; width: 100%; }
+      .pp-img-pair-item { aspect-ratio: 16 / 9; }
+      .pp-img-pair--portrait .pp-img-pair-item { aspect-ratio: 4 / 5; }
+      .pp-img-triple { flex-direction: column; }
+      .pp-img-triple-item { aspect-ratio: 16 / 9; }
+      .pp-stats { flex-direction: column; height: auto; padding: 24px 0; }
+      .pp-stat { border-right: none; border-bottom: 1px solid var(--muted-foreground); padding: 16px 0; }
+      .pp-stat:last-child { border-bottom: none; }
+      .pp-stat-number { font-size: 64px; line-height: 64px; }
+      .footer-row { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+      .footer-social, .footer-end { justify-self: unset; }
+    }
+    @media (max-width: 480px) {
+      .pp-overview-title { font-size: 36px; }
+      .pp-section-title  { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+    <button class="drawer-close" onclick="closeDrawer()">Close</button>
+    <a href="index.html" class="drawer-item" onclick="closeDrawer()">Work</a>
+    <a href="about.html" class="drawer-item" onclick="closeDrawer()">About</a>
+    <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="drawer-item" onclick="closeDrawer()">Resume ↗</a>
+  </div>
+
+  <!-- Navigation -->
+  <nav>
+    <a href="mailto:weihsunc@gmail.com" class="nav-email" target="_blank" rel="noopener">weihsunc@gmail.com</a>
+    <div class="nav-tabs-group">
+      <a href="index.html" class="nav-tab">Work</a>
+      <a href="about.html" class="nav-tab">About</a>
+      <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="nav-tab">Resume ↗</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-menu" onclick="openDrawer()" aria-label="Open menu">Menu</button>
+      <button class="btn-ghost" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span class="theme-icon">◑</span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="pp-content">
+
+      <!-- ① Overview -->
+      <div class="pp-overview">
+        <h1 class="pp-overview-title">Plan and Pricing</h1>
+        <div class="pp-overview-right">
+          <p class="pp-overview-label">Overview</p>
+          <p class="pp-overview-desc">I re-designed the plan and pricing purchase experience for Docusign, which eventually drove 8% of conversion and 29% of ASP increase.</p>
+        </div>
+      </div>
+
+      <!-- ② Cover -->
+      <div class="pp-cover">
+        <img src="images/cover-plan-pricing.png" alt="Plan and Pricing — Docusign" />
+      </div>
+
+      <!-- ③ Meta -->
+      <div class="pp-meta">
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">YEAR</p>
+          <p class="pp-meta-value">2025</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">TIMELINE</p>
+          <p class="pp-meta-value">1 month</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">COMPANY</p>
+          <p class="pp-meta-value">DOCUSIGN</p>
+        </div>
+      </div>
+
+      <!-- ④ Goals -->
+      <div class="pp-title-section">
+        <h2 class="pp-section-title">Goals</h2>
+        <p class="pp-section-desc">The primary goal is to redesign the pricing page to align with the new rebrand and differentiate it from our original e-Signature offerings. Eventually unlock new customer conversions.</p>
+      </div>
+
+      <!-- ⑤ Target Audience -->
+      <div class="pp-title-section">
+        <h2 class="pp-section-title">Target Audience</h2>
+        <p class="pp-section-desc">Individuals interested in contract lifecycle solutions and eSignature products.</p>
+      </div>
+
+      <!-- ⑥ Brand image pair (old DocuSign logo → new docusign rebrand) -->
+      <div class="pp-img-pair">
+        <div class="pp-img-pair-item">
+          <img src="images/pp-iam.png" alt="Old DocuSign logo — lime green brand" />
+        </div>
+        <div class="pp-img-pair-item">
+          <img src="images/pp-esign.png" alt="New docusign logo after 2024 rebrand" />
+        </div>
+      </div>
+
+      <!-- ⑦ Background text -->
+      <div class="pp-text">
+        <p>In 2024, DocuSign announced a new rebrand and introduced <strong>Intelligent Agreement Management</strong> (IAM), a powerful new platform. IAM integrates artificial intelligence (AI) and automation throughout the agreement lifecycle.</p>
+        <p>The IAM platform introduces key components:</p>
+        <ul>
+          <li><strong>Docusign Navigator</strong> – An AI-powered repository that centralizes agreements' storage, management, and analysis, converting unstructured documents into structured, actionable data.</li>
+          <li><strong>Docusign Maestro</strong> – A no-code workflow engine that enables users to build customized agreement workflows, automating tasks such as document generation, approvals, and notifications—without writing a single line of code.</li>
+        </ul>
+        <p>When the new platform was introduced, the team added an "IAM" tab to the right side in the original design to understand how customers react to the new offerings without cannibalizing our original e-Signature solution.</p>
+        <p>We realized people aren't fully understanding the IAM offerings, with less than 10% of people actually clicking on the view all features section (see below).</p>
+      </div>
+
+      <!-- ⑧ Old design image pair — original IAM and eSign pricing pages -->
+      <div class="pp-img-pair">
+        <div class="pp-img-pair-item">
+          <img src="images/pp-control.png" alt="Original IAM pricing page — control design" />
+        </div>
+        <div class="pp-img-pair-item">
+          <img src="images/pp-usability.png" alt="Original eSignature pricing page — control design" />
+        </div>
+      </div>
+
+      <!-- ⑨ Full-width usability issues annotated -->
+      <div class="pp-img-full">
+        <img src="images/pp-iam-experience.png" alt="Usability issues identified on original IAM pricing design" />
+      </div>
+
+      <!-- ⑩ Fix intro -->
+      <div class="pp-text pt-sm">
+        <p>To fix the usability problems on the pricing page, I originally proposed the following design as a separate experiment.</p>
+      </div>
+
+      <!-- ⑪ Prototype embed 1 -->
+      <div class="pp-embed" id="embed1">
+        <iframe src="https://embed.figma.com/proto/NyHvxzM6OEEq21FgoHSPK3/Docusign-PnP?page-id=4%3A13834&node-id=4-13835&viewport=359%2C852%2C0.25&scaling=scale-down-width&content-scaling=fixed&starting-point-node-id=4%3A13835&embed-host=share" allowfullscreen></iframe>
+      </div>
+
+      <!-- ⑫ Usability feedback -->
+      <div class="pp-text pt-sm">
+        <p>Here is some feedback from the usability testing:</p>
+        <ul>
+          <li>Iconography helps users locate the features they are looking for more easily.</li>
+          <li>By highlighting the "View All" features section, users can easily compare different plans and make quicker purchasing decisions.</li>
+          <li>Navigation can be further refined to better showcase the various plan types.</li>
+        </ul>
+        <p>I led a few rounds of workshops and explorations below to iterate on different IA and components, working with the leadership and branding team.</p>
+      </div>
+
+      <!-- ⑬ Explorations full-width -->
+      <div class="pp-img-full">
+        <img src="images/pp-explorations.png" alt="Design explorations and workshops" />
+      </div>
+
+      <!-- ⑭ Design intentions -->
+      <div class="pp-text pt-sm">
+        <p>After rounds of iterations and reviews, we finally settled on the following design with the key design intentions:</p>
+        <ul>
+          <li>Action-oriented content to drive conversion</li>
+          <li>Card-type structure with focus on feature comparison</li>
+          <li>Value proposition for new IAM product</li>
+          <li>Surfacing view all feature for quick plan type comparison features</li>
+        </ul>
+      </div>
+
+      <!-- ⑮ Prototype embed 2 -->
+      <div class="pp-embed" id="embed2">
+        <iframe src="https://embed.figma.com/proto/NyHvxzM6OEEq21FgoHSPK3/Docusign-PnP?page-id=57%3A213150&node-id=57-237686&p=f&viewport=21%2C165%2C0.07&scaling=scale-down-width&content-scaling=fixed&embed-host=share" allowfullscreen></iframe>
+      </div>
+
+      <!-- ⑯ Stats -->
+      <div class="pp-stats" id="pp-stats">
+        <div class="pp-stat">
+          <p class="pp-stat-number"><span class="stat-num" data-target="8" data-prefix="" data-suffix="%">8%</span></p>
+          <p class="pp-stat-label">Increase in conversion</p>
+        </div>
+        <div class="pp-stat">
+          <p class="pp-stat-number"><span class="stat-num" data-target="29" data-prefix="" data-suffix="%">29%</span></p>
+          <p class="pp-stat-label">Higher in average selling price (ASP)</p>
+        </div>
+        <div class="pp-stat">
+          <p class="pp-stat-number"><span class="stat-num" data-target="252" data-prefix="$" data-suffix="k">$252k</span></p>
+          <p class="pp-stat-label">MRR increase during experiment</p>
+        </div>
+      </div>
+
+      <!-- ⑰ A/B/C Testing -->
+      <div class="pp-text pt-sm">
+        <p>To understand the impact of the higher price point and premium product, the team ran an A/B/C test with the intention to validate the new direction.</p>
+        <ul>
+          <li><strong>Variant A</strong>: Original design with IAM tab (Default to eSignature tab)</li>
+          <li><strong>Variant B</strong>: New design defaulting to eSignature tab (Lower price point)</li>
+          <li><strong>Variant C</strong>: New design defaulting to IAM tab (Premium price point)</li>
+        </ul>
+      </div>
+
+      <!-- ⑱ Three-col final design images (A/B/C variants) -->
+      <div class="pp-img-triple">
+        <div class="pp-img-triple-item">
+          <img src="images/final-1.png" alt="Final design — Variant A" />
+        </div>
+        <div class="pp-img-triple-item">
+          <img src="images/final-2.png" alt="Final design — Variant B" />
+        </div>
+        <div class="pp-img-triple-item">
+          <img src="images/final-3.png" alt="Final design — Variant C" />
+        </div>
+      </div>
+
+      <!-- ⑲ Outcome -->
+      <div class="pp-text">
+        <p>The Variant B new design is driving a <strong>8% increase in conversion</strong> itself, but we noticed that Variant C results in a lower conversion but a <strong>29% higher ASP.</strong> The design helped influence the company strategy to focus on conversion for self-serve customers, and IAM product for enterprise customers.</p>
+      </div>
+
+      <!-- ⑳ Bottom navigation -->
+      <div class="pp-nav">
+        <a href="index.html" class="pp-nav-back">← Back to Home</a>
+        <span class="pp-nav-spacer"></span>
+        <a href="metric-investigation.html" class="pp-nav-next">Metric Investigation →</a>
+      </div>
+
+    </div><!-- /.pp-content -->
+  </main>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <div class="footer-row">
+      <span class="footer-cta">Let's get in touch</span>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/weiweistreet/" target="_blank" rel="noopener" class="btn">Instagram</a>
+        <a href="https://www.linkedin.com/in/weihsunchen/" target="_blank" rel="noopener" class="btn">Linkedin</a>
+        <a href="mailto:weihsunc@gmail.com" class="btn">Email</a>
+      </div>
+      <div class="footer-end">
+        <span class="footer-credit">Made by Figma + Claude</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+    // ── Clock ───────────────────────────────────────────────
+
+    initProjectAnimations();
+
+    // ── Animated stats counter ──────────────────────────────
+    (function () {
+      const statsEl = document.getElementById('pp-stats');
+      if (!statsEl) return;
+      function easeOutExpo(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+      function animateNum(el) {
+        const target = parseInt(el.dataset.target);
+        const prefix = el.dataset.prefix || '';
+        const suffix = el.dataset.suffix || '';
+        const duration = 1400;
+        const startTime = performance.now();
+        function step(now) {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          el.textContent = prefix + Math.round(easeOutExpo(progress) * target) + suffix;
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+      const obs = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          statsEl.querySelectorAll('.stat-num').forEach(animateNum);
+          obs.unobserve(statsEl);
+        }
+      }, { threshold: 0.4 });
+      obs.observe(statsEl);
+    })();
+
+    // ── View cursor + lightbox ──────────────────────────────
+    const IMG_SELECTOR = '.pp-img-pair-item, .pp-img-triple-item, .pp-img-full, .pp-cover';
+    initViewCursor(IMG_SELECTOR);
+    initLightbox(IMG_SELECTOR);
+  </script>
+  <script src="chatbot.js"></script>
+
+</body>
+</html>

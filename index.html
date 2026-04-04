@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wei-Hsun Chen — Product Designer</title>
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="chatbot.css" />
+
+  <!-- Prevent theme flash -->
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+  <script>if(!sessionStorage.getItem('pw_ok'))window.location.replace('password.html');</script>
+
+  <style>
+    /* ─── Page-specific token overrides ──────────────────── */
+    :root { --text-display: clamp(36px, 5vw, 48px); }
+
+    /* ─── Intro Section ──────────────────────────────────── */
+    .intro {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      padding: 80px 40px;
+      align-items: start;
+    }
+    .intro-headline {
+      font-size: var(--text-display);
+      font-weight: 500;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .name-type-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 0.85em;
+      background: #2563EB;
+      vertical-align: baseline;
+      margin-left: 2px;
+      opacity: 0;
+      animation: none;
+    }
+    .name-type-cursor.blink {
+      opacity: 1;
+      animation: cursorBlink 600ms steps(1) infinite;
+    }
+    @keyframes cursorBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .intro-body {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding-top: 6px;
+    }
+    .intro-body p {
+      font-size: var(--text-body);
+      line-height: 24px;
+      font-weight: 400;
+    }
+
+    /* ─── Works Section ──────────────────────────────────── */
+    .works { padding: 40px 40px 80px; }
+    .works-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .works-title {
+      font-size: var(--text-heading);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+    .works-years {
+      font-size: var(--text-body);
+      color: var(--muted-foreground);
+    }
+    .works-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 20px;
+      row-gap: 24px;
+    }
+
+    /* ─── Work Card ──────────────────────────────────────── */
+    .work-card { display: block; }
+    .work-thumb-wrap {
+      overflow: hidden;
+      border-radius: 4px;
+      aspect-ratio: 16 / 10;
+      margin-bottom: 16px;
+      background: var(--card);
+    }
+    .work-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  opacity 300ms ease;
+    }
+    .work-card:hover .work-thumb { transform: scale(1.03); opacity: 0.9; }
+    .work-meta {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .work-title {
+      font-size: var(--text-body);
+      font-weight: 400;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .work-company {
+      font-size: var(--text-body);
+      line-height: 1;
+      color: var(--muted-foreground);
+    }
+    .work-year {
+      font-size: var(--text-body);
+      line-height: 1;
+      color: var(--muted-foreground);
+      flex-shrink: 0;
+    }
+
+    /* ─── Footer ─────────────────────────────────────────── */
+    footer { padding: 80px 40px 120px; }
+    .footer-top {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 40px;
+    }
+    .footer-cta {
+      font-size: var(--text-heading);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+    .footer-social { display: flex; gap: 8px; }
+    .footer-bottom { display: flex; align-items: baseline; justify-content: flex-end; gap: 12px; }
+    .footer-credit {
+      font-size: var(--text-body);
+      color: var(--muted-foreground);
+    }
+
+    /* ─── Responsive ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .intro  { grid-template-columns: 1fr; padding: 48px 20px; gap: 28px; }
+      .works  { padding: 32px 20px 60px; }
+      .works-grid { grid-template-columns: 1fr; }
+      footer  { padding: 48px 20px 100px; }
+      .footer-top { flex-direction: column; align-items: flex-start; gap: 24px; }
+      .footer-bottom { justify-content: flex-start; }
+    }
+    @media (max-width: 480px) {
+      .footer-social { flex-wrap: wrap; gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+    <button class="drawer-close" onclick="closeDrawer()">Close</button>
+    <a href="index.html" class="drawer-item" onclick="closeDrawer()">Work</a>
+    <a href="about.html" class="drawer-item" onclick="closeDrawer()">About</a>
+    <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="drawer-item" onclick="closeDrawer()">Resume ↗</a>
+  </div>
+
+  <!-- Navigation -->
+  <nav>
+    <a href="mailto:weihsunc@gmail.com" class="nav-email" target="_blank" rel="noopener">weihsunc@gmail.com</a>
+    <div class="nav-tabs-group">
+      <a href="index.html" class="nav-tab active">Work</a>
+      <a href="about.html" class="nav-tab">About</a>
+      <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener" class="nav-tab">Resume ↗</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-menu" onclick="openDrawer()" aria-label="Open menu">Menu</button>
+      <button class="btn-ghost" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span class="theme-icon">◑</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main>
+
+    <!-- Intro -->
+    <section class="intro" id="about">
+      <h1 class="intro-headline">Hi, I'm Wei, a product designer that loves to experiment</h1>
+      <div class="intro-body">
+        <p>With over 10 years of experience, I've designed products for growth, data tooling and mobile apps.</p>
+        <p>I'm currently leading growth design at Docusign, where I focus on driving conversion and expansion.</p>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- Selected Works -->
+    <section class="works" id="work">
+      <div class="works-header">
+        <h2 class="works-title">Selected Works</h2>
+        <span class="works-years">2018 – 2025</span>
+      </div>
+
+      <div class="works-grid">
+
+        <a class="work-card" href="plan-and-pricing.html">
+          <div class="work-thumb-wrap">
+            <img class="work-thumb" src="images/cover-plan-pricing.png" alt="Plan and Pricing" />
+          </div>
+          <div class="work-meta">
+            <div>
+              <div class="work-title">Plan and Pricing</div>
+              <div class="work-company">Docusign</div>
+            </div>
+            <span class="work-year">2024</span>
+          </div>
+        </a>
+
+        <a class="work-card" href="metric-investigation.html">
+          <div class="work-thumb-wrap">
+            <img class="work-thumb" src="images/cover-metric.png" alt="Metric Investigation" />
+          </div>
+          <div class="work-meta">
+            <div>
+              <div class="work-title">Metric Investigation</div>
+              <div class="work-company">Meta</div>
+            </div>
+            <span class="work-year">2024</span>
+          </div>
+        </a>
+
+        <a class="work-card" href="shure-play.html">
+          <div class="work-thumb-wrap">
+            <img class="work-thumb" src="images/sp-hero.gif" alt="ShurePlus Play" />
+          </div>
+          <div class="work-meta">
+            <div>
+              <div class="work-title">ShurePlus Play</div>
+              <div class="work-company">Shure</div>
+            </div>
+            <span class="work-year">2024</span>
+          </div>
+        </a>
+
+        <a class="work-card" href="data-lifecycle.html">
+          <div class="work-thumb-wrap">
+            <img class="work-thumb" src="images/cover-data-lifecycle.webp" alt="Data Lifecycle" />
+          </div>
+          <div class="work-meta">
+            <div>
+              <div class="work-title">Data Lifecycle</div>
+              <div class="work-company">Meta</div>
+            </div>
+            <span class="work-year">2024</span>
+          </div>
+        </a>
+
+        <a class="work-card" href="shure-aonic.html">
+          <div class="work-thumb-wrap">
+            <img class="work-thumb" src="images/cover-shure-aonic.webp" alt="Shure AONIC" />
+          </div>
+          <div class="work-meta">
+            <div>
+              <div class="work-title">Shure AONIC</div>
+              <div class="work-company">Shure</div>
+            </div>
+            <span class="work-year">2024</span>
+          </div>
+        </a>
+
+        <a class="work-card" href="product-led-growth.html">
+          <div class="work-thumb-wrap">
+            <img class="work-thumb" src="images/cover-ipt.jpg" alt="Product-Led Growth Experiments" />
+          </div>
+          <div class="work-meta">
+            <div>
+              <div class="work-title">Product-Led Growth Experiments</div>
+              <div class="work-company">Docusign</div>
+            </div>
+            <span class="work-year">2022</span>
+          </div>
+        </a>
+
+        <a class="work-card" href="shure-channels.html">
+          <div class="work-thumb-wrap">
+            <img class="work-thumb" src="images/cover-shure-channels.webp" alt="ShurePlus Channels" />
+          </div>
+          <div class="work-meta">
+            <div>
+              <div class="work-title">ShurePlus Channels</div>
+              <div class="work-company">Shure</div>
+            </div>
+            <span class="work-year">2024</span>
+          </div>
+        </a>
+
+        <a class="work-card" href="aivvy.html">
+          <div class="work-thumb-wrap">
+            <img class="work-thumb" src="images/cover-aivvy.webp" alt="Aivvy Headphones" />
+          </div>
+          <div class="work-meta">
+            <div>
+              <div class="work-title">Aivvy Headphones</div>
+              <div class="work-company">Aivvy</div>
+            </div>
+            <span class="work-year">2016</span>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <div class="footer-top">
+      <span class="footer-cta">Let's get in touch</span>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/weiweistreet/" target="_blank" rel="noopener" class="btn">Instagram</a>
+        <a href="https://www.linkedin.com/in/weihsunchen/" target="_blank" rel="noopener" class="btn">Linkedin</a>
+        <a href="mailto:weihsunc@gmail.com" class="btn">Email</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-credit">Made by Figma + Claude</span>
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+    // Text animations
+    (function () {
+      let cursor = 80;
+      const headline = document.querySelector('.intro-headline');
+      if (headline) cursor = splitWords(headline, cursor);
+      cursor += 60;
+      cursor = paraAnimate(document.querySelectorAll('.intro-body p'), cursor);
+      cursor += 60;
+      const worksTitle = document.querySelector('.works-title');
+      if (worksTitle) splitWords(worksTitle, cursor);
+    })();
+
+    // Name typewriter on hover
+    (function () {
+      var FROM = 'Wei';
+      var TO = '陳威勳';
+      var DEL_SPEED = 120;
+      var TYPE_SPEED = 200;
+
+      // Find the "Wei," word span created by splitWords
+      var words = document.querySelectorAll('.intro-headline .word');
+      var target = null;
+      words.forEach(function (w) {
+        if (w.textContent.replace(',', '').trim() === FROM) target = w;
+      });
+      if (!target) return;
+
+      // Add cursor element
+      var cursorEl = document.createElement('span');
+      cursorEl.className = 'name-type-cursor';
+      target.appendChild(cursorEl);
+
+      // Lock intro section height so nothing shifts during the animation
+      // Measure with both names and use the taller result
+      var introSection = document.querySelector('.intro');
+      var headline = target.closest('.intro-headline');
+      var originalText = target.firstChild.textContent;
+      // Measure with Chinese name (longer, may wrap to more lines)
+      target.firstChild.textContent = TO;
+      var h1 = introSection.offsetHeight;
+      // Measure with empty string (worst case mid-delete)
+      target.firstChild.textContent = '';
+      var h2 = introSection.offsetHeight;
+      // Restore and measure original
+      target.firstChild.textContent = originalText;
+      var h3 = introSection.offsetHeight;
+      introSection.style.minHeight = Math.max(h1, h2, h3) + 'px';
+
+      var current = FROM;
+      var busy = false;
+      var pendingDir = null; // queued direction if hovered/unhovered during animation
+
+      function typewrite(from, to, done) {
+        var i = from.length;
+        cursorEl.classList.add('blink');
+
+        // Phase 1: delete
+        function del() {
+          if (i > 0) {
+            i--;
+            target.firstChild.textContent = from.slice(0, i);
+            setTimeout(del, DEL_SPEED);
+          } else {
+            // Phase 2: type
+            var j = 0;
+            function type() {
+              if (j < to.length) {
+                j++;
+                target.firstChild.textContent = to.slice(0, j);
+                setTimeout(type, TYPE_SPEED);
+              } else {
+                cursorEl.classList.remove('blink');
+                done(to);
+              }
+            }
+            setTimeout(type, TYPE_SPEED);
+          }
+        }
+        setTimeout(del, DEL_SPEED);
+      }
+
+      // Ensure the text node is the first child (splitWords wraps content)
+      // After splitWords, target.innerHTML is just the text "Wei,"
+      // We need to separate the text from the comma
+      var rawText = target.textContent;
+      var comma = rawText.endsWith(',') ? ',' : '';
+      target.innerHTML = '';
+      var textNode = document.createTextNode(FROM);
+      target.appendChild(textNode);
+      if (comma) target.appendChild(document.createTextNode(comma));
+      target.appendChild(cursorEl);
+
+      introSection.addEventListener('mouseenter', function () {
+        if (busy) { pendingDir = true; return; }
+        var next = current === FROM ? TO : FROM;
+        busy = true;
+        typewrite(current, next, function (result) {
+          current = result;
+          busy = false;
+          if (pendingDir) { pendingDir = false; introSection.dispatchEvent(new Event('mouseenter')); }
+        });
+      });
+    })();
+
+    // View cursor on work cards
+    initViewCursor('.work-card');
+  </script>
+  <script src="chatbot.js"></script>
+
+</body>
+</html>
