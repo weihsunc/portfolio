@@ -6,9 +6,9 @@ export const config = {
      * - /images/* (static assets)
      * - /favicon.ico, /favicon-32x32.png, /apple-touch-icon.png
      * - /shared.css, /shared.js, /chatbot.css, /chatbot.js (assets needed by pages)
-     * - /password.html (the password page itself)
+     * - /password and /password.html (the password page itself)
      */
-    '/((?!api|images|favicon|shared\\.|chatbot\\.|password\\.html).*)',
+    '/((?!api|images|favicon|shared\\.|chatbot\\.|password).*)',
   ],
 };
 
@@ -20,7 +20,7 @@ export default function middleware(request) {
     return;
   }
 
-  // Serve password.html while keeping the original URL
-  const url = new URL('/password.html', request.url);
+  // Serve password page while keeping the original URL
+  const url = new URL('/password', request.url);
   return fetch(url);
 }
