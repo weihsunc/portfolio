@@ -38,19 +38,19 @@
 1. Plan and Pricing (Docusign, 2025) — plan-and-pricing.html
    Wei redesigned Docusign's pricing page for the 2025 rebrand and new IAM platform. Led workshops, usability testing, and A/B/C experiments. Result: 8% conversion increase, 29% higher ASP, $252k MRR increase.
 
-2. Metric Investigation (Meta, 2023) — metric-investigation.html
+2. Metric Investigation (Meta, 2022) — metric-investigation.html
    Wei redesigned Meta's root cause analysis tool to help data scientists find insights faster. Led heuristic evaluation and design. Result: 178% more metrics monitored, 92% user growth, launched in 5 weeks.
 
 3. ShurePlus Play (Shure, 2019) — shure-play.html
    Wei designed a 0-1 mobile app for Shure's premium listening headphones. Led co-design sessions with audiophiles in Tokyo. Result: 4.4/5 App Store rating, 300% Android user growth, 60%+ EQ adoption.
 
-4. Data Lifecycle (Meta, 2023) — data-lifecycle.html
+4. Data Lifecycle (Meta, 2022) — data-lifecycle.html
    Wei designed a self-serve lifecycle management tool for data artifacts at Meta. Focused on deprecation workflows and automated notifications. Result: 30% unused tables and 20% unused dashboards deprecated within a month.
 
 5. Shure AONIC (Shure, 2020) — shure-aonic.html
    Wei led UX for the AONIC headphones — app, hardware interaction, and unboxing. Collaborated with industrial design and research teams. Result: press coverage from The Verge, SoundGuys, WhatHifi.
 
-6. Product-Led Growth Experiments (Docusign, 2022) — product-led-growth.html
+6. Product-Led Growth Experiments (Docusign, 2024) — product-led-growth.html
    Wei designed two in-product growth experiments — plan recommendations and self-serve add-ons. Result: 15.3% conversion lift ($500k MRR) and 53% week-over-week SMS expansion growth.
 
 7. ShurePlus Channels (Shure, 2018) — shure-channels.html
