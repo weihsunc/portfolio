@@ -11,5 +11,11 @@ export default function handler(req, res) {
   }
 
   const valid = password && password.trim().toLowerCase() === sitePassword.trim().toLowerCase();
+
+  if (valid) {
+    // Set auth cookie — expires in 7 days, accessible across the site
+    res.setHeader('Set-Cookie', 'site_auth=verified; Path=/; Max-Age=604800; SameSite=Lax; Secure');
+  }
+
   return res.status(200).json({ valid });
 }
