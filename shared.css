@@ -508,6 +508,32 @@ nav {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
 
+/* ─── Footer Credit — text rotate on hover ───────────── */
+.footer-credit-link {
+  display: inline-block;
+  overflow: hidden;
+  height: 1.2em;
+  line-height: 1.2;
+  text-decoration: none;
+  color: var(--muted-foreground);
+  vertical-align: baseline;
+}
+.footer-credit-inner {
+  display: block;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.footer-credit-link:hover .footer-credit-inner {
+  transform: translateY(-50%);
+}
+.footer-credit-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 1.2em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 /* ─── Keyframe Animations ─────────────────────────────── */
 @keyframes themeReveal {
   from { clip-path: inset(0 0 100% 0); }
