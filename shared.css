@@ -571,8 +571,11 @@ nav {
 /* ─── Responsive — shared nav rules ──────────────────── */
 @media (max-width: 900px) {
   nav { padding: 40px 20px 0; grid-template-columns: 1fr auto; }
+  .nav-email { display: none; }
   .nav-tabs-group { display: none; }
-  .btn-menu { display: inline-flex; }
+  .btn-menu { display: inline-flex; justify-self: start; }
+  .btn-ghost { justify-self: end; }
+  .nav-right { display: contents; }
   .mobile-drawer { padding: 40px 20px 28px; }
   .drawer-close  { top: 40px; right: 20px; }
 }

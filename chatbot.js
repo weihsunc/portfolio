@@ -425,7 +425,10 @@
       isOpen = true;
       trigger.classList.add('active');
       win.classList.add('open');
-      input.focus();
+      // Only auto-focus on desktop — avoids keyboard popping up on mobile
+      if (!window.matchMedia('(pointer: coarse)').matches) {
+        input.focus();
+      }
       showWelcome();
     });
 
