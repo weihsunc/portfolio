@@ -500,6 +500,15 @@ nav {
   #img-lightbox-close { top: 16px; right: 16px; }
 }
 
+/* ─── About bio link ─────────────────────────────────── */
+.about-bio a {
+  color: #2563EB;
+  text-decoration: none;
+}
+.about-bio a:hover {
+  text-decoration: underline;
+}
+
 /* ─── Text selection ──────────────────────────────────── */
 ::selection { background: #000; color: #2563EB; }
 
