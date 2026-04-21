@@ -73,6 +73,15 @@
     .pp-img-pair-item { flex: 1 0 0; overflow: hidden; border-radius: 4px; cursor: none !important; }
     .pp-img-pair-item img { width: 100%; height: auto; display: block; }
 
+    /* ─── Blockquote (for pull quotes) ──────────────────── */
+    .pp-quote { position: relative; padding: 8px 0 8px 24px; margin: 0 0 64px; }
+    .pp-quote::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--foreground); border-radius: 999px; }
+    .pp-quote p { font-size: 20px; line-height: 28px; font-style: normal; color: var(--foreground); }
+
+    /* ─── Prototype embed ────────────────────────────────── */
+    .pp-embed { position: relative; width: 100%; aspect-ratio: 16 / 10; margin-bottom: 64px; border-radius: 4px; overflow: hidden; }
+    .pp-embed iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; display: block; }
+
     /* Inline metrics row (smaller stats within experiment sections) */
     .pp-stats { display: flex; gap: 20px; padding: 32px 15px 64px; }
     .pp-stat { flex: 1 0 0; display: flex; flex-direction: column; gap: 20px; padding: 16px 16px 16px 0; border-right: 1px solid var(--border); }
@@ -204,7 +213,14 @@
       <div class="pp-text reveal">
         <p>Docusign customers spent a lot of time in the product sending documents for signature, preparing documents and analyzing results. People choose to upgrade when they feel like they need more powerful features, or when they reach their document sending limitation. Currently users go to a whole page contains of all the plans, then choose a plan they want to upgrade to.</p>
         <p style="margin-top:24px;">Users can access the upgrade plan experience from the home page, within the product while preparing a document, and on the settings page. The plans and pricing page provides users with a comprehensive view of all our SKUs, a full feature comparison, and a Q&A section.</p>
-        <p style="margin-top:24px;">Our hypothesis... By offering a personalized, simplified, in-context plan recommendation experience when users are looking to upgrade, we can reduce friction and increase trial-to-paid conversions.</p>
+      </div>
+
+      <blockquote class="pp-quote">
+        <p>Our hypothesis… By offering a personalized, simplified, in-context plan recommendation experience when users are looking to upgrade, we can reduce friction and increase trial-to-paid conversions.</p>
+      </blockquote>
+
+      <div class="pp-embed reveal">
+        <iframe src="https://embed.figma.com/proto/xal4vvbzG19QUax3QcwYY5/Docusign-IPT?page-id=27%3A36397&viewport=685%2C1637%2C0.41&scaling=scale-down-width&content-scaling=fixed&show-proto-sidebar=1&node-id=27-42294&starting-point-node-id=27%3A42294&embed-host=share" allowfullscreen></iframe>
       </div>
 
       <div class="pp-title-section reveal">
@@ -248,7 +264,14 @@
 
       <div class="pp-text reveal">
         <p>As DocuSign expands its offerings beyond eSignature, features like SMS delivery and identity verification have proven to be highly valuable for customers' businesses. Previously, customers needed to contact sales to purchase these capabilities as add-ons. This initiative aims to provide users with a self-serve option to purchase add-ons when subscribing to a new plan, as well as empower users to trial add-ons directly within the product.</p>
-        <p style="margin-top:24px;">By offering a personalized, simplified, in-context plan recommendation experience when users are looking to upgrade, we can reduce friction and increase trial-to-paid conversions.</p>
+      </div>
+
+      <blockquote class="pp-quote">
+        <p>Our hypothesis… By removing the sales gate and letting customers trial and purchase add-ons directly in-product, we can accelerate add-on adoption and grow expansion revenue beyond plan upgrades alone.</p>
+      </blockquote>
+
+      <div class="pp-embed reveal">
+        <iframe src="https://embed.figma.com/proto/xal4vvbzG19QUax3QcwYY5/Docusign-IPT?content-scaling=fixed&kind=proto&node-id=135-71190&page-id=27%3A36397&scaling=scale-down-width&starting-point-node-id=135%3A71190&embed-host=share" allowfullscreen></iframe>
       </div>
 
       <div class="pp-title-section reveal">
