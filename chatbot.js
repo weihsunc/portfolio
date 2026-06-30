@@ -26,7 +26,7 @@
 - Email: weihsunc@gmail.com
 - LinkedIn: https://www.linkedin.com/in/weihsunchen/
 - Instagram: https://www.instagram.com/weiweistreet/
-- Resume: https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing
+- Resume: https://drive.google.com/file/d/19ksAgx9szwyxqmvfr-EajPPbOLni0T4s/view?usp=sharing
 
 ## Design Community
 - Wei co-runs UX East Meets West (https://medium.com/uxeastmeetswest), one of the largest design communities for Taiwanese designers
@@ -87,7 +87,7 @@
     { keywords: ['contact','email','reach','hire','connect','touch','message'], answer: `You can reach Wei at <a href="mailto:weihsunc@gmail.com">weihsunc@gmail.com</a>, connect on <a href="${SOCIAL_LINKS.linkedin.url}" target="_blank" rel="noopener">LinkedIn</a>, or follow on <a href="${SOCIAL_LINKS.instagram.url}" target="_blank" rel="noopener">Instagram</a>.` },
     { keywords: ['linkedin','social','profile','network'], answer: `Here's Wei's <a href="${SOCIAL_LINKS.linkedin.url}" target="_blank" rel="noopener">LinkedIn profile</a> and <a href="${SOCIAL_LINKS.instagram.url}" target="_blank" rel="noopener">Instagram</a>. Feel free to connect!` },
     { keywords: ['instagram','ig','insta','photo','photos'], answer: `Follow Wei on <a href="${SOCIAL_LINKS.instagram.url}" target="_blank" rel="noopener">Instagram (@weiweistreet)</a> for photos and updates.` },
-    { keywords: ['resume','cv','download'], answer: `You can view Wei's resume <a href="https://drive.google.com/file/d/1wEjseGZzI--HP0VtRS0fhP2p2_UvBVGQ/view?usp=sharing" target="_blank" rel="noopener">here on Google Drive</a>.` },
+    { keywords: ['resume','cv','download'], answer: `You can view Wei's resume <a href="https://drive.google.com/file/d/19ksAgx9szwyxqmvfr-EajPPbOLni0T4s/view?usp=sharing" target="_blank" rel="noopener">here on Google Drive</a>.` },
     { keywords: ['location','live','where','based','city'], answer: `Wei is based in Brooklyn, NY. Originally born and raised in Taiwan.` },
     { keywords: ['taiwan','taiwanese','origin','from','hometown','born'], answer: `Wei was born and raised in Taiwan and is now based in Brooklyn, NY.` },
     { keywords: ['hobby','hobbies','interest','free time','fun','outside','passion','like','likes'], answer: `Outside of design, Wei enjoys cooking, playing guitar, and photography. He also runs a design community called UX East Meets West.` },
