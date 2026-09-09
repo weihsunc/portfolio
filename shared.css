@@ -356,6 +356,17 @@ nav {
 #custom-cursor.is-view .cursor-label,
 #custom-cursor.is-view .cursor-icon { opacity: 1; transform: scale(1); }
 
+/* Locked variant: yellow pill with a lock icon on password-protected cards */
+.cursor-icon-lock { display: none; }
+#custom-cursor.is-locked .cursor-icon-view { display: none; }
+#custom-cursor.is-locked .cursor-icon-lock { display: block; }
+#custom-cursor.is-locked .cursor-ring {
+  width: 156px;
+  background: rgba(252, 195, 92, 0.92);
+}
+#custom-cursor.is-locked .cursor-label,
+#custom-cursor.is-locked .cursor-icon { color: #0a0a0a; }
+
 /* Light-mode cursor invert */
 [data-theme="light"] .cursor-ring {
   background: rgba(10, 10, 10, 0.8);
@@ -365,6 +376,13 @@ nav {
 }
 [data-theme="light"] .cursor-icon {
   color: #fafafa;
+}
+[data-theme="light"] #custom-cursor.is-locked .cursor-ring {
+  background: rgba(252, 195, 92, 0.95);
+}
+[data-theme="light"] #custom-cursor.is-locked .cursor-label,
+[data-theme="light"] #custom-cursor.is-locked .cursor-icon {
+  color: #0a0a0a;
 }
 
 /* ─── Carousel Lightbox ───────────────────────────────── */

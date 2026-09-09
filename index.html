@@ -106,6 +106,7 @@
     /* ─── Work Card ──────────────────────────────────────── */
     .work-card { display: block; }
     .work-thumb-wrap {
+      position: relative;
       overflow: hidden;
       border-radius: 4px;
       aspect-ratio: 16 / 10;
@@ -121,6 +122,25 @@
                   opacity 300ms ease;
     }
     .work-card:hover .work-thumb { transform: scale(1.03); opacity: 0.9; }
+    .work-lock {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1;
+      color: rgba(255, 255, 255, 0.92);
+      background: rgba(23, 23, 23, 0.72);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      pointer-events: none;
+    }
+    .work-lock svg { width: 11px; height: 11px; }
     .work-meta {
       display: flex;
       align-items: flex-start;
@@ -229,9 +249,10 @@
 
       <div class="works-grid">
 
-        <a class="work-card" href="plan-and-pricing.html">
+        <a class="work-card" href="plan-and-pricing.html" data-cursor="locked">
           <div class="work-thumb-wrap">
             <img class="work-thumb" src="images/cover-plan-pricing.png" alt="Plan and Pricing" />
+            <span class="work-lock" title="Password protected"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Password</span>
           </div>
           <div class="work-meta">
             <div>
@@ -242,9 +263,10 @@
           </div>
         </a>
 
-        <a class="work-card" href="metric-investigation.html">
+        <a class="work-card" href="metric-investigation.html" data-cursor="locked">
           <div class="work-thumb-wrap">
             <img class="work-thumb" src="images/cover-metric.png" alt="Metric Investigation" />
+            <span class="work-lock" title="Password protected"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Password</span>
           </div>
           <div class="work-meta">
             <div>
@@ -307,9 +329,10 @@
           </div>
         </a>
 
-        <a class="work-card" href="product-led-growth.html">
+        <a class="work-card" href="product-led-growth.html" data-cursor="locked">
           <div class="work-thumb-wrap">
             <img class="work-thumb" src="images/cover-ipt.jpg" alt="Product-Led Growth Experiments" />
+            <span class="work-lock" title="Password protected"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Password</span>
           </div>
           <div class="work-meta">
             <div>

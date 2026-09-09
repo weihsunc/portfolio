@@ -104,9 +104,13 @@
   el.id = 'custom-cursor';
   el.innerHTML = `<div class="cursor-ring">
     <span class="cursor-label">View</span>
-    <svg class="cursor-icon" width="12" height="12" viewBox="0 0 24 24" fill="none"
+    <svg class="cursor-icon cursor-icon-view" width="12" height="12" viewBox="0 0 24 24" fill="none"
          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M7 17L17 7"/><path d="M7 7h10v10"/>
+    </svg>
+    <svg class="cursor-icon cursor-icon-lock" width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
     </svg>
   </div>`;
   document.body.appendChild(el);
@@ -132,11 +136,20 @@
     requestAnimationFrame(loop);
   })();
 
-  // Call from page script to enable the "View" pill on hover targets
+  // Call from page script to enable the "View" pill on hover targets.
+  // Targets with data-cursor="locked" get the yellow "Password protected" pill.
+  const label = el.querySelector('.cursor-label');
   window.initViewCursor = function (selector) {
     document.querySelectorAll(selector).forEach(wrap => {
-      wrap.addEventListener('mouseenter', () => el.classList.add('is-view'));
-      wrap.addEventListener('mouseleave', () => el.classList.remove('is-view'));
+      const locked = wrap.dataset.cursor === 'locked';
+      wrap.addEventListener('mouseenter', () => {
+        label.textContent = locked ? 'Password protected' : 'View';
+        el.classList.toggle('is-locked', locked);
+        el.classList.add('is-view');
+      });
+      wrap.addEventListener('mouseleave', () => {
+        el.classList.remove('is-view', 'is-locked');
+      });
     });
   };
 })();
