@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   CHATBOT — Wei AI portfolio assistant
+   CHATBOT — Agent Wei portfolio assistant
    Default: Claude via /api/chat (system prompt lives server-side).
    Fallback: local keyword matching when the API is unavailable.
    Conversation persists in sessionStorage across page navigation.
@@ -53,7 +53,7 @@
     { keywords: ['project','projects','portfolio','case study','case studies','all projects','show'], answer: `Here are Wei's featured projects: <a href="lofi.html">Lofi App</a> (Studio Lofi), <a href="plan-and-pricing.html">Plan and Pricing</a> (Docusign), <a href="metric-investigation.html">Metric Investigation</a> (Meta), <a href="shure-play.html">ShurePlus Play</a> (Shure), <a href="data-lifecycle.html">Data Lifecycle</a> (Meta), <a href="shure-aonic.html">Shure AONIC</a> (Shure), <a href="product-led-growth.html">PLG Experiments</a> (Docusign), <a href="shure-channels.html">ShurePlus Channels</a> (Shure), and <a href="aivvy.html">Aivvy Headphones</a> (Aivvy).` },
     { keywords: ['enterprise','b2b','saas','tool','tooling'], answer: `Enterprise design is a strong focus. See <a href="data-lifecycle.html">Data Lifecycle</a> at Meta and <a href="plan-and-pricing.html">Plan and Pricing</a> at Docusign.` },
     { keywords: ['mobile','app','ios','android'], answer: `Check out <a href="shure-play.html">ShurePlus Play</a>, a mobile audio app Wei designed for Shure, and <a href="lofi.html">Lofi</a>, the canvas app he's building now.` },
-    { keywords: ['hello','hi','hey','sup','yo','greet'], answer: `Hey there! I'm Wei AI, Wei's portfolio assistant. Ask me anything about Wei's work, experience, or how to get in touch.` },
+    { keywords: ['hello','hi','hey','sup','yo','greet'], answer: `Hey there! I'm Agent Wei, Wei's portfolio assistant. Ask me anything about Wei's work, experience, or how to get in touch.` },
     { keywords: ['thank','thanks','bye','goodbye','see you','later','cheers'], answer: `Thanks for stopping by! Reach out at <a href="mailto:weihsunc@gmail.com">weihsunc@gmail.com</a>, on ${ext(SOCIAL_LINKS.linkedin.url, 'LinkedIn')}, or follow on ${ext(SOCIAL_LINKS.instagram.url, 'Instagram')}.` }
   ];
 
@@ -262,7 +262,7 @@
       const text = typeof data.text === 'string' ? data.text.trim() : '';
       return text || null;
     } catch (e) {
-      console.error('Wei AI request failed:', e);
+      console.error('Agent Wei request failed:', e);
       return null;
     } finally {
       clearTimeout(timer);
@@ -291,22 +291,22 @@
     // Pill trigger button
     const trigger = document.createElement('button');
     trigger.className = 'chat-trigger';
-    trigger.setAttribute('aria-label', 'Open chat with Wei AI');
+    trigger.setAttribute('aria-label', 'Open Agent Wei');
     trigger.setAttribute('aria-expanded', 'false');
     trigger.innerHTML = `
       <span class="chat-trigger-icon">${AVATAR_IMG}</span>
-      <span>Chat with Wei AI</span>`;
+      <span>Agent Wei</span>`;
 
     // Chat window
     const win = document.createElement('div');
     win.className = 'chat-window';
     win.setAttribute('role', 'dialog');
-    win.setAttribute('aria-label', 'Chat with Wei AI');
+    win.setAttribute('aria-label', 'Agent Wei');
     win.innerHTML = `
       <div class="chat-header">
         <div class="chat-header-left">
           <span class="chat-header-icon">${AVATAR_IMG}</span>
-          <h3>Chat with Wei AI</h3>
+          <h3>Agent Wei</h3>
         </div>
         <button class="chat-minimize-btn" aria-label="Minimize chat">${MINIMIZE_SVG}</button>
       </div>
@@ -397,7 +397,7 @@
     function showTyping() {
       const t = document.createElement('div');
       t.className = 'chat-typing';
-      t.setAttribute('aria-label', 'Wei AI is typing');
+      t.setAttribute('aria-label', 'Agent Wei is typing');
       t.innerHTML = '<span></span><span></span><span></span>';
       messages.appendChild(t);
       scrollToBottom();
@@ -465,7 +465,7 @@
         addBotMessage(`Hi! I see you're viewing <strong>${project.name}</strong>. Ask me anything about this project or Wei's other work.`);
         setTimeout(() => renderSuggestionRow(projectSuggestions(project)), 150);
       } else {
-        addBotMessage("Hi! I'm Wei AI, Wei's portfolio assistant. Ask me anything about Wei's work, what he's building now, or how to get in touch.");
+        addBotMessage("Hi! I'm Agent Wei, Wei's portfolio assistant. Ask me anything about Wei's work, what he's building now, or how to get in touch.");
         setTimeout(() => addSuggestions(['intro', 'greeting']), 150);
       }
     }

@@ -10,7 +10,7 @@ const MAX_MESSAGES = 20;        // conversation turns kept per request
 const MAX_MESSAGE_CHARS = 1500; // per message
 const MAX_OUTPUT_TOKENS = 400;
 
-const SYSTEM_PROMPT = `You are Wei AI, the friendly, concise assistant embedded on Wei-Hsun Chen's product design portfolio. Answer visitors' questions using ONLY the information below. Keep responses short (2 to 4 sentences) and conversational.
+const SYSTEM_PROMPT = `You are Agent Wei, the friendly, concise assistant embedded on Wei-Hsun Chen's product design portfolio. Answer visitors' questions using ONLY the information below. Keep responses short (2 to 4 sentences) and conversational.
 
 ## About Wei
 - Full name: Wei-Hsun Chen. Goes by Wei.

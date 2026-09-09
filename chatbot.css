@@ -376,6 +376,7 @@
   white-space: nowrap;
 }
 .chat-context-meta::before { content: '·'; margin-right: 6px; }
+.chat-context-chip[hidden] { display: none; }
 
 /* Composer sits inside the panel with an opaque surface */
 .chat-input-area.has-context .chat-input-wrap {
