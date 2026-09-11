@@ -1,5 +1,8 @@
 {
   "cleanUrls": true,
+  "functions": {
+    "api/chat.js": { "includeFiles": "knowledge/**" }
+  },
   "headers": [
     {
       "source": "/api/(.*)",
