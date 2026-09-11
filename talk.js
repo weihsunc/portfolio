@@ -193,20 +193,21 @@
   /* ─── Dot avatar: a 3D point cloud ────────────────────────
      Monochrome dots in the page's foreground colour. At rest a sparse
      sphere turns slowly. While the agent thinks the sphere pulses. While
-     it speaks the dots morph into Wei's head: the face is wrapped onto an
-     ellipsoid with a sparse back, so it reads as a solid head as it
-     rotates, and the mouth region opens with the audio level. */
+     it speaks the dots morph into Wei's head. The head shape comes from
+     the photo itself: the head is masked out (skin and hair, no sky,
+     stopping at the collar) and the outline is inflated into a volume, so
+     hair, jaw and neck keep their real proportions as it turns. */
   const DOT = {
     size: 220,       // css px of .talk-avatar; the canvas scales with CSS below that
-    grid: 88,        // sampling cells per side
-    faceDots: 1500,  // dots on the face
+    grid: 96,        // sampling cells per side
+    faceDots: 1500,  // dots on the front of the head
     backDots: 520,   // sparse dots on the back of the head
     sphereDots: 620, // dots visible on the resting sphere (the rest fade in as the head forms)
     sphereRadius: 72,
-    head: { rx: 82, ry: 98, rz: 84 }, // ellipsoid radii
-    // where the face sits in the crop (as a fraction of the avatar box)
-    face: { cx: 0.5, cy: 0.5, rx: 0.32, ry: 0.42 },
-    mouth: { x: 102, y: 144, rx: 22, ry: 13 } // css px, matches --mouth-* in talk.css
+    headHeight: 196, // css px the head occupies when facing forward
+    headDepth: 0.8,  // thickness relative to half the head width
+    collar: 0.72,    // fraction of the crop height below which dark pixels are shirt, not hair
+    mouth: { x: 102, y: 144, rx: 22, ry: 13 } // css px in the flat crop, matches --mouth-* in talk.css
   };
 
   function createDotAvatar(canvas, img) {
@@ -218,80 +219,157 @@
     let rgbAt = -1e9;
     let sampledLight = null; // theme the current point set was built for
     let imageData = null;
+    let head = null;         // { mask, depth, cx, cy, scale, maxDepth } from the photo
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = DOT.size * dpr;
     canvas.height = DOT.size * dpr;
 
     const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
-    /* Like a halftone print: dots are the ink. On a dark theme the ink is
-       light, so dots go where the photo is bright (lit skin); on a light
-       theme they go where it is dark. Density and size both follow tone. */
-    function sample(lightInk) {
+    /* Head mask and inflation. Runs once per image. */
+    function buildHead() {
       const g = DOT.grid;
-      if (!imageData) {
-        const off = document.createElement('canvas');
-        off.width = g; off.height = g;
-        const o = off.getContext('2d');
-        o.drawImage(img, 0, 0, g, g);
-        imageData = o.getImageData(0, 0, g, g).data;
-      }
+      const off = document.createElement('canvas');
+      off.width = g; off.height = g;
+      const o = off.getContext('2d');
+      o.drawImage(img, 0, 0, g, g);
+      imageData = o.getImageData(0, 0, g, g).data;
       const data = imageData;
-      const F = DOT.face;
+
+      // 1. classify pixels: warm skin or dark hair count as head, cool sky and bridge do not
+      const mask = new Uint8Array(g * g);
+      for (let y = 0; y < g; y++) {
+        for (let x = 0; x < g; x++) {
+          const i = (y * g + x) * 4;
+          const R = data[i], G = data[i + 1], B = data[i + 2];
+          const lum = (0.2126 * R + 0.7152 * G + 0.0722 * B) / 255;
+          const warm = R - B > 12;
+          const dark = lum < 0.3;
+          const cool = B > R + 4 || (lum > 0.72 && !warm);
+          const isHead = (warm || (dark && y / g < DOT.collar)) && !(cool && !dark);
+          mask[y * g + x] = isHead ? 1 : 0;
+        }
+      }
+      // 2. keep only the blob under the centre, and fill holes in it
+      const keep = floodFill(mask, g, Math.round(g / 2), Math.round(g / 2), 1);
+      const outside = floodFill(keep, g, 0, 0, 0, true);
+      for (let i = 0; i < g * g; i++) keep[i] = outside[i] ? 0 : 1;
+      // 3. distance to the outline, then inflate like a balloon
+      const dist = distanceTransform(keep, g);
+      let maxD = 0, minY = g, maxY = 0, minX = g, maxX = 0;
+      for (let y = 0; y < g; y++) {
+        for (let x = 0; x < g; x++) {
+          if (!keep[y * g + x]) continue;
+          if (dist[y * g + x] > maxD) maxD = dist[y * g + x];
+          if (y < minY) minY = y; if (y > maxY) maxY = y;
+          if (x < minX) minX = x; if (x > maxX) maxX = x;
+        }
+      }
+      const depth = new Float32Array(g * g);
+      for (let i = 0; i < g * g; i++) {
+        if (!keep[i]) continue;
+        const d = dist[i] / maxD;                    // 0 at the edge, 1 at the core
+        depth[i] = Math.sqrt(d * (2 - d));           // round cross-section
+      }
+      const scale = DOT.headHeight / Math.max(1, maxY - minY + 1); // grid cell -> css px
+      head = {
+        mask: keep, depth, scale,
+        cx: (minX + maxX + 1) / 2, cy: (minY + maxY + 1) / 2,
+        maxDepth: ((maxX - minX + 1) / 2) * scale * DOT.headDepth
+      };
+    }
+
+    function floodFill(src, g, sx, sy, value, invert) {
+      const out = new Uint8Array(g * g);
+      const stack = [sy * g + sx];
+      const hit = i => (invert ? !src[i] : src[i] === value);
+      if (!hit(stack[0])) return out;
+      out[stack[0]] = 1;
+      while (stack.length) {
+        const i = stack.pop();
+        const x = i % g, y = (i - x) / g;
+        const nb = [x > 0 ? i - 1 : -1, x < g - 1 ? i + 1 : -1, y > 0 ? i - g : -1, y < g - 1 ? i + g : -1];
+        for (const j of nb) if (j >= 0 && !out[j] && hit(j)) { out[j] = 1; stack.push(j); }
+      }
+      return out;
+    }
+
+    function distanceTransform(mask, g) {
+      // two-pass chamfer (3-4), good enough for inflation
+      const INF = 1e6;
+      const d = new Float32Array(g * g);
+      for (let i = 0; i < g * g; i++) d[i] = mask[i] ? INF : 0;
+      for (let y = 0; y < g; y++) for (let x = 0; x < g; x++) {
+        const i = y * g + x;
+        if (!d[i]) continue;
+        if (x > 0) d[i] = Math.min(d[i], d[i - 1] + 3);
+        if (y > 0) { d[i] = Math.min(d[i], d[i - g] + 3);
+          if (x > 0) d[i] = Math.min(d[i], d[i - g - 1] + 4);
+          if (x < g - 1) d[i] = Math.min(d[i], d[i - g + 1] + 4); }
+      }
+      for (let y = g - 1; y >= 0; y--) for (let x = g - 1; x >= 0; x--) {
+        const i = y * g + x;
+        if (!d[i]) continue;
+        if (x < g - 1) d[i] = Math.min(d[i], d[i + 1] + 3);
+        if (y < g - 1) { d[i] = Math.min(d[i], d[i + g] + 3);
+          if (x < g - 1) d[i] = Math.min(d[i], d[i + g + 1] + 4);
+          if (x > 0) d[i] = Math.min(d[i], d[i + g - 1] + 4); }
+      }
+      for (let i = 0; i < g * g; i++) d[i] /= 3;
+      return d;
+    }
+
+    /* Dots are the ink. On a dark theme the ink is light, so dots go where
+       the photo is bright; on a light theme where it is dark. A small
+       baseline everywhere on the head keeps the silhouette (hair, on dark)
+       visible even where the tone gives nothing. */
+    function sample(lightInk) {
+      if (!head) buildHead();
+      const g = DOT.grid, data = imageData, H = head, M = DOT.mouth;
       const cells = [];
       let sum = 0;
       for (let y = 0; y < g; y++) {
         for (let x = 0; x < g; x++) {
-          const u = ((x + 0.5) / g - F.cx) / F.rx;  // -1..1 across the face
-          const v = ((y + 0.5) / g - F.cy) / F.ry;  // -1..1 down the face
-          const e = u * u + v * v;
-          if (e > 1) continue;                      // only the head, nothing outside
-          const i = (y * g + x) * 4;
-          const R = data[i], G = data[i + 1], B = data[i + 2];
-          const lum = (0.2126 * R + 0.7152 * G + 0.0722 * B) / 255;
+          const i = y * g + x;
+          if (!H.mask[i]) continue;
+          const j = i * 4;
+          const lum = (0.2126 * data[j] + 0.7152 * data[j + 1] + 0.0722 * data[j + 2]) / 255;
           const tone = lightInk ? lum : 1 - lum;
-          // sky and bridge are cool or neutral; skin is warm. Cool pixels are not the head.
-          const warm = clamp((R - B - 6) / 24);
-          const edge = 1 - clamp((e - 0.55) / 0.45); // fade out toward the ellipse boundary
-          const w = Math.pow(clamp((tone - 0.15) / 0.85), 1.3) * edge * warm;
-          if (w <= 0.01) continue;
-          cells.push({ u, v, tone, w });
+          const w = Math.pow(clamp((tone - 0.15) / 0.85), 1.3) * 0.88 + 0.12;
+          cells.push({ x, y, tone, w, depth: H.depth[i] });
           sum += w;
         }
       }
       const k = DOT.faceDots / sum;
-      const H = DOT.head, M = DOT.mouth;
       const out = [];
-      const jitter = 0.9 / (g * F.rx);
+      const toHead = (gx, gy, dep, sign) => ({
+        hx: (gx - H.cx) * H.scale,
+        hy: (gy - H.cy) * H.scale,
+        hz: sign * dep * H.maxDepth
+      });
       for (const c of cells) {
         if (Math.random() > c.w * k) continue;
-        const u = c.u + (Math.random() - 0.5) * jitter;
-        const v = c.v + (Math.random() - 0.5) * jitter * (F.rx / F.ry);
-        // wrap the flat face onto the front of the ellipsoid
-        const lon = u * 1.2, lat = v * 1.25;             // radians; the face spans the front
-        const bump = 1 + (c.tone - 0.5) * 0.1;           // slight relief from tone
-        const hx = H.rx * Math.cos(lat) * Math.sin(lon) * bump;
-        const hy = H.ry * Math.sin(lat) * bump;
-        const hz = H.rz * Math.cos(lat) * Math.cos(lon) * bump;
-        // flat-image position, for the mouth test
-        const px = (F.cx + u * F.rx) * DOT.size, py = (F.cy + v * F.ry) * DOT.size;
+        const gx = c.x + 0.5 + (Math.random() - 0.5) * 0.9;
+        const gy = c.y + 0.5 + (Math.random() - 0.5) * 0.9;
+        const pos = toHead(gx, gy, c.depth * (1 + (c.tone - 0.5) * 0.08), 1);
+        // mouth test in flat crop pixels
+        const px = gx / g * DOT.size, py = gy / g * DOT.size;
         const mx = (px - M.x) / M.rx, my = (py - M.y) / M.ry;
         const inMouth = mx * mx + my * my <= 1;
-        out.push({ hx, hy, hz, d: c.tone, r: 0.45 + c.tone * 0.95, stagger: Math.random(),
+        out.push({ ...pos, d: c.tone, r: 0.45 + c.tone * 0.95, stagger: Math.random(),
                    mouth: inMouth ? (py > M.y ? 2 : 1) : 0, back: false });
       }
-      // sparse back of the head: random points on the rear of the ellipsoid
-      for (let i = 0; i < DOT.backDots; i++) {
-        const lon = Math.PI / 2 + Math.random() * Math.PI;  // rear half
-        const lat = Math.asin(Math.random() * 2 - 1) * 0.9;
-        out.push({ hx: H.rx * Math.cos(lat) * Math.sin(lon), hy: H.ry * Math.sin(lat),
-                   hz: H.rz * Math.cos(lat) * Math.cos(lon), d: 0.55, r: 0.65,
-                   stagger: Math.random(), mouth: 0, back: true });
+      // sparse back of the head: the same silhouette, inflated the other way
+      for (let n = 0; n < DOT.backDots; n++) {
+        const c = cells[(Math.random() * cells.length) | 0];
+        const pos = toHead(c.x + Math.random(), c.y + Math.random(), c.depth * 0.95, -1);
+        out.push({ ...pos, d: 0.55, r: 0.65, stagger: Math.random(), mouth: 0, back: true });
       }
-      // sphere seats on a fibonacci lattice, shuffled so face neighbours scatter;
+      // sphere seats on a fibonacci lattice, shuffled so head neighbours scatter;
       // only the first sphereDots are visible at rest, the rest fade in with the head
       const n = out.length, R = DOT.sphereRadius, phi = Math.PI * (3 - Math.sqrt(5));
       const order = out.map((_, i) => i).sort(() => Math.random() - 0.5);
+      const every = Math.max(1, Math.round(n / DOT.sphereDots));
       order.forEach((idx, i) => {
         const p = out[idx];
         const yy = 1 - (i / Math.max(1, n - 1)) * 2;
@@ -300,7 +378,7 @@
         p.sx = Math.cos(th) * rad * R;
         p.sy = yy * R;
         p.sz = Math.sin(th) * rad * R;
-        p.core = (i % Math.round(n / DOT.sphereDots)) === 0;
+        p.core = (i % every) === 0;
       });
       pts = out;
       sampledLight = lightInk;
@@ -338,6 +416,7 @@
       const yaw = Math.sin(t * 0.6) * 0.6, pitch = Math.sin(t * 0.45) * 0.07;
       const cyw = Math.cos(yaw), syw = Math.sin(yaw), cpt = Math.cos(pitch), spt = Math.sin(pitch);
       const ink = `${rgb[0] | 0},${rgb[1] | 0},${rgb[2] | 0}`;
+      const maxDepth = head ? head.maxDepth : 60;
 
       for (const p of pts) {
         // sphere seat, rotated and projected
@@ -356,9 +435,9 @@
         const hzy = -hx * syw + hz * cyw;
         const hy2 = hy * cpt - hzy * spt;
         const hz2 = hy * spt + hzy * cpt;
-        const hp = 320 / (320 - hz2);
+        const hp = 340 / (340 - hz2);
         const fx = c + hx2 * hp, fy = c + hy2 * hp;
-        const hdepth = clamp((hz2 / DOT.head.rz + 1) / 2);
+        const hdepth = clamp((hz2 / maxDepth + 1) / 2);
 
         const m = ease(clamp(morph * 1.35 - p.stagger * 0.35));
         const X = ox + (fx - ox) * m, Y = oy + (fy - oy) * m;
