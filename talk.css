@@ -1,0 +1,245 @@
+/* ═══════════════════════════════════════════════════════
+   TALK TO WEI — voice panel with the animated-mouth avatar
+   Opened from the About page and from the Agent Wei header.
+   Mouth position is tunable via --mouth-x / --mouth-y / --mouth-w.
+   ═══════════════════════════════════════════════════════ */
+
+.talk-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.talk-overlay.open { opacity: 1; pointer-events: auto; }
+.talk-panel [hidden] { display: none !important; }
+
+.talk-panel {
+  width: min(440px, 100%);
+  max-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 16px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--font-sans);
+  transform: translateY(12px) scale(0.97);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+.talk-overlay.open .talk-panel { transform: none; }
+
+.talk-top {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.talk-title { font-size: 16px; font-weight: 600; margin: 0; }
+.talk-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+.talk-close:hover { background: var(--muted); }
+.talk-close svg { width: 16px; height: 16px; }
+
+/* ─── Avatar ─────────────────────────────────────────── */
+.talk-avatar-wrap {
+  position: relative;
+  padding: 8px;
+  border-radius: 50%;
+}
+.talk-avatar-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  pointer-events: none;
+}
+.talk-panel[data-state="listening"] .talk-avatar-wrap::after {
+  border-color: #2ecc71;
+  animation: talk-pulse 1.6s ease-in-out infinite;
+}
+.talk-panel[data-state="speaking"] .talk-avatar-wrap::after {
+  border-color: #ff7a1a;
+  box-shadow: 0 0 0 6px rgba(255, 122, 26, 0.18);
+}
+.talk-panel[data-state="thinking"] .talk-avatar-wrap::after,
+.talk-panel[data-state="connecting"] .talk-avatar-wrap::after {
+  border-color: var(--muted-foreground);
+  animation: talk-spin 1.2s linear infinite;
+  border-top-color: transparent;
+}
+@keyframes talk-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.35); }
+  50%      { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+}
+@keyframes talk-spin { to { transform: rotate(360deg); } }
+
+.talk-avatar {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--card);
+  /* Where the mouth sits on the face crop, as a fraction of the avatar box */
+  --mouth-x: 46.5%;
+  --mouth-y: 65.6%;
+  --mouth-w: 17%;
+}
+.talk-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.talk-mouth {
+  position: absolute;
+  left: var(--mouth-x);
+  top: var(--mouth-y);
+  width: var(--mouth-w);
+  height: auto;
+  /* seam of the lips sits at 30% of the SVG height */
+  transform: translate(-50%, -30%);
+  overflow: visible;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  pointer-events: none;
+}
+
+/* ─── Status + transcript ────────────────────────────── */
+.talk-status {
+  font-size: 14px;
+  color: var(--muted-foreground);
+  text-align: center;
+  min-height: 20px;
+  margin: 0;
+}
+.talk-transcript {
+  width: 100%;
+  max-height: 150px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  scrollbar-width: thin;
+}
+.talk-transcript:empty { display: none; }
+.talk-line {
+  max-width: 88%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.talk-line.wei {
+  align-self: flex-start;
+  background: var(--muted);
+  border-bottom-left-radius: 4px;
+}
+.talk-line.you {
+  align-self: flex-end;
+  background: var(--foreground);
+  color: var(--background);
+  border-bottom-right-radius: 4px;
+}
+.talk-line.note {
+  align-self: center;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  padding: 0;
+  text-align: center;
+}
+
+/* ─── Controls ───────────────────────────────────────── */
+.talk-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.talk-controls .btn {
+  font-size: 15px;
+  padding: 8px 16px;
+}
+.talk-controls .btn.primary {
+  background: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+}
+.talk-controls .btn.primary:hover { opacity: 0.9; }
+.talk-controls .btn.danger:hover { border-color: #e5484d; color: #e5484d; }
+.talk-controls .btn svg { width: 16px; height: 16px; }
+.talk-controls .btn.is-muted { color: #e5484d; border-color: #e5484d; }
+
+.talk-composer {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+}
+.talk-composer input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  padding: 9px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--foreground);
+  outline: none;
+}
+.talk-composer input:focus { border-color: var(--ring); }
+.talk-composer .btn { font-size: 15px; padding: 8px 14px; }
+
+.talk-disclosure {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+  text-align: center;
+  margin: 0;
+}
+.talk-disclosure a { color: inherit; }
+
+/* About page entry point */
+.about-actions { display: flex; gap: 8px; align-items: center; }
+.about-actions .btn svg { width: 18px; height: 18px; }
+
+@media (max-width: 520px) {
+  .talk-overlay { padding: 0; align-items: flex-end; }
+  .talk-panel {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 20px 20px 0 0;
+    padding-bottom: max(18px, env(safe-area-inset-bottom));
+  }
+  .talk-avatar { width: 180px; height: 180px; }
+}

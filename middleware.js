@@ -26,7 +26,7 @@ export const config = {
      * - /shared.css, /shared.js, /chatbot.css, /chatbot.js (assets needed by pages)
      * - /password and /password.html (the password page itself)
      */
-    '/((?!api|images|favicon|shared\\.|chatbot\\.|password).*)',
+    '/((?!api|images|favicon|shared\\.|chatbot\\.|talk\\.|password).*)',
   ],
 };
 

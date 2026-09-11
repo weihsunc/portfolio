@@ -13,6 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="shared.css" />
   <link rel="stylesheet" href="chatbot.css" />
+  <link rel="stylesheet" href="talk.css" />
 
   <!-- Prevent theme flash -->
   <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
@@ -162,6 +163,9 @@
           <p>Hi, I'm Wei-Hsun Chen, a product designer from Taiwan.</p>
           <p>When I'm not working, I'm probably making espresso or growing design communities. I help run <a href="https://medium.com/uxeastmeetswest" target="_blank">one of the largest design communities</a> in Taiwan!</p>
         </div>
+        <div class="about-actions">
+          <button class="btn" type="button" onclick="TalkToWei.open()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></svg>Talk to Wei</button>
+        </div>
         <div class="about-interests">
           <span>Photography</span>
           <span>Cooking</span>
@@ -271,6 +275,7 @@
       });
     })();
   </script>
+  <script src="talk.js"></script>
   <script src="chatbot.js"></script>
 
 </body>

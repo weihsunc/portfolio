@@ -274,6 +274,7 @@
   const AVATAR_IMG = `<div style="position:absolute;width:96px;height:64px;left:calc(50% - 2px);top:50%;transform:translate(-50%,-50%);"><img src="images/wei-avatar.png" alt="" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" /></div>`;
 
   // shadcn Minimize2 icon (two inward-pointing arrows)
+  const MIC_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></svg>`;
   const MINIMIZE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
 
   const ARROW_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="13" x2="13" y2="3"/><polyline points="6 3 13 3 13 10"/></svg>`;
@@ -308,7 +309,10 @@
           <span class="chat-header-icon">${AVATAR_IMG}</span>
           <h3>Agent Wei</h3>
         </div>
-        <button class="chat-minimize-btn" aria-label="Minimize chat">${MINIMIZE_SVG}</button>
+        <div class="chat-header-right">
+          <button class="chat-talk-btn" hidden aria-label="Talk to Wei" title="Talk to Wei">${MIC_SVG}<span>Talk</span></button>
+          <button class="chat-minimize-btn" aria-label="Minimize chat">${MINIMIZE_SVG}</button>
+        </div>
       </div>
 
       <div class="chat-content">
@@ -340,6 +344,13 @@
     const scrollBtn = win.querySelector('.chat-scroll-bottom');
     const contextChip = win.querySelector('.chat-context-chip');
     const inputArea = win.querySelector('.chat-input-area');
+
+    // "Talk" opens the voice panel when talk.js is loaded on the page
+    const talkBtn = win.querySelector('.chat-talk-btn');
+    if (window.TalkToWei) {
+      talkBtn.hidden = false;
+      talkBtn.addEventListener('click', () => window.TalkToWei.open());
+    }
 
     // Context chip: tells the visitor the assistant knows which project page they're on
     const currentProject = getCurrentProject();

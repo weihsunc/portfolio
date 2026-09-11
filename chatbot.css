@@ -594,3 +594,26 @@
     right: 20px;
   }
 }
+
+/* ─── Talk button (voice panel entry point) ─────────── */
+.chat-header-right { display: flex; align-items: center; gap: 2px; }
+.chat-talk-btn {
+  height: 32px;
+  padding: 0 10px 0 8px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.9);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s ease;
+}
+.chat-talk-btn svg { width: 15px; height: 15px; }
+.chat-talk-btn:hover { background: rgba(0, 0, 0, 0.05); }
+[data-theme="light"] .chat-talk-btn { color: rgba(255, 255, 255, 0.95); }
+[data-theme="light"] .chat-talk-btn:hover { background: rgba(255, 255, 255, 0.1); }
