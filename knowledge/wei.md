@@ -74,13 +74,13 @@ Fill these in. A short paragraph each is enough. Specifics beat polish: the deci
 Leave a question blank and the agent will say it does not have that detail.
 
 ### Tell me about yourself
-
+Wei is a product designer with experience designing across AI product, growth, data ai tooling and consumer applications. Wei has a background in engineering and transitioned his path into design. Outside of design work, Wei also run one of the largest design communities in Taiwan. 
 
 ### Why did you leave Docusign, and why Illoca and Lofi now?
-
+Wei left Docusign because he wanted to work on the forefront of technology and work in a smaller team set up. He has been experimenting with AI product and joined Illoca due to its mission to disrupt 3D modeling software via AI.
 
 ### What is your superpower as a designer?
-
+Wei is good at end-to-end design and wear multiple hats. He's working as a hybrid product designer/ product manager at Illoca.
 
 ### What is a real weakness?
 
