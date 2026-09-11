@@ -58,8 +58,21 @@
   let muted = false;
   let history = [];        // demo-mode chat turns for /api/chat
   let lastFocus = null;
+  let avatarMode = 'photo'; // 'photo' (orange mouth) | 'dots' (point cloud)
+  let dots = null;          // dot avatar renderer
 
+  const AVATAR_KEY = 'talk.avatar';
   const clamp = v => Math.max(0, Math.min(1, v));
+
+  function setAvatarMode(next) {
+    avatarMode = next === 'dots' ? 'dots' : 'photo';
+    el.panel.dataset.avatar = avatarMode;
+    el.toggle.querySelectorAll('button').forEach(b => {
+      b.classList.toggle('is-on', b.dataset.avatar === avatarMode);
+      b.setAttribute('aria-pressed', String(b.dataset.avatar === avatarMode));
+    });
+    try { localStorage.setItem(AVATAR_KEY, avatarMode); } catch (_) { /* storage blocked */ }
+  }
 
   /* ─── DOM ────────────────────────────────────────────── */
   function build() {
@@ -69,12 +82,17 @@
       <div class="talk-panel" role="dialog" aria-modal="true" aria-label="Talk to Wei" data-state="idle">
         <div class="talk-top">
           <h3 class="talk-title">Talk to Wei</h3>
+          <div class="talk-avatar-toggle" role="group" aria-label="Avatar style">
+            <button type="button" data-avatar="photo">Photo</button>
+            <button type="button" data-avatar="dots">Dots</button>
+          </div>
           <button class="talk-close" aria-label="Close">${CLOSE_SVG}</button>
         </div>
         <div class="talk-avatar-wrap">
           <div class="talk-avatar">
             <img src="images/avatar-face.jpg" alt="Wei" draggable="false" />
             ${MOUTH_SVG}
+            <canvas class="talk-dots" aria-hidden="true"></canvas>
           </div>
         </div>
         <p class="talk-status">Start a conversation. Your mic is only used while it is on.</p>
@@ -107,8 +125,20 @@
       innerClip: q('.talk-inner-clip'),
       tongue: q('.talk-tongue'),
       lipUpper: q('.talk-lip-upper'),
-      lipLower: q('.talk-lip-lower')
+      lipLower: q('.talk-lip-lower'),
+      img: q('.talk-avatar img'),
+      canvas: q('.talk-dots'),
+      toggle: q('.talk-avatar-toggle')
     };
+
+    dots = createDotAvatar(el.canvas, el.img);
+    el.toggle.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-avatar]');
+      if (btn) setAvatarMode(btn.dataset.avatar);
+    });
+    let saved = 'photo';
+    try { saved = localStorage.getItem(AVATAR_KEY) || 'photo'; } catch (_) { /* storage blocked */ }
+    setAvatarMode(saved);
 
     q('.talk-close').addEventListener('click', close);
     overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
@@ -139,7 +169,7 @@
     el.lipUpper.setAttribute('transform', `translate(0 ${(-o * 3).toFixed(2)})`);
   }
 
-  function tick() {
+  function tick(now) {
     let target = 0;
     if (state === 'speaking') {
       if (mode === 'live' && conversation) {
@@ -151,12 +181,170 @@
     }
     level += (target - level) * (target > level ? 0.55 : 0.28);
     if (level < 0.005) level = 0;
-    setMouth(level);
+    if (avatarMode === 'dots') dots.render(now, state, level);
+    else setMouth(level);
     rafId = requestAnimationFrame(tick);
   }
 
+  // The loop runs while the panel is open: the dot avatar animates even when idle.
   function startLoop() { if (!rafId) rafId = requestAnimationFrame(tick); }
   function stopLoop() { cancelAnimationFrame(rafId); rafId = 0; level = 0; setMouth(0); }
+
+  /* ─── Dot avatar: the photo as a point cloud ─────────────
+     Dots sit where the photo is dark (a stipple portrait). While the agent
+     connects or thinks they leave the face for a slowly turning sphere and
+     come back when it speaks or listens. Speaking moves the dots around the
+     mouth and tints them orange with the audio level. */
+  const DOT = {
+    size: 220,      // css px of .talk-avatar; the canvas scales with CSS below that
+    grid: 84,       // sampling cells per side
+    target: 1700,   // dots wanted
+    orbRadius: 72,
+    mouth: { x: 102, y: 144, rx: 24, ry: 14 } // css px, matches --mouth-* in talk.css
+  };
+
+  function createDotAvatar(canvas, img) {
+    const ctx = canvas.getContext('2d');
+    let pts = [];
+    let ready = false;
+    let morph = 0;   // 0 face, 1 orb
+    let rgb = [255, 255, 255];
+    let rgbAt = -1e9;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = DOT.size * dpr;
+    canvas.height = DOT.size * dpr;
+
+    const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+    /* Like a halftone print: dots are the ink. On a dark theme the ink is
+       light, so dots go where the photo is bright (lit skin); on a light
+       theme they go where it is dark. Density and size both follow tone. */
+    let sampledLight = null; // theme the current point set was built for
+    let imageData = null;
+
+    function sample(lightInk) {
+      const g = DOT.grid;
+      if (!imageData) {
+        const off = document.createElement('canvas');
+        off.width = g; off.height = g;
+        const o = off.getContext('2d');
+        o.drawImage(img, 0, 0, g, g);
+        imageData = o.getImageData(0, 0, g, g).data;
+      }
+      const data = imageData;
+      const cells = [];
+      let sum = 0;
+      for (let y = 0; y < g; y++) {
+        for (let x = 0; x < g; x++) {
+          const cx = (x + 0.5) / g - 0.5, cy = (y + 0.5) / g - 0.5;
+          const rr = Math.sqrt(cx * cx + cy * cy);
+          if (rr > 0.5) continue;
+          const i = (y * g + x) * 4;
+          const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+          const tone = lightInk ? lum : 1 - lum; // how much ink this cell wants
+          // keep the picture on the head: fade the rim and anything outside the head ellipse (sky, bridge)
+          const rim = clamp((rr - 0.34) / 0.16);
+          const ex = (cx - 0.0) / 0.30, ey = (cy + 0.04) / 0.40;
+          const outside = clamp((Math.sqrt(ex * ex + ey * ey) - 1) / 0.25);
+          const w = Math.pow(clamp((tone - 0.18) / 0.82), 1.35) * (1 - rim * 0.92) * (1 - outside * 0.8);
+          if (w <= 0.01) continue;
+          cells.push({ x, y, tone, w });
+          sum += w;
+        }
+      }
+      const k = DOT.target / sum;
+      const cell = DOT.size / g;
+      const out = [];
+      for (const c of cells) {
+        if (Math.random() > c.w * k) continue;
+        const hx = (c.x + 0.5 + (Math.random() - 0.5) * 0.9) * cell;
+        const hy = (c.y + 0.5 + (Math.random() - 0.5) * 0.9) * cell;
+        const m = DOT.mouth;
+        const mx = (hx - m.x) / m.rx, my = (hy - m.y) / m.ry;
+        const inMouth = mx * mx + my * my <= 1;
+        out.push({ hx, hy, d: c.tone, r: 0.6 + c.tone * 1.7, stagger: Math.random(),
+                   mouth: inMouth ? (hy > m.y ? 2 : 1) : 0, sx: 0, sy: 0, sz: 0 });
+      }
+      // Sphere seats on a fibonacci lattice, shuffled so face neighbours scatter
+      const n = out.length, R = DOT.orbRadius, phi = Math.PI * (3 - Math.sqrt(5));
+      const seats = out.map((_, i) => i).sort(() => Math.random() - 0.5);
+      out.forEach((p, idx) => {
+        const i = seats[idx];
+        const yy = 1 - (i / Math.max(1, n - 1)) * 2;
+        const rad = Math.sqrt(Math.max(0, 1 - yy * yy));
+        const th = phi * i;
+        p.sx = Math.cos(th) * rad * R;
+        p.sy = yy * R;
+        p.sz = Math.sin(th) * rad * R;
+      });
+      pts = out;
+      sampledLight = lightInk;
+      ready = true;
+    }
+
+    function readColor(now) {
+      if (now - rgbAt < 500) return;
+      rgbAt = now;
+      const m = getComputedStyle(canvas).color.match(/\d+(\.\d+)?/g);
+      if (m && m.length >= 3) rgb = m.slice(0, 3).map(Number);
+      const lightInk = (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) > 128;
+      if (lightInk !== sampledLight && img.complete && img.naturalWidth) sample(lightInk);
+    }
+
+    function render(now, st, lvl) {
+      readColor(now);
+      if (!ready) return;
+      const size = DOT.size, c = size / 2;
+      const want = (st === 'thinking' || st === 'connecting') ? 1 : 0;
+      morph += (want - morph) * 0.045;
+      if (Math.abs(want - morph) < 0.002) morph = want;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, size, size);
+
+      const t = now / 1000;
+      const rotY = t * 0.5, rotX = Math.sin(t * 0.3) * 0.35;
+      const cy1 = Math.cos(rotY), sy1 = Math.sin(rotY), cx1 = Math.cos(rotX), sx1 = Math.sin(rotX);
+      const breathe = st === 'listening' ? 1 + Math.sin(t * 1.6) * 0.008 : 1;
+      const speaking = st === 'speaking';
+      const [cr, cg, cb] = rgb;
+
+      for (const p of pts) {
+        // sphere seat, rotated and projected
+        const x2 = p.sx * cy1 - p.sz * sy1;
+        const zr = p.sx * sy1 + p.sz * cy1;
+        const y2 = p.sy * cx1 - zr * sx1;
+        const z2 = p.sy * sx1 + zr * cx1;
+        const persp = 300 / (300 - z2);
+        const ox = c + x2 * persp, oy = c + y2 * persp;
+        const depth = (z2 / DOT.orbRadius + 1) / 2;
+
+        // face seat, with the mouth opening on speech
+        let fx = c + (p.hx - c) * breathe, fy = c + (p.hy - c) * breathe;
+        let tint = 0;
+        if (speaking) {
+          if (p.mouth) { fy += p.mouth === 2 ? lvl * 16 : -lvl * 3; tint = lvl; }
+          else { fx += (Math.random() - 0.5) * lvl * 1.2; fy += (Math.random() - 0.5) * lvl * 1.2; }
+        }
+
+        const m = ease(clamp(morph * 1.35 - p.stagger * 0.35));
+        const X = fx + (ox - fx) * m, Y = fy + (oy - fy) * m;
+        const r = p.r * (1 - m) + (0.55 + depth * 1.1) * m;
+        const a = (0.55 + p.d * 0.45) * (1 - m) + (0.2 + depth * 0.8) * m;
+
+        ctx.globalAlpha = a;
+        ctx.fillStyle = tint > 0
+          ? `rgb(${cr + (255 - cr) * tint | 0},${cg + (122 - cg) * tint | 0},${cb + (26 - cb) * tint | 0})`
+          : `rgb(${cr},${cg},${cb})`;
+        ctx.beginPath();
+        ctx.arc(X, Y, r, 0, 6.2832);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    return { render };
+  }
 
   /* ─── UI helpers ─────────────────────────────────────── */
   const STATUS = {
@@ -210,7 +398,6 @@
     if (state !== 'idle') return;
     mode = null;
     setState('connecting');
-    startLoop();
 
     let creds = null;
     try {
@@ -277,7 +464,8 @@
     }
     if ('speechSynthesis' in window) speechSynthesis.cancel();
     clearInterval(syllableTimer);
-    stopLoop();
+    level = 0;
+    setMouth(0);
     if (note && state !== 'idle') addLine('note', note);
     mode = null;
     muted = false;
@@ -369,12 +557,14 @@
     el.transcript.innerHTML = '';
     el.overlay.classList.add('open');
     setState('idle');
+    startLoop();
     setTimeout(() => el.startBtn.focus(), 60);
   }
 
   function close() {
     if (!el) return;
     end();
+    stopLoop();
     el.overlay.classList.remove('open');
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
@@ -382,4 +572,9 @@
   if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => {};
 
   window.TalkToWei = { open, close };
+  // Local-only hook so the avatar states can be previewed without a call
+  if (location.hostname === 'localhost') {
+    window.TalkToWei._setState = s => { if (el) setState(s); };
+    window.TalkToWei._setLevel = v => { pulse = v; };
+  }
 })();

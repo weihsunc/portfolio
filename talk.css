@@ -243,3 +243,42 @@
   }
   .talk-avatar { width: 180px; height: 180px; }
 }
+
+/* ─── Avatar style toggle (photo vs dots) ────────────── */
+.talk-avatar-toggle {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  gap: 2px;
+}
+.talk-avatar-toggle button {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.talk-avatar-toggle button:hover { color: var(--foreground); }
+.talk-avatar-toggle button.is-on {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.talk-dots {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  color: var(--foreground); /* dot colour, read by the renderer */
+}
+.talk-panel[data-avatar="dots"] .talk-dots { display: block; }
+.talk-panel[data-avatar="dots"] .talk-avatar img,
+.talk-panel[data-avatar="dots"] .talk-mouth { visibility: hidden; }
+.talk-panel[data-avatar="dots"] .talk-avatar { background: transparent; }
