@@ -192,9 +192,9 @@
 
   /* ─── Dot avatar: a 3D point cloud ────────────────────────
      Monochrome dots in the page's foreground colour. At rest a sparse
-     sphere turns slowly. While the agent thinks the dots snap into a
-     tumbling cube lattice (solving). While it speaks they morph into
-     Wei's head. The head shape comes from
+     sphere turns slowly. While the agent thinks the dots morph into
+     Wei's head, turning. While it speaks they snap into a tumbling cube
+     lattice that swells with the voice. The head shape comes from
      the photo itself: the head is masked out (skin and hair, no sky,
      stopping at the collar) and the outline is inflated into a volume, so
      hair, jaw and neck keep their real proportions as it turns. */
@@ -222,8 +222,8 @@
     const ctx = canvas.getContext('2d');
     let pts = [];
     let ready = false;
-    let morph = 0;   // 0 sphere, 1 head
-    let cube = 0;    // 0 sphere, 1 cube (thinking)
+    let morph = 0;   // 0 sphere, 1 head (thinking)
+    let cube = 0;    // 0 sphere, 1 cube (speaking)
     let rgb = [255, 255, 255];
     let rgbAt = -1e9;
     let sampledLight = null; // theme the current point set was built for
@@ -489,10 +489,11 @@
       const size = DOT.size, c = size / 2;
       const speaking = st === 'speaking';
       const thinking = st === 'thinking';
-      morph += ((speaking ? 1 : 0) - morph) * 0.05;
-      if (Math.abs((speaking ? 1 : 0) - morph) < 0.002) morph = speaking ? 1 : 0;
-      cube += ((thinking ? 1 : 0) - cube) * 0.06;
-      if (Math.abs((thinking ? 1 : 0) - cube) < 0.002) cube = thinking ? 1 : 0;
+      // head while thinking, cube while speaking
+      morph += ((thinking ? 1 : 0) - morph) * 0.05;
+      if (Math.abs((thinking ? 1 : 0) - morph) < 0.002) morph = thinking ? 1 : 0;
+      cube += ((speaking ? 1 : 0) - cube) * 0.06;
+      if (Math.abs((speaking ? 1 : 0) - cube) < 0.002) cube = speaking ? 1 : 0;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
@@ -502,8 +503,9 @@
       const rotY = t * 0.4, rotX = Math.sin(t * 0.3) * 0.3;
       const cy1 = Math.cos(rotY), sy1 = Math.sin(rotY), cx1 = Math.cos(rotX), sx1 = Math.sin(rotX);
       const sScale = 1 + Math.sin(t * 0.2 * 6.2832) * 0.01;
-      // cube: tumbles on two axes
+      // cube: tumbles on two axes and swells with the voice
       const cA = t * 0.55, cB = t * 0.8;
+      const cScale = 1 + lvl * 0.14;
       const ca = Math.cos(cA), sa = Math.sin(cA), cb = Math.cos(cB), sb = Math.sin(cB);
       // head: turns side to side so the face stays in view, with a small nod
       const yaw = Math.sin(t * 0.6) * 0.6, pitch = Math.sin(t * 0.45) * 0.07;
@@ -538,7 +540,7 @@
         const qy2 = p.cy * ca - qz1 * sa;
         const qz2 = p.cy * sa + qz1 * ca;
         const qp = 300 / (300 - qz2);
-        const qx = c + qx1 * qp, qy = c + qy2 * qp;
+        const qx = c + qx1 * qp * cScale, qy = c + qy2 * qp * cScale;
         const qdepth = clamp((qz2 / (DOT.cubeHalf * 1.7) + 1) / 2);
 
         const m = ease(clamp(morph * 1.35 - p.stagger * 0.35));
