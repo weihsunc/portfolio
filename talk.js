@@ -192,8 +192,9 @@
 
   /* ─── Dot avatar: a 3D point cloud ────────────────────────
      Monochrome dots in the page's foreground colour. At rest a sparse
-     sphere turns slowly. While the agent thinks the sphere pulses. While
-     it speaks the dots morph into Wei's head. The head shape comes from
+     sphere turns slowly. While the agent thinks the dots snap into a
+     tumbling cube lattice (solving). While it speaks they morph into
+     Wei's head. The head shape comes from
      the photo itself: the head is masked out (skin and hair, no sky,
      stopping at the collar) and the outline is inflated into a volume, so
      hair, jaw and neck keep their real proportions as it turns. */
@@ -204,6 +205,7 @@
     backDots: 520,   // sparse dots on the back of the head
     sphereDots: 620, // dots visible on the resting sphere (the rest fade in as the head forms)
     sphereRadius: 72,
+    cubeHalf: 52,    // half edge of the thinking cube, css px
     headHeight: 196, // css px the head occupies when facing forward
     headDepth: 0.8,  // thickness relative to half the head width
     collar: 0.72,    // fraction of the crop height below which dark pixels are shirt, not hair
@@ -221,6 +223,7 @@
     let pts = [];
     let ready = false;
     let morph = 0;   // 0 sphere, 1 head
+    let cube = 0;    // 0 sphere, 1 cube (thinking)
     let rgb = [255, 255, 255];
     let rgbAt = -1e9;
     let sampledLight = null; // theme the current point set was built for
@@ -446,6 +449,26 @@
         p.sz = Math.sin(th) * rad * R;
         p.core = (i % every) === 0;
       });
+      // cube seats: core dots form a lattice on the six faces; the rest hide inside
+      const core = out.filter(p => p.core);
+      const perFace = Math.ceil(core.length / 6);
+      const side = Math.max(2, Math.ceil(Math.sqrt(perFace)));
+      const Hc = DOT.cubeHalf;
+      core.forEach((p, k) => {
+        const face = k % 6, j = (k / 6) | 0;
+        const u = ((j % side) / (side - 1)) * 2 - 1;
+        const v = (((j / side) | 0) / (side - 1)) * 2 - 1;
+        const a = u * Hc, b = v * Hc;
+        switch (face) {
+          case 0: p.cx = a; p.cy = b; p.cz = Hc; break;
+          case 1: p.cx = a; p.cy = b; p.cz = -Hc; break;
+          case 2: p.cx = Hc; p.cy = a; p.cz = b; break;
+          case 3: p.cx = -Hc; p.cy = a; p.cz = b; break;
+          case 4: p.cx = a; p.cy = Hc; p.cz = b; break;
+          default: p.cx = a; p.cy = -Hc; p.cz = b;
+        }
+      });
+      for (const p of out) if (!p.core) { p.cx = (Math.random() - 0.5) * Hc; p.cy = (Math.random() - 0.5) * Hc; p.cz = (Math.random() - 0.5) * Hc; }
       pts = out;
       sampledLight = lightInk;
       ready = true;
@@ -465,8 +488,11 @@
       if (!ready) return;
       const size = DOT.size, c = size / 2;
       const speaking = st === 'speaking';
+      const thinking = st === 'thinking';
       morph += ((speaking ? 1 : 0) - morph) * 0.05;
       if (Math.abs((speaking ? 1 : 0) - morph) < 0.002) morph = speaking ? 1 : 0;
+      cube += ((thinking ? 1 : 0) - cube) * 0.06;
+      if (Math.abs((thinking ? 1 : 0) - cube) < 0.002) cube = thinking ? 1 : 0;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
@@ -475,9 +501,10 @@
       // sphere: steady turn, pulsing while thinking
       const rotY = t * 0.4, rotX = Math.sin(t * 0.3) * 0.3;
       const cy1 = Math.cos(rotY), sy1 = Math.sin(rotY), cx1 = Math.cos(rotX), sx1 = Math.sin(rotX);
-      const pulseAmt = st === 'thinking' ? 0.05 : 0.01;
-      const pulseHz = st === 'thinking' ? 1.1 : 0.2;
-      const sScale = 1 + Math.sin(t * pulseHz * 6.2832) * pulseAmt;
+      const sScale = 1 + Math.sin(t * 0.2 * 6.2832) * 0.01;
+      // cube: tumbles on two axes
+      const cA = t * 0.55, cB = t * 0.8;
+      const ca = Math.cos(cA), sa = Math.sin(cA), cb = Math.cos(cB), sb = Math.sin(cB);
       // head: turns side to side so the face stays in view, with a small nod
       const yaw = Math.sin(t * 0.6) * 0.6, pitch = Math.sin(t * 0.45) * 0.07;
       const cyw = Math.cos(yaw), syw = Math.sin(yaw), cpt = Math.cos(pitch), spt = Math.sin(pitch);
@@ -505,13 +532,25 @@
         const fx = c + hx2 * hp, fy = c + hy2 * hp;
         const hdepth = clamp((hz2 / maxDepth + 1) / 2);
 
+        // cube seat, tumbled and projected
+        const qx1 = p.cx * cb - p.cz * sb;
+        const qz1 = p.cx * sb + p.cz * cb;
+        const qy2 = p.cy * ca - qz1 * sa;
+        const qz2 = p.cy * sa + qz1 * ca;
+        const qp = 300 / (300 - qz2);
+        const qx = c + qx1 * qp, qy = c + qy2 * qp;
+        const qdepth = clamp((qz2 / (DOT.cubeHalf * 1.7) + 1) / 2);
+
         const m = ease(clamp(morph * 1.35 - p.stagger * 0.35));
-        const X = ox + (fx - ox) * m, Y = oy + (fy - oy) * m;
-        const r = (0.35 + sdepth * 0.95) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
-        // sphere: only core dots show; head: everything, shaded by depth
+        const q = ease(clamp(cube * 1.35 - p.stagger * 0.35)) * (1 - m);
+        const s0 = 1 - m - q;
+        const X = ox * s0 + fx * m + qx * q, Y = oy * s0 + fy * m + qy * q;
+        const r = (0.35 + sdepth * 0.95) * s0 + (p.r * (0.6 + hdepth * 0.6)) * m + (0.4 + qdepth * 0.9) * q;
+        // sphere and cube: only core dots show; head: everything, shaded by depth
         const aSphere = p.core ? 0.18 + sdepth * 0.82 : 0;
+        const aCube = p.core ? 0.15 + qdepth * 0.85 : 0;
         const aHead = (p.back ? 0.5 : 0.5 + p.d * 0.5) * (0.12 + hdepth * 0.88);
-        const a = aSphere * (1 - m) + aHead * m;
+        const a = aSphere * s0 + aHead * m + aCube * q;
         if (a < 0.02) continue;
 
         ctx.globalAlpha = a;
