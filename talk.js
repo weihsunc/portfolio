@@ -207,7 +207,13 @@
     headHeight: 196, // css px the head occupies when facing forward
     headDepth: 0.8,  // thickness relative to half the head width
     collar: 0.72,    // fraction of the crop height below which dark pixels are shirt, not hair
-    mouth: { x: 102, y: 144, rx: 22, ry: 13 } // css px in the flat crop, matches --mouth-* in talk.css
+    mouth: { x: 102, y: 144, rx: 22, ry: 13 }, // css px in the flat crop, matches --mouth-* in talk.css
+    // landmarks as fractions of the crop, read off the photo
+    nose: { x: 0.487, top: 0.45, tip: 0.578, end: 0.62, sigma: 0.045, amp: 0.34 },
+    eyes: { y: 0.478, xs: [0.385, 0.59], sigma: 0.035, amp: -0.11 },
+    chin: { x: 0.487, y: 0.79, sx: 0.09, sy: 0.05, amp: 0.08 },
+    ears: { y: 0.57, ry: 12, rz: 11, dots: 70 }, // px at avatar scale; found at the mask edge on that row
+    relief: 0.22     // shading relief on skin, fraction of head depth
   };
 
   function createDotAvatar(canvas, img) {
@@ -271,12 +277,58 @@
         const d = dist[i] / maxD;                    // 0 at the edge, 1 at the core
         depth[i] = Math.sqrt(d * (2 - d));           // round cross-section
       }
+      // 4. shading relief on the skin: brighter pixels sit closer to the light, so forward
+      const relief = new Float32Array(g * g);
+      for (let y = 1; y < g - 1; y++) {
+        for (let x = 1; x < g - 1; x++) {
+          const i = y * g + x;
+          if (!keep[i]) continue;
+          const j = i * 4;
+          if (data[j] - data[j + 2] <= 12) continue; // hair and shadow, not skin
+          let acc = 0;
+          for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+            const k = ((y + dy) * g + (x + dx)) * 4;
+            acc += 0.2126 * data[k] + 0.7152 * data[k + 1] + 0.0722 * data[k + 2];
+          }
+          const lum = acc / 9 / 255;
+          relief[i] = Math.max(-0.12, Math.min(0.12, (lum - 0.55) * DOT.relief));
+        }
+      }
+      // 5. ear positions: the outermost mask cells on the ear row
+      const earRow = Math.round(DOT.ears.y * g);
+      let earL = -1, earR = -1;
+      for (let x = 0; x < g; x++) if (keep[earRow * g + x]) { if (earL < 0) earL = x; earR = x; }
       const scale = DOT.headHeight / Math.max(1, maxY - minY + 1); // grid cell -> css px
       head = {
-        mask: keep, depth, scale,
+        mask: keep, depth, relief, scale,
         cx: (minX + maxX + 1) / 2, cy: (minY + maxY + 1) / 2,
-        maxDepth: ((maxX - minX + 1) / 2) * scale * DOT.headDepth
+        maxDepth: ((maxX - minX + 1) / 2) * scale * DOT.headDepth,
+        ears: earL >= 0 ? [earL + 0.5, earR + 0.5] : []
       };
+    }
+
+    /* Sculpted features on top of the inflated silhouette, in units of head depth.
+       u, v are fractions of the crop. */
+    function features(u, v) {
+      const N = DOT.nose, E = DOT.eyes, C = DOT.chin;
+      let z = 0;
+      // nose: a ridge rising from the bridge to the tip, dropping under the nostrils
+      let prof = 0;
+      if (v >= N.top && v <= N.tip) prof = (v - N.top) / (N.tip - N.top);
+      else if (v > N.tip && v <= N.end) prof = 1 - (v - N.tip) / (N.end - N.tip);
+      if (prof > 0) {
+        const du = (u - N.x) / (N.sigma * (0.6 + 0.4 * prof)); // widens toward the tip
+        z += N.amp * prof * Math.exp(-du * du);
+      }
+      // eye sockets recess
+      for (const ex of E.xs) {
+        const du = (u - ex) / E.sigma, dv = (v - E.y) / (E.sigma * 0.8);
+        z += E.amp * Math.exp(-(du * du + dv * dv));
+      }
+      // chin comes forward a little
+      const cu = (u - C.x) / C.sx, cv = (v - C.y) / C.sy;
+      z += C.amp * Math.exp(-(cu * cu + cv * cv));
+      return z;
     }
 
     function floodFill(src, g, sx, sy, value, invert) {
@@ -351,13 +403,27 @@
         if (Math.random() > c.w * k) continue;
         const gx = c.x + 0.5 + (Math.random() - 0.5) * 0.9;
         const gy = c.y + 0.5 + (Math.random() - 0.5) * 0.9;
-        const pos = toHead(gx, gy, c.depth * (1 + (c.tone - 0.5) * 0.08), 1);
+        const zExtra = features(gx / g, gy / g) + H.relief[c.y * g + c.x];
+        const pos = toHead(gx, gy, c.depth + zExtra, 1);
         // mouth test in flat crop pixels
         const px = gx / g * DOT.size, py = gy / g * DOT.size;
         const mx = (px - M.x) / M.rx, my = (py - M.y) / M.ry;
         const inMouth = mx * mx + my * my <= 1;
         out.push({ ...pos, d: c.tone, r: 0.45 + c.tone * 0.95, stagger: Math.random(),
                    mouth: inMouth ? (py > M.y ? 2 : 1) : 0, back: false });
+      }
+      // ears: a loop of dots on each side, standing out from the head in the y/z plane
+      const earY = DOT.ears.y * g;
+      for (const ex of H.ears) {
+        const side = ex < H.cx ? -1 : 1;
+        for (let n = 0; n < DOT.ears.dots; n++) {
+          const th = Math.random() * 6.2832;
+          const rr = 0.55 + Math.random() * 0.45; // mostly rim, some fill
+          const base = toHead(ex + side * 0.6, earY, 0, 1);
+          out.push({ hx: base.hx + side * (Math.random() * 3), hy: base.hy + Math.sin(th) * DOT.ears.ry * rr,
+                     hz: 4 + Math.cos(th) * DOT.ears.rz * rr, d: 0.6, r: 0.75,
+                     stagger: Math.random(), mouth: 0, back: false });
+        }
       }
       // sparse back of the head: the same silhouette, inflated the other way
       for (let n = 0; n < DOT.backDots; n++) {
