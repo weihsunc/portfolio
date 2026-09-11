@@ -193,8 +193,11 @@
   /* ─── Dot avatar: a 3D point cloud ────────────────────────
      Monochrome dots in the page's foreground colour. At rest a sparse
      sphere turns slowly. While the agent thinks the dots morph into
-     Wei's head, turning. While it speaks they snap into a tumbling cube
-     lattice that swells with the voice. The head shape comes from
+     Wei's head, turning. While it speaks the sphere becomes an organic
+     blob: every dot is pushed along its normal by a drifting noise field
+     whose strength follows the voice, and more dots fade in to give it
+     body. The ball is the blob at zero amplitude, so the change is
+     continuous. The head shape comes from
      the photo itself: the head is masked out (skin and hair, no sky,
      stopping at the collar) and the outline is inflated into a volume, so
      hair, jaw and neck keep their real proportions as it turns. */
@@ -205,7 +208,7 @@
     backDots: 520,   // sparse dots on the back of the head
     sphereDots: 620, // dots visible on the resting sphere (the rest fade in as the head forms)
     sphereRadius: 72,
-    cubeHalf: 52,    // half edge of the thinking cube, css px
+    blobAmp: 0.55,   // how far the sphere deforms while speaking, fraction of its radius
     headHeight: 196, // css px the head occupies when facing forward
     headDepth: 0.8,  // thickness relative to half the head width
     collar: 0.72,    // fraction of the crop height below which dark pixels are shirt, not hair
@@ -223,7 +226,7 @@
     let pts = [];
     let ready = false;
     let morph = 0;   // 0 sphere, 1 head (thinking)
-    let cube = 0;    // 0 sphere, 1 cube (speaking)
+    let blob = 0;    // 0 sphere, 1 organic blob (speaking)
     let rgb = [255, 255, 255];
     let rgbAt = -1e9;
     let sampledLight = null; // theme the current point set was built for
@@ -449,26 +452,6 @@
         p.sz = Math.sin(th) * rad * R;
         p.core = (i % every) === 0;
       });
-      // cube seats: core dots form a lattice on the six faces; the rest hide inside
-      const core = out.filter(p => p.core);
-      const perFace = Math.ceil(core.length / 6);
-      const side = Math.max(2, Math.ceil(Math.sqrt(perFace)));
-      const Hc = DOT.cubeHalf;
-      core.forEach((p, k) => {
-        const face = k % 6, j = (k / 6) | 0;
-        const u = ((j % side) / (side - 1)) * 2 - 1;
-        const v = (((j / side) | 0) / (side - 1)) * 2 - 1;
-        const a = u * Hc, b = v * Hc;
-        switch (face) {
-          case 0: p.cx = a; p.cy = b; p.cz = Hc; break;
-          case 1: p.cx = a; p.cy = b; p.cz = -Hc; break;
-          case 2: p.cx = Hc; p.cy = a; p.cz = b; break;
-          case 3: p.cx = -Hc; p.cy = a; p.cz = b; break;
-          case 4: p.cx = a; p.cy = Hc; p.cz = b; break;
-          default: p.cx = a; p.cy = -Hc; p.cz = b;
-        }
-      });
-      for (const p of out) if (!p.core) { p.cx = (Math.random() - 0.5) * Hc; p.cy = (Math.random() - 0.5) * Hc; p.cz = (Math.random() - 0.5) * Hc; }
       pts = out;
       sampledLight = lightInk;
       ready = true;
@@ -489,11 +472,11 @@
       const size = DOT.size, c = size / 2;
       const speaking = st === 'speaking';
       const thinking = st === 'thinking';
-      // head while thinking, cube while speaking
+      // head while thinking, organic blob while speaking
       morph += ((thinking ? 1 : 0) - morph) * 0.05;
       if (Math.abs((thinking ? 1 : 0) - morph) < 0.002) morph = thinking ? 1 : 0;
-      cube += ((speaking ? 1 : 0) - cube) * 0.06;
-      if (Math.abs((speaking ? 1 : 0) - cube) < 0.002) cube = speaking ? 1 : 0;
+      blob += ((speaking ? 1 : 0) - blob) * 0.04;
+      if (Math.abs((speaking ? 1 : 0) - blob) < 0.002) blob = speaking ? 1 : 0;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
@@ -502,11 +485,10 @@
       // sphere: steady turn, pulsing while thinking
       const rotY = t * 0.4, rotX = Math.sin(t * 0.3) * 0.3;
       const cy1 = Math.cos(rotY), sy1 = Math.sin(rotY), cx1 = Math.cos(rotX), sx1 = Math.sin(rotX);
-      const sScale = 1 + Math.sin(t * 0.2 * 6.2832) * 0.01;
-      // cube: tumbles on two axes and swells with the voice
-      const cA = t * 0.55, cB = t * 0.8;
-      const cScale = 1 + lvl * 0.14;
-      const ca = Math.cos(cA), sa = Math.sin(cA), cb = Math.cos(cB), sb = Math.sin(cB);
+      const sScale = (1 + Math.sin(t * 0.2 * 6.2832) * 0.01) * (1 + blob * lvl * 0.06);
+      // blob: deformation strength grows with the voice; a quiet floor keeps it alive
+      const amp = blob * DOT.blobAmp * (0.4 + 0.6 * lvl);
+      const invR = 1 / DOT.sphereRadius;
       // head: turns side to side so the face stays in view, with a small nod
       const yaw = Math.sin(t * 0.6) * 0.6, pitch = Math.sin(t * 0.45) * 0.07;
       const cyw = Math.cos(yaw), syw = Math.sin(yaw), cpt = Math.cos(pitch), spt = Math.sin(pitch);
@@ -514,11 +496,20 @@
       const maxDepth = head ? head.maxDepth : 60;
 
       for (const p of pts) {
-        // sphere seat, rotated and projected
-        const sx2 = p.sx * cy1 - p.sz * sy1;
-        const szr = p.sx * sy1 + p.sz * cy1;
-        const sy2 = p.sy * cx1 - szr * sx1;
-        const sz2 = p.sy * sx1 + szr * cx1;
+        // sphere seat, pushed along its normal by the noise field, then rotated and projected
+        let bx = p.sx, by = p.sy, bz = p.sz;
+        if (amp > 0) {
+          const ux = bx * invR, uy = by * invR, uz = bz * invR;
+          const n = (Math.sin(ux * 1.6 + t * 0.9) * Math.cos(uy * 1.4 - t * 0.7)
+                   + 0.7 * Math.sin(uz * 2.2 + uy * 1.1 - t * 1.2)
+                   + 0.35 * Math.sin((ux + uy + uz) * 3.1 + t * 1.7)) * 0.49;
+          const f = 1 + amp * n;
+          bx *= f; by *= f; bz *= f;
+        }
+        const sx2 = bx * cy1 - bz * sy1;
+        const szr = bx * sy1 + bz * cy1;
+        const sy2 = by * cx1 - szr * sx1;
+        const sz2 = by * sx1 + szr * cx1;
         const sp = 300 / (300 - sz2);
         const ox = c + sx2 * sp * sScale, oy = c + sy2 * sp * sScale;
         const sdepth = (sz2 / DOT.sphereRadius + 1) / 2;
@@ -534,25 +525,13 @@
         const fx = c + hx2 * hp, fy = c + hy2 * hp;
         const hdepth = clamp((hz2 / maxDepth + 1) / 2);
 
-        // cube seat, tumbled and projected
-        const qx1 = p.cx * cb - p.cz * sb;
-        const qz1 = p.cx * sb + p.cz * cb;
-        const qy2 = p.cy * ca - qz1 * sa;
-        const qz2 = p.cy * sa + qz1 * ca;
-        const qp = 300 / (300 - qz2);
-        const qx = c + qx1 * qp * cScale, qy = c + qy2 * qp * cScale;
-        const qdepth = clamp((qz2 / (DOT.cubeHalf * 1.7) + 1) / 2);
-
         const m = ease(clamp(morph * 1.35 - p.stagger * 0.35));
-        const q = ease(clamp(cube * 1.35 - p.stagger * 0.35)) * (1 - m);
-        const s0 = 1 - m - q;
-        const X = ox * s0 + fx * m + qx * q, Y = oy * s0 + fy * m + qy * q;
-        const r = (0.35 + sdepth * 0.95) * s0 + (p.r * (0.6 + hdepth * 0.6)) * m + (0.4 + qdepth * 0.9) * q;
-        // sphere and cube: only core dots show; head: everything, shaded by depth
-        const aSphere = p.core ? 0.18 + sdepth * 0.82 : 0;
-        const aCube = p.core ? 0.15 + qdepth * 0.85 : 0;
+        const X = ox + (fx - ox) * m, Y = oy + (fy - oy) * m;
+        const r = (0.35 + sdepth * 0.95) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
+        // sphere: core dots, plus the rest fading in as the blob forms; head: everything
+        const aSphere = (p.core ? 0.18 + sdepth * 0.82 : blob * (0.1 + sdepth * 0.5)) ;
         const aHead = (p.back ? 0.5 : 0.5 + p.d * 0.5) * (0.12 + hdepth * 0.88);
-        const a = aSphere * s0 + aHead * m + aCube * q;
+        const a = aSphere * (1 - m) + aHead * m;
         if (a < 0.02) continue;
 
         ctx.globalAlpha = a;
