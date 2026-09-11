@@ -136,8 +136,8 @@
       const btn = e.target.closest('button[data-avatar]');
       if (btn) setAvatarMode(btn.dataset.avatar);
     });
-    let saved = 'photo';
-    try { saved = localStorage.getItem(AVATAR_KEY) || 'photo'; } catch (_) { /* storage blocked */ }
+    let saved = 'dots';
+    try { saved = localStorage.getItem(AVATAR_KEY) || 'dots'; } catch (_) { /* storage blocked */ }
     setAvatarMode(saved);
 
     q('.talk-close').addEventListener('click', close);
@@ -190,18 +190,42 @@
   function startLoop() { if (!rafId) rafId = requestAnimationFrame(tick); }
   function stopLoop() { cancelAnimationFrame(rafId); rafId = 0; level = 0; setMouth(0); }
 
-  /* ─── Dot avatar: the photo as a point cloud ─────────────
-     Dots sit where the photo is dark (a stipple portrait). While the agent
-     connects or thinks they leave the face for a slowly turning sphere and
-     come back when it speaks or listens. Speaking moves the dots around the
-     mouth and tints them orange with the audio level. */
+  /* ─── Dot avatar: a 3D point cloud ────────────────────────
+     At rest the dots form a slowly turning sphere shaded like the site
+     favicon (coral top, yellow middle, cream left, teal bottom). While the
+     agent thinks they morph into Wei's face, in relief, pulsing. While it
+     speaks the face stays, every dot turns green, and the mouth region
+     opens with the audio level. */
   const DOT = {
     size: 220,      // css px of .talk-avatar; the canvas scales with CSS below that
     grid: 84,       // sampling cells per side
     target: 1700,   // dots wanted
-    orbRadius: 72,
+    orbRadius: 74,
+    faceRelief: 34, // px of depth between the brightest and darkest face dots
     mouth: { x: 102, y: 144, rx: 24, ry: 14 } // css px, matches --mouth-* in talk.css
   };
+
+  // Favicon palette, top to bottom, plus the cream highlight on the left
+  const PAL = {
+    coral:  [223, 58, 88],
+    orange: [244, 136, 74],
+    yellow: [252, 195, 92],
+    teal:   [74, 141, 168],
+    cream:  [243, 222, 176],
+    green:  [46, 204, 113]
+  };
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  /* Colour for a point at (u, v) in [-1, 1] within the avatar circle. Computed
+     from the projected position each frame, so the gradient stays put like a
+     light source while the sphere turns under it. */
+  function shade(u, v) {
+    const t = clamp((v + 1) / 2);
+    let c = t < 0.35 ? mix(PAL.coral, PAL.orange, t / 0.35)
+          : t < 0.6 ? mix(PAL.orange, PAL.yellow, (t - 0.35) / 0.25)
+          : mix(PAL.yellow, PAL.teal, (t - 0.6) / 0.4);
+    const creamy = clamp(-u) * 0.75 * (1 - Math.abs(v) * 0.5);
+    return mix(c, PAL.cream, creamy);
+  }
 
   function createDotAvatar(canvas, img) {
     const ctx = canvas.getContext('2d');
@@ -262,7 +286,11 @@
         const m = DOT.mouth;
         const mx = (hx - m.x) / m.rx, my = (hy - m.y) / m.ry;
         const inMouth = mx * mx + my * my <= 1;
-        out.push({ hx, hy, d: c.tone, r: 0.6 + c.tone * 1.7, stagger: Math.random(),
+        // relief: brighter (closer to the camera) cells sit forward, on a shallow dome
+        const nx = hx / DOT.size - 0.5, ny = hy / DOT.size - 0.5;
+        const dome = Math.sqrt(Math.max(0, 0.3 - nx * nx - ny * ny)) * 40;
+        const hz = (c.tone - 0.5) * DOT.faceRelief + dome;
+        out.push({ hx, hy, hz, d: c.tone, r: 0.6 + c.tone * 1.7, stagger: Math.random(),
                    mouth: inMouth ? (hy > m.y ? 2 : 1) : 0, sx: 0, sy: 0, sz: 0 });
       }
       // Sphere seats on a fibonacci lattice, shuffled so face neighbours scatter
@@ -291,51 +319,70 @@
       if (lightInk !== sampledLight && img.complete && img.naturalWidth) sample(lightInk);
     }
 
+    let green = 0; // 0 palette, 1 all green (speaking)
+
     function render(now, st, lvl) {
       readColor(now);
       if (!ready) return;
       const size = DOT.size, c = size / 2;
-      const want = (st === 'thinking' || st === 'connecting') ? 1 : 0;
-      morph += (want - morph) * 0.045;
-      if (Math.abs(want - morph) < 0.002) morph = want;
+      const wantFace = (st === 'thinking' || st === 'speaking') ? 1 : 0;
+      morph += (wantFace - morph) * 0.05;
+      if (Math.abs(wantFace - morph) < 0.002) morph = wantFace;
+      const speaking = st === 'speaking';
+      green += ((speaking ? 1 : 0) - green) * 0.08;
+      if (green < 0.003) green = 0;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
 
       const t = now / 1000;
-      const rotY = t * 0.5, rotX = Math.sin(t * 0.3) * 0.35;
+      // sphere: steady turn
+      const rotY = t * 0.45, rotX = Math.sin(t * 0.3) * 0.3;
       const cy1 = Math.cos(rotY), sy1 = Math.sin(rotY), cx1 = Math.cos(rotX), sx1 = Math.sin(rotX);
-      const breathe = st === 'listening' ? 1 + Math.sin(t * 1.6) * 0.008 : 1;
-      const speaking = st === 'speaking';
-      const [cr, cg, cb] = rgb;
+      // face: a gentle look-around
+      const yaw = Math.sin(t * 0.7) * 0.22, pitch = Math.sin(t * 0.45) * 0.08;
+      const cyw = Math.cos(yaw), syw = Math.sin(yaw), cpt = Math.cos(pitch), spt = Math.sin(pitch);
+      // thinking pulse, breathing at rest
+      const pulseAmt = st === 'thinking' ? 0.04 : 0.008;
+      const pulseHz = st === 'thinking' ? 1.15 : 0.25;
+      const scale = 1 + Math.sin(t * pulseHz * 6.2832) * pulseAmt;
+      const lightInk = sampledLight;
 
       for (const p of pts) {
         // sphere seat, rotated and projected
-        const x2 = p.sx * cy1 - p.sz * sy1;
-        const zr = p.sx * sy1 + p.sz * cy1;
-        const y2 = p.sy * cx1 - zr * sx1;
-        const z2 = p.sy * sx1 + zr * cx1;
-        const persp = 300 / (300 - z2);
-        const ox = c + x2 * persp, oy = c + y2 * persp;
-        const depth = (z2 / DOT.orbRadius + 1) / 2;
+        const sx2 = p.sx * cy1 - p.sz * sy1;
+        const szr = p.sx * sy1 + p.sz * cy1;
+        const sy2 = p.sy * cx1 - szr * sx1;
+        const sz2 = p.sy * sx1 + szr * cx1;
+        const sp = 300 / (300 - sz2);
+        const ox = c + sx2 * sp * scale, oy = c + sy2 * sp * scale;
+        const sdepth = (sz2 / DOT.orbRadius + 1) / 2;
 
-        // face seat, with the mouth opening on speech
-        let fx = c + (p.hx - c) * breathe, fy = c + (p.hy - c) * breathe;
-        let tint = 0;
+        // face seat: relief coordinates, turned, projected, mouth opening on speech
+        let fxr = p.hx - c, fyr = p.hy - c, fzr = p.hz;
         if (speaking) {
-          if (p.mouth) { fy += p.mouth === 2 ? lvl * 16 : -lvl * 3; tint = lvl; }
-          else { fx += (Math.random() - 0.5) * lvl * 1.2; fy += (Math.random() - 0.5) * lvl * 1.2; }
+          if (p.mouth) fyr += p.mouth === 2 ? lvl * 16 : -lvl * 3;
+          else { fxr += (Math.random() - 0.5) * lvl; fyr += (Math.random() - 0.5) * lvl; }
         }
+        const fx2 = fxr * cyw + fzr * syw;
+        const fzy = -fxr * syw + fzr * cyw;
+        const fy2 = fyr * cpt - fzy * spt;
+        const fz2 = fyr * spt + fzy * cpt;
+        const fp = 320 / (320 - fz2);
+        const fx = c + fx2 * fp * scale, fy = c + fy2 * fp * scale;
+        const fdepth = clamp((fz2 + 20) / 70);
 
         const m = ease(clamp(morph * 1.35 - p.stagger * 0.35));
-        const X = fx + (ox - fx) * m, Y = fy + (oy - fy) * m;
-        const r = p.r * (1 - m) + (0.55 + depth * 1.1) * m;
-        const a = (0.55 + p.d * 0.45) * (1 - m) + (0.2 + depth * 0.8) * m;
+        const X = ox + (fx - ox) * m, Y = oy + (fy - oy) * m;
+        const r = (0.55 + sdepth * 1.15) * (1 - m) + (p.r * (0.75 + fdepth * 0.5)) * m;
+        const a = (0.22 + sdepth * 0.78) * (1 - m) + (0.5 + p.d * 0.5) * m;
+
+        let col = shade((X - c) / c, (Y - c) / c);
+        if (!lightInk) col = mix(col, [0, 0, 0], 0.3); // ink on a light page: darker so the pale tones hold
+        if (green > 0) col = mix(col, PAL.green, green);
 
         ctx.globalAlpha = a;
-        ctx.fillStyle = tint > 0
-          ? `rgb(${cr + (255 - cr) * tint | 0},${cg + (122 - cg) * tint | 0},${cb + (26 - cb) * tint | 0})`
-          : `rgb(${cr},${cg},${cb})`;
+        ctx.fillStyle = `rgb(${col[0] | 0},${col[1] | 0},${col[2] | 0})`;
         ctx.beginPath();
         ctx.arc(X, Y, r, 0, 6.2832);
         ctx.fill();

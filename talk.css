@@ -282,3 +282,20 @@
 .talk-panel[data-avatar="dots"] .talk-avatar img,
 .talk-panel[data-avatar="dots"] .talk-mouth { visibility: hidden; }
 .talk-panel[data-avatar="dots"] .talk-avatar { background: transparent; }
+
+/* Dots mode: the dots carry the state, so the ring steps back.
+   Thinking has no ring (the face pulses), speaking goes green. */
+.talk-panel[data-avatar="dots"][data-state="listening"] .talk-avatar-wrap::after {
+  border-color: var(--border-subtle);
+  animation: none;
+  box-shadow: none;
+}
+.talk-panel[data-avatar="dots"][data-state="thinking"] .talk-avatar-wrap::after,
+.talk-panel[data-avatar="dots"][data-state="connecting"] .talk-avatar-wrap::after {
+  border-color: transparent;
+  animation: none;
+}
+.talk-panel[data-avatar="dots"][data-state="speaking"] .talk-avatar-wrap::after {
+  border-color: #2ecc71;
+  box-shadow: 0 0 0 6px rgba(46, 204, 113, 0.16);
+}
