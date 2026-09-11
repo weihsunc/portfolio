@@ -191,49 +191,33 @@
   function stopLoop() { cancelAnimationFrame(rafId); rafId = 0; level = 0; setMouth(0); }
 
   /* ─── Dot avatar: a 3D point cloud ────────────────────────
-     At rest the dots form a slowly turning sphere shaded like the site
-     favicon (coral top, yellow middle, cream left, teal bottom). While the
-     agent thinks they morph into Wei's face, in relief, pulsing. While it
-     speaks the face stays, every dot turns green, and the mouth region
-     opens with the audio level. */
+     Monochrome dots in the page's foreground colour. At rest a sparse
+     sphere turns slowly. While the agent thinks the sphere pulses. While
+     it speaks the dots morph into Wei's head: the face is wrapped onto an
+     ellipsoid with a sparse back, so it reads as a solid head as it
+     rotates, and the mouth region opens with the audio level. */
   const DOT = {
-    size: 220,      // css px of .talk-avatar; the canvas scales with CSS below that
-    grid: 84,       // sampling cells per side
-    target: 1700,   // dots wanted
-    orbRadius: 74,
-    faceRelief: 34, // px of depth between the brightest and darkest face dots
-    mouth: { x: 102, y: 144, rx: 24, ry: 14 } // css px, matches --mouth-* in talk.css
+    size: 220,       // css px of .talk-avatar; the canvas scales with CSS below that
+    grid: 88,        // sampling cells per side
+    faceDots: 1500,  // dots on the face
+    backDots: 520,   // sparse dots on the back of the head
+    sphereDots: 620, // dots visible on the resting sphere (the rest fade in as the head forms)
+    sphereRadius: 72,
+    head: { rx: 82, ry: 98, rz: 84 }, // ellipsoid radii
+    // where the face sits in the crop (as a fraction of the avatar box)
+    face: { cx: 0.5, cy: 0.5, rx: 0.32, ry: 0.42 },
+    mouth: { x: 102, y: 144, rx: 22, ry: 13 } // css px, matches --mouth-* in talk.css
   };
-
-  // Favicon palette, top to bottom, plus the cream highlight on the left
-  const PAL = {
-    coral:  [223, 58, 88],
-    orange: [244, 136, 74],
-    yellow: [252, 195, 92],
-    teal:   [74, 141, 168],
-    cream:  [243, 222, 176],
-    green:  [46, 204, 113]
-  };
-  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
-  /* Colour for a point at (u, v) in [-1, 1] within the avatar circle. Computed
-     from the projected position each frame, so the gradient stays put like a
-     light source while the sphere turns under it. */
-  function shade(u, v) {
-    const t = clamp((v + 1) / 2);
-    let c = t < 0.35 ? mix(PAL.coral, PAL.orange, t / 0.35)
-          : t < 0.6 ? mix(PAL.orange, PAL.yellow, (t - 0.35) / 0.25)
-          : mix(PAL.yellow, PAL.teal, (t - 0.6) / 0.4);
-    const creamy = clamp(-u) * 0.75 * (1 - Math.abs(v) * 0.5);
-    return mix(c, PAL.cream, creamy);
-  }
 
   function createDotAvatar(canvas, img) {
     const ctx = canvas.getContext('2d');
     let pts = [];
     let ready = false;
-    let morph = 0;   // 0 face, 1 orb
+    let morph = 0;   // 0 sphere, 1 head
     let rgb = [255, 255, 255];
     let rgbAt = -1e9;
+    let sampledLight = null; // theme the current point set was built for
+    let imageData = null;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = DOT.size * dpr;
     canvas.height = DOT.size * dpr;
@@ -243,9 +227,6 @@
     /* Like a halftone print: dots are the ink. On a dark theme the ink is
        light, so dots go where the photo is bright (lit skin); on a light
        theme they go where it is dark. Density and size both follow tone. */
-    let sampledLight = null; // theme the current point set was built for
-    let imageData = null;
-
     function sample(lightInk) {
       const g = DOT.grid;
       if (!imageData) {
@@ -256,54 +237,70 @@
         imageData = o.getImageData(0, 0, g, g).data;
       }
       const data = imageData;
+      const F = DOT.face;
       const cells = [];
       let sum = 0;
       for (let y = 0; y < g; y++) {
         for (let x = 0; x < g; x++) {
-          const cx = (x + 0.5) / g - 0.5, cy = (y + 0.5) / g - 0.5;
-          const rr = Math.sqrt(cx * cx + cy * cy);
-          if (rr > 0.5) continue;
+          const u = ((x + 0.5) / g - F.cx) / F.rx;  // -1..1 across the face
+          const v = ((y + 0.5) / g - F.cy) / F.ry;  // -1..1 down the face
+          const e = u * u + v * v;
+          if (e > 1) continue;                      // only the head, nothing outside
           const i = (y * g + x) * 4;
-          const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
-          const tone = lightInk ? lum : 1 - lum; // how much ink this cell wants
-          // keep the picture on the head: fade the rim and anything outside the head ellipse (sky, bridge)
-          const rim = clamp((rr - 0.34) / 0.16);
-          const ex = (cx - 0.0) / 0.30, ey = (cy + 0.04) / 0.40;
-          const outside = clamp((Math.sqrt(ex * ex + ey * ey) - 1) / 0.25);
-          const w = Math.pow(clamp((tone - 0.18) / 0.82), 1.35) * (1 - rim * 0.92) * (1 - outside * 0.8);
+          const R = data[i], G = data[i + 1], B = data[i + 2];
+          const lum = (0.2126 * R + 0.7152 * G + 0.0722 * B) / 255;
+          const tone = lightInk ? lum : 1 - lum;
+          // sky and bridge are cool or neutral; skin is warm. Cool pixels are not the head.
+          const warm = clamp((R - B - 6) / 24);
+          const edge = 1 - clamp((e - 0.55) / 0.45); // fade out toward the ellipse boundary
+          const w = Math.pow(clamp((tone - 0.15) / 0.85), 1.3) * edge * warm;
           if (w <= 0.01) continue;
-          cells.push({ x, y, tone, w });
+          cells.push({ u, v, tone, w });
           sum += w;
         }
       }
-      const k = DOT.target / sum;
-      const cell = DOT.size / g;
+      const k = DOT.faceDots / sum;
+      const H = DOT.head, M = DOT.mouth;
       const out = [];
+      const jitter = 0.9 / (g * F.rx);
       for (const c of cells) {
         if (Math.random() > c.w * k) continue;
-        const hx = (c.x + 0.5 + (Math.random() - 0.5) * 0.9) * cell;
-        const hy = (c.y + 0.5 + (Math.random() - 0.5) * 0.9) * cell;
-        const m = DOT.mouth;
-        const mx = (hx - m.x) / m.rx, my = (hy - m.y) / m.ry;
+        const u = c.u + (Math.random() - 0.5) * jitter;
+        const v = c.v + (Math.random() - 0.5) * jitter * (F.rx / F.ry);
+        // wrap the flat face onto the front of the ellipsoid
+        const lon = u * 1.2, lat = v * 1.25;             // radians; the face spans the front
+        const bump = 1 + (c.tone - 0.5) * 0.1;           // slight relief from tone
+        const hx = H.rx * Math.cos(lat) * Math.sin(lon) * bump;
+        const hy = H.ry * Math.sin(lat) * bump;
+        const hz = H.rz * Math.cos(lat) * Math.cos(lon) * bump;
+        // flat-image position, for the mouth test
+        const px = (F.cx + u * F.rx) * DOT.size, py = (F.cy + v * F.ry) * DOT.size;
+        const mx = (px - M.x) / M.rx, my = (py - M.y) / M.ry;
         const inMouth = mx * mx + my * my <= 1;
-        // relief: brighter (closer to the camera) cells sit forward, on a shallow dome
-        const nx = hx / DOT.size - 0.5, ny = hy / DOT.size - 0.5;
-        const dome = Math.sqrt(Math.max(0, 0.3 - nx * nx - ny * ny)) * 40;
-        const hz = (c.tone - 0.5) * DOT.faceRelief + dome;
-        out.push({ hx, hy, hz, d: c.tone, r: 0.6 + c.tone * 1.7, stagger: Math.random(),
-                   mouth: inMouth ? (hy > m.y ? 2 : 1) : 0, sx: 0, sy: 0, sz: 0 });
+        out.push({ hx, hy, hz, d: c.tone, r: 0.45 + c.tone * 0.95, stagger: Math.random(),
+                   mouth: inMouth ? (py > M.y ? 2 : 1) : 0, back: false });
       }
-      // Sphere seats on a fibonacci lattice, shuffled so face neighbours scatter
-      const n = out.length, R = DOT.orbRadius, phi = Math.PI * (3 - Math.sqrt(5));
-      const seats = out.map((_, i) => i).sort(() => Math.random() - 0.5);
-      out.forEach((p, idx) => {
-        const i = seats[idx];
+      // sparse back of the head: random points on the rear of the ellipsoid
+      for (let i = 0; i < DOT.backDots; i++) {
+        const lon = Math.PI / 2 + Math.random() * Math.PI;  // rear half
+        const lat = Math.asin(Math.random() * 2 - 1) * 0.9;
+        out.push({ hx: H.rx * Math.cos(lat) * Math.sin(lon), hy: H.ry * Math.sin(lat),
+                   hz: H.rz * Math.cos(lat) * Math.cos(lon), d: 0.55, r: 0.65,
+                   stagger: Math.random(), mouth: 0, back: true });
+      }
+      // sphere seats on a fibonacci lattice, shuffled so face neighbours scatter;
+      // only the first sphereDots are visible at rest, the rest fade in with the head
+      const n = out.length, R = DOT.sphereRadius, phi = Math.PI * (3 - Math.sqrt(5));
+      const order = out.map((_, i) => i).sort(() => Math.random() - 0.5);
+      order.forEach((idx, i) => {
+        const p = out[idx];
         const yy = 1 - (i / Math.max(1, n - 1)) * 2;
         const rad = Math.sqrt(Math.max(0, 1 - yy * yy));
         const th = phi * i;
         p.sx = Math.cos(th) * rad * R;
         p.sy = yy * R;
         p.sz = Math.sin(th) * rad * R;
+        p.core = (i % Math.round(n / DOT.sphereDots)) === 0;
       });
       pts = out;
       sampledLight = lightInk;
@@ -319,34 +316,28 @@
       if (lightInk !== sampledLight && img.complete && img.naturalWidth) sample(lightInk);
     }
 
-    let green = 0; // 0 palette, 1 all green (speaking)
-
     function render(now, st, lvl) {
       readColor(now);
       if (!ready) return;
       const size = DOT.size, c = size / 2;
-      const wantFace = (st === 'thinking' || st === 'speaking') ? 1 : 0;
-      morph += (wantFace - morph) * 0.05;
-      if (Math.abs(wantFace - morph) < 0.002) morph = wantFace;
       const speaking = st === 'speaking';
-      green += ((speaking ? 1 : 0) - green) * 0.08;
-      if (green < 0.003) green = 0;
+      morph += ((speaking ? 1 : 0) - morph) * 0.05;
+      if (Math.abs((speaking ? 1 : 0) - morph) < 0.002) morph = speaking ? 1 : 0;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
 
       const t = now / 1000;
-      // sphere: steady turn
-      const rotY = t * 0.45, rotX = Math.sin(t * 0.3) * 0.3;
+      // sphere: steady turn, pulsing while thinking
+      const rotY = t * 0.4, rotX = Math.sin(t * 0.3) * 0.3;
       const cy1 = Math.cos(rotY), sy1 = Math.sin(rotY), cx1 = Math.cos(rotX), sx1 = Math.sin(rotX);
-      // face: a gentle look-around
-      const yaw = Math.sin(t * 0.7) * 0.22, pitch = Math.sin(t * 0.45) * 0.08;
+      const pulseAmt = st === 'thinking' ? 0.05 : 0.01;
+      const pulseHz = st === 'thinking' ? 1.1 : 0.2;
+      const sScale = 1 + Math.sin(t * pulseHz * 6.2832) * pulseAmt;
+      // head: turns side to side so the face stays in view, with a small nod
+      const yaw = Math.sin(t * 0.6) * 0.6, pitch = Math.sin(t * 0.45) * 0.07;
       const cyw = Math.cos(yaw), syw = Math.sin(yaw), cpt = Math.cos(pitch), spt = Math.sin(pitch);
-      // thinking pulse, breathing at rest
-      const pulseAmt = st === 'thinking' ? 0.04 : 0.008;
-      const pulseHz = st === 'thinking' ? 1.15 : 0.25;
-      const scale = 1 + Math.sin(t * pulseHz * 6.2832) * pulseAmt;
-      const lightInk = sampledLight;
+      const ink = `${rgb[0] | 0},${rgb[1] | 0},${rgb[2] | 0}`;
 
       for (const p of pts) {
         // sphere seat, rotated and projected
@@ -355,34 +346,31 @@
         const sy2 = p.sy * cx1 - szr * sx1;
         const sz2 = p.sy * sx1 + szr * cx1;
         const sp = 300 / (300 - sz2);
-        const ox = c + sx2 * sp * scale, oy = c + sy2 * sp * scale;
-        const sdepth = (sz2 / DOT.orbRadius + 1) / 2;
+        const ox = c + sx2 * sp * sScale, oy = c + sy2 * sp * sScale;
+        const sdepth = (sz2 / DOT.sphereRadius + 1) / 2;
 
-        // face seat: relief coordinates, turned, projected, mouth opening on speech
-        let fxr = p.hx - c, fyr = p.hy - c, fzr = p.hz;
-        if (speaking) {
-          if (p.mouth) fyr += p.mouth === 2 ? lvl * 16 : -lvl * 3;
-          else { fxr += (Math.random() - 0.5) * lvl; fyr += (Math.random() - 0.5) * lvl; }
-        }
-        const fx2 = fxr * cyw + fzr * syw;
-        const fzy = -fxr * syw + fzr * cyw;
-        const fy2 = fyr * cpt - fzy * spt;
-        const fz2 = fyr * spt + fzy * cpt;
-        const fp = 320 / (320 - fz2);
-        const fx = c + fx2 * fp * scale, fy = c + fy2 * fp * scale;
-        const fdepth = clamp((fz2 + 20) / 70);
+        // head seat: mouth opens in head space, then the head turns and projects
+        let hx = p.hx, hy = p.hy, hz = p.hz;
+        if (speaking && p.mouth) hy += p.mouth === 2 ? lvl * 14 : -lvl * 3;
+        const hx2 = hx * cyw + hz * syw;
+        const hzy = -hx * syw + hz * cyw;
+        const hy2 = hy * cpt - hzy * spt;
+        const hz2 = hy * spt + hzy * cpt;
+        const hp = 320 / (320 - hz2);
+        const fx = c + hx2 * hp, fy = c + hy2 * hp;
+        const hdepth = clamp((hz2 / DOT.head.rz + 1) / 2);
 
         const m = ease(clamp(morph * 1.35 - p.stagger * 0.35));
         const X = ox + (fx - ox) * m, Y = oy + (fy - oy) * m;
-        const r = (0.55 + sdepth * 1.15) * (1 - m) + (p.r * (0.75 + fdepth * 0.5)) * m;
-        const a = (0.22 + sdepth * 0.78) * (1 - m) + (0.5 + p.d * 0.5) * m;
-
-        let col = shade((X - c) / c, (Y - c) / c);
-        if (!lightInk) col = mix(col, [0, 0, 0], 0.3); // ink on a light page: darker so the pale tones hold
-        if (green > 0) col = mix(col, PAL.green, green);
+        const r = (0.35 + sdepth * 0.95) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
+        // sphere: only core dots show; head: everything, shaded by depth
+        const aSphere = p.core ? 0.18 + sdepth * 0.82 : 0;
+        const aHead = (p.back ? 0.5 : 0.5 + p.d * 0.5) * (0.12 + hdepth * 0.88);
+        const a = aSphere * (1 - m) + aHead * m;
+        if (a < 0.02) continue;
 
         ctx.globalAlpha = a;
-        ctx.fillStyle = `rgb(${col[0] | 0},${col[1] | 0},${col[2] | 0})`;
+        ctx.fillStyle = `rgb(${ink})`;
         ctx.beginPath();
         ctx.arc(X, Y, r, 0, 6.2832);
         ctx.fill();
