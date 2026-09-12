@@ -447,14 +447,18 @@
       const n = out.length, R = DOT.sphereRadius, phi = Math.PI * (3 - Math.sqrt(5));
       const order = out.map((_, i) => i).sort(() => Math.random() - 0.5);
       const every = Math.max(1, Math.round(n / DOT.sphereDots));
+      // scatter each seat by most of a dot spacing so the lattice's spiral pattern dissolves
+      const jitter = 0.8 * Math.sqrt(4 * Math.PI * R * R / DOT.sphereDots);
       order.forEach((idx, i) => {
         const p = out[idx];
         const yy = 1 - (i / Math.max(1, n - 1)) * 2;
         const rad = Math.sqrt(Math.max(0, 1 - yy * yy));
         const th = phi * i;
-        p.sx = Math.cos(th) * rad * R;
-        p.sy = yy * R;
-        p.sz = Math.sin(th) * rad * R;
+        let x = Math.cos(th) * rad * R + (Math.random() - 0.5) * jitter;
+        let y = yy * R + (Math.random() - 0.5) * jitter;
+        let z = Math.sin(th) * rad * R + (Math.random() - 0.5) * jitter;
+        const len = Math.hypot(x, y, z) || 1;
+        p.sx = x / len * R; p.sy = y / len * R; p.sz = z / len * R;
         p.core = (i % every) === 0;
       });
       pts = out;
