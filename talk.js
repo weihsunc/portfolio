@@ -490,8 +490,10 @@
       ctx.clearRect(0, 0, size, size);
 
       const t = now / 1000;
-      // sphere: steady turn; while thinking it tumbles on a second axis and breathes
-      const rotY = t * 0.26 + cube * t * 0.22, rotX = Math.sin(t * 0.2) * 0.25 + cube * t * 0.3;
+      // sphere: steady turn. As the cube forms the axis tilts and the turn slows a touch,
+      // so the cube spins on a leaning axis with its corners rising and falling, no tumble.
+      const rotY = t * (0.26 - cube * 0.08);
+      const rotX = Math.sin(t * 0.2) * 0.25 * (1 - cube) + cube * 0.62;
       const breath = 1 + cube * Math.sin(t * 1.4) * 0.05;
       // superellipsoid: pull each unit direction toward the cube surface
       const sq = cube * DOT.cubeness;
