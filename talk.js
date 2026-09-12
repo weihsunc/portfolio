@@ -259,7 +259,8 @@
       user.dragging = true; user.vx = 0; user.vy = 0;
       [user.lastX, user.lastY] = toLocal(e); user.lastT = performance.now();
       try { canvas.setPointerCapture(e.pointerId); } catch (_) { /* synthetic event */ }
-      e.preventDefault();
+      // no preventDefault here: cancelling pointerdown would suppress the mouse events
+      // the site's custom cursor follows, freezing it for the whole drag
     });
     canvas.addEventListener('pointermove', e => {
       const [x, y] = toLocal(e);
