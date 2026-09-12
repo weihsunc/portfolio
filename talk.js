@@ -229,7 +229,8 @@
     let ready = false;
     let morph = 0;   // 0 sphere, 1 head (unused by default, kept for the Photo mode and future)
     let blob = 0;    // 0 sphere, 1 organic blob (speaking)
-    let cube = 0;    // 0 sphere, 1 soft cube (thinking)
+    let cube = 0;    // 0 sphere, 1 soft cube (thinking), eased
+    let cubeT = 0;   // linear progress behind it
     let voice = 0;   // slow envelope of the audio level, for the blob
     let rgb = [255, 255, 255];
     let rgbAt = -1e9;
@@ -479,8 +480,9 @@
       // soft cube while thinking, organic blob while speaking; the head stays parked
       morph += (0 - morph) * 0.05;
       if (morph < 0.002) morph = 0;
-      cube += ((thinking ? 1 : 0) - cube) * (thinking ? 0.06 : 0.04);
-      if (Math.abs((thinking ? 1 : 0) - cube) < 0.002) cube = thinking ? 1 : 0;
+      // linear ramp (about 1.5 s in, 1.2 s out), eased below so it starts and ends softly
+      cubeT = clamp(cubeT + (thinking ? 1 / 90 : -1 / 70));
+      cube = ease(cubeT);
       blob += ((speaking ? 1 : 0) - blob) * (speaking ? 0.08 : 0.04);
       if (Math.abs((speaking ? 1 : 0) - blob) < 0.002) blob = speaking ? 1 : 0;
 
