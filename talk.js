@@ -228,7 +228,8 @@
     let pts = [];
     let ready = false;
     let morph = 0;   // 0 sphere, 1 head (unused by default, kept for the Photo mode and future)
-    let blob = 0;    // 0 sphere, 1 organic blob (speaking)
+    let blob = 0;    // 0 sphere, 1 organic blob (speaking), eased
+    let blobT = 0;   // linear progress behind it
     let cube = 0;    // 0 sphere, 1 soft cube (thinking), eased
     let cubeT = 0;   // linear progress behind it
     let voice = 0;   // slow envelope of the audio level, for the blob
@@ -488,8 +489,9 @@
       // linear ramp (about 1.5 s in, 1.2 s out), eased below so it starts and ends softly
       cubeT = clamp(cubeT + (thinking ? 1 / 90 : -1 / 70));
       cube = ease(cubeT);
-      blob += ((speaking ? 1 : 0) - blob) * (speaking ? 0.08 : 0.04);
-      if (Math.abs((speaking ? 1 : 0) - blob) < 0.002) blob = speaking ? 1 : 0;
+      // about 1 s in, 1.2 s out, eased so the ball grows lobes rather than snapping into them
+      blobT = clamp(blobT + (speaking ? 1 / 60 : -1 / 70));
+      blob = ease(blobT);
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
@@ -557,9 +559,8 @@
         const X = ox + (fx - ox) * m, Y = oy + (fy - oy) * m;
         const r = (0.35 + sdepth * 0.95) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
         // sphere: core dots, plus the rest fading in as the blob forms; head: everything
-        const aSphere = p.core
-          ? (0.18 + sdepth * 0.82) * (1 - cube * 0.25)
-          : blob * (0.1 + sdepth * 0.5);
+        const aSphere = p.core ? (0.18 + sdepth * 0.82) * (1 - cube * 0.25) : 0;
+        if (aSphere === 0 && m === 0) continue;
         const aHead = (p.back ? 0.5 : 0.5 + p.d * 0.5) * (0.12 + hdepth * 0.88);
         const a = aSphere * (1 - m) + aHead * m;
         if (a < 0.02) continue;
