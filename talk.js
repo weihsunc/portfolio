@@ -227,6 +227,7 @@
     let ready = false;
     let morph = 0;   // 0 sphere, 1 head (thinking)
     let blob = 0;    // 0 sphere, 1 organic blob (speaking)
+    let voice = 0;   // slow envelope of the audio level, for the blob
     let rgb = [255, 255, 255];
     let rgbAt = -1e9;
     let sampledLight = null; // theme the current point set was built for
@@ -475,7 +476,7 @@
       // head while thinking, organic blob while speaking
       morph += ((thinking ? 1 : 0) - morph) * 0.05;
       if (Math.abs((thinking ? 1 : 0) - morph) < 0.002) morph = thinking ? 1 : 0;
-      blob += ((speaking ? 1 : 0) - blob) * 0.04;
+      blob += ((speaking ? 1 : 0) - blob) * 0.025;
       if (Math.abs((speaking ? 1 : 0) - blob) < 0.002) blob = speaking ? 1 : 0;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -483,14 +484,16 @@
 
       const t = now / 1000;
       // sphere: steady turn, pulsing while thinking
-      const rotY = t * 0.4, rotX = Math.sin(t * 0.3) * 0.3;
+      const rotY = t * 0.18, rotX = Math.sin(t * 0.15) * 0.22;
       const cy1 = Math.cos(rotY), sy1 = Math.sin(rotY), cx1 = Math.cos(rotX), sx1 = Math.sin(rotX);
-      const sScale = (1 + Math.sin(t * 0.2 * 6.2832) * 0.01) * (1 + blob * lvl * 0.06);
+      // the blob follows a slow envelope of the voice: quick to rise a little, slow to settle
+      voice += (lvl - voice) * (lvl > voice ? 0.08 : 0.03);
+      const sScale = (1 + Math.sin(t * 0.2 * 6.2832) * 0.01) * (1 + blob * voice * 0.05);
       // blob: deformation strength grows with the voice; a quiet floor keeps it alive
-      const amp = blob * DOT.blobAmp * (0.4 + 0.6 * lvl);
+      const amp = blob * DOT.blobAmp * (0.45 + 0.55 * voice);
       const invR = 1 / DOT.sphereRadius;
       // head: turns side to side so the face stays in view, with a small nod
-      const yaw = Math.sin(t * 0.6) * 0.6, pitch = Math.sin(t * 0.45) * 0.07;
+      const yaw = Math.sin(t * 0.45) * 0.55, pitch = Math.sin(t * 0.35) * 0.06;
       const cyw = Math.cos(yaw), syw = Math.sin(yaw), cpt = Math.cos(pitch), spt = Math.sin(pitch);
       const ink = `${rgb[0] | 0},${rgb[1] | 0},${rgb[2] | 0}`;
       const maxDepth = head ? head.maxDepth : 60;
@@ -500,9 +503,9 @@
         let bx = p.sx, by = p.sy, bz = p.sz;
         if (amp > 0) {
           const ux = bx * invR, uy = by * invR, uz = bz * invR;
-          const n = (Math.sin(ux * 1.6 + t * 0.9) * Math.cos(uy * 1.4 - t * 0.7)
-                   + 0.7 * Math.sin(uz * 2.2 + uy * 1.1 - t * 1.2)
-                   + 0.35 * Math.sin((ux + uy + uz) * 3.1 + t * 1.7)) * 0.49;
+          const n = (Math.sin(ux * 1.6 + t * 0.45) * Math.cos(uy * 1.4 - t * 0.35)
+                   + 0.7 * Math.sin(uz * 2.2 + uy * 1.1 - t * 0.6)
+                   + 0.35 * Math.sin((ux + uy + uz) * 3.1 + t * 0.85)) * 0.49;
           const f = 1 + amp * n;
           bx *= f; by *= f; bz *= f;
         }
