@@ -210,7 +210,7 @@
     sphereDots: 620, // dots visible on the resting sphere (the rest fade in as the head forms)
     sphereRadius: 72,
     blobAmp: 0.55,   // how far the sphere deforms while speaking, fraction of its radius
-    cubeness: 0.82,  // how square the thinking shape gets, 0 sphere .. 1 sharp cube
+    cubeness: 0.7,   // how square the thinking shape gets, 0 sphere .. 1 sharp cube
     headHeight: 196, // css px the head occupies when facing forward
     headDepth: 0.8,  // thickness relative to half the head width
     collar: 0.72,    // fraction of the crop height below which dark pixels are shirt, not hair
@@ -550,7 +550,9 @@
         const X = ox + (fx - ox) * m, Y = oy + (fy - oy) * m;
         const r = (0.35 + sdepth * 0.95) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
         // sphere: core dots, plus the rest fading in as the blob forms; head: everything
-        const aSphere = (p.core ? 0.18 + sdepth * 0.82 : Math.max(blob, cube * 0.6) * (0.1 + sdepth * 0.5));
+        const aSphere = p.core
+          ? (0.18 + sdepth * 0.82) * (1 - cube * 0.25)
+          : blob * (0.1 + sdepth * 0.5);
         const aHead = (p.back ? 0.5 : 0.5 + p.d * 0.5) * (0.12 + hdepth * 0.88);
         const a = aSphere * (1 - m) + aHead * m;
         if (a < 0.02) continue;
