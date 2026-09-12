@@ -3,7 +3,8 @@
    Live mode: ElevenLabs Agents via /api/talk-session (voice in, voice out).
    Demo mode: no agent configured yet, so questions typed below go to
    /api/chat and the reply is read aloud with the browser voice.
-   Either way the orange mouth on the photo moves with the speech.
+   A monochrome 3D dot avatar reacts to the call: sphere at rest, soft
+   cube while thinking, organic blob pulsing with the voice while speaking.
    Exposes window.TalkToWei = { open, close }.
    ═══════════════════════════════════════════════════════ */
 
@@ -21,28 +22,6 @@
   const CLOSE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>`;
   const MIC_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></svg>`;
 
-  /* Orange lips over the photo. The lower lip group slides down by the
-     openness value; the dark cavity path is rebuilt to fill the gap. */
-  const MOUTH_SVG = `
-    <svg class="talk-mouth" viewBox="0 0 100 70" aria-hidden="true">
-      <defs>
-        <linearGradient id="talkLipGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#FF9A3C"/><stop offset="1" stop-color="#F25C05"/>
-        </linearGradient>
-        <clipPath id="talkInnerClip"><path class="talk-inner-clip" d="M5 21 L95 21 L95 21 L5 21 Z"/></clipPath>
-      </defs>
-      <path class="talk-inner" d="M5 21 L95 21 L95 21 L5 21 Z" fill="#3B1206"/>
-      <g clip-path="url(#talkInnerClip)">
-        <rect class="talk-teeth" x="15" y="21.5" width="70" height="9" rx="3" fill="#FFF7E8"/>
-        <ellipse class="talk-tongue" cx="50" cy="34" rx="22" ry="11" fill="#E2453B"/>
-      </g>
-      <path class="talk-lip-upper" d="M5 21 C 18 9, 40 5, 50 13 C 60 5, 82 9, 95 21 C 82 26, 62 28, 50 28 C 38 28, 18 26, 5 21 Z" fill="url(#talkLipGrad)" stroke="#C94A08" stroke-width="1.2" stroke-linejoin="round"/>
-      <g class="talk-lip-lower">
-        <path d="M5 21 C 18 27, 38 29, 50 29 C 62 29, 82 27, 95 21 C 84 34, 66 42, 50 42 C 34 42, 16 34, 5 21 Z" fill="url(#talkLipGrad)" stroke="#C94A08" stroke-width="1.2" stroke-linejoin="round"/>
-        <path d="M24 33 C 34 37, 66 37, 76 33" fill="none" stroke="#FFC08A" stroke-width="1.6" stroke-linecap="round" opacity="0.7"/>
-        <path d="M5 21 C 18 27, 38 29, 50 29 C 62 29, 82 27, 95 21" fill="none" stroke="#7A2A05" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
-      </g>
-    </svg>`;
 
   const PAGE_KEY = (location.pathname.split('/').pop() || 'index').replace(/\.html$/, '') || 'index';
 
@@ -58,21 +37,9 @@
   let muted = false;
   let history = [];        // demo-mode chat turns for /api/chat
   let lastFocus = null;
-  let avatarMode = 'photo'; // 'photo' (orange mouth) | 'dots' (point cloud)
   let dots = null;          // dot avatar renderer
 
-  const AVATAR_KEY = 'talk.avatar';
   const clamp = v => Math.max(0, Math.min(1, v));
-
-  function setAvatarMode(next) {
-    avatarMode = next === 'dots' ? 'dots' : 'photo';
-    el.panel.dataset.avatar = avatarMode;
-    el.toggle.querySelectorAll('button').forEach(b => {
-      b.classList.toggle('is-on', b.dataset.avatar === avatarMode);
-      b.setAttribute('aria-pressed', String(b.dataset.avatar === avatarMode));
-    });
-    try { localStorage.setItem(AVATAR_KEY, avatarMode); } catch (_) { /* storage blocked */ }
-  }
 
   /* ─── DOM ────────────────────────────────────────────── */
   function build() {
@@ -82,17 +49,12 @@
       <div class="talk-panel" role="dialog" aria-modal="true" aria-label="Talk to Wei" data-state="idle">
         <div class="talk-top">
           <h3 class="talk-title">Talk to Wei</h3>
-          <div class="talk-avatar-toggle" role="group" aria-label="Avatar style">
-            <button type="button" data-avatar="photo">Photo</button>
-            <button type="button" data-avatar="dots">Dots</button>
-          </div>
           <button class="talk-close" aria-label="Close">${CLOSE_SVG}</button>
         </div>
         <div class="talk-avatar-wrap">
           <div class="talk-avatar">
-            <img src="images/avatar-face.jpg" alt="Wei" draggable="false" />
-            ${MOUTH_SVG}
-            <canvas class="talk-dots" aria-hidden="true"></canvas>
+            <img src="images/avatar-face.jpg" alt="" hidden draggable="false" />
+            <canvas class="talk-dots" aria-label="Wei, as a cloud of dots"></canvas>
           </div>
         </div>
         <p class="talk-status">Start a conversation. Your mic is only used while it is on.</p>
@@ -121,24 +83,11 @@
       endBtn: q('.talk-end'),
       composer: q('.talk-composer'),
       input: q('.talk-composer input'),
-      inner: q('.talk-inner'),
-      innerClip: q('.talk-inner-clip'),
-      tongue: q('.talk-tongue'),
-      lipUpper: q('.talk-lip-upper'),
-      lipLower: q('.talk-lip-lower'),
       img: q('.talk-avatar img'),
-      canvas: q('.talk-dots'),
-      toggle: q('.talk-avatar-toggle')
+      canvas: q('.talk-dots')
     };
 
     dots = createDotAvatar(el.canvas, el.img);
-    el.toggle.addEventListener('click', e => {
-      const btn = e.target.closest('button[data-avatar]');
-      if (btn) setAvatarMode(btn.dataset.avatar);
-    });
-    let saved = 'dots';
-    try { saved = localStorage.getItem(AVATAR_KEY) || 'dots'; } catch (_) { /* storage blocked */ }
-    setAvatarMode(saved);
 
     q('.talk-close').addEventListener('click', close);
     let downOnBackdrop = false;
@@ -159,18 +108,6 @@
     });
   }
 
-  /* ─── Mouth animation ────────────────────────────────── */
-  function setMouth(o) {
-    const dy = o * 26;
-    const y1 = (21 + dy).toFixed(2), y2 = (27 + dy).toFixed(2), y3 = (29 + dy).toFixed(2);
-    const d = `M5 21 C 18 26, 38 28, 50 28 C 62 28, 82 26, 95 21 L 95 ${y1} C 82 ${y2}, 62 ${y3}, 50 ${y3} C 38 ${y3}, 18 ${y2}, 5 ${y1} Z`;
-    el.inner.setAttribute('d', d);
-    el.innerClip.setAttribute('d', d);
-    el.tongue.setAttribute('cy', (30 + dy).toFixed(2));
-    el.lipLower.setAttribute('transform', `translate(0 ${dy.toFixed(2)})`);
-    el.lipUpper.setAttribute('transform', `translate(0 ${(-o * 3).toFixed(2)})`);
-  }
-
   function tick(now) {
     let target = 0;
     if (state === 'speaking') {
@@ -183,14 +120,13 @@
     }
     level += (target - level) * (target > level ? 0.55 : 0.28);
     if (level < 0.005) level = 0;
-    if (avatarMode === 'dots') dots.render(now, state, level);
-    else setMouth(level);
+    dots.render(now, state, level);
     rafId = requestAnimationFrame(tick);
   }
 
   // The loop runs while the panel is open: the dot avatar animates even when idle.
   function startLoop() { if (!rafId) rafId = requestAnimationFrame(tick); }
-  function stopLoop() { cancelAnimationFrame(rafId); rafId = 0; level = 0; setMouth(0); }
+  function stopLoop() { cancelAnimationFrame(rafId); rafId = 0; level = 0; }
 
   /* ─── Dot avatar: a 3D point cloud ────────────────────────
      Monochrome dots in the page's foreground colour. At rest a sparse
@@ -200,7 +136,7 @@
      normal by a drifting noise field whose strength follows the voice, and
      more dots fade in to give it body. Both are the sphere at zero
      amplitude, so every change is continuous. Wei's head (built from the
-     photo) stays in the code for the Photo toggle and future use. The head shape comes from
+     photo) stays in the code, parked, for future use. The head shape comes from
      the photo itself: the head is masked out (skin and hair, no sky,
      stopping at the collar) and the outline is inflated into a volume, so
      hair, jaw and neck keep their real proportions as it turns. */
@@ -229,7 +165,7 @@
     const ctx = canvas.getContext('2d');
     let pts = [];
     let ready = false;
-    let morph = 0;   // 0 sphere, 1 head (unused by default, kept for the Photo mode and future)
+    let morph = 0;   // 0 sphere, 1 head (parked, always 0 for now)
     let blob = 0;    // 0 sphere, 1 organic blob (speaking), eased
     let blobT = 0;   // linear progress behind it
     let cube = 0;    // 0 sphere, 1 soft cube (thinking), eased
@@ -753,7 +689,6 @@
     if ('speechSynthesis' in window) speechSynthesis.cancel();
     clearInterval(syllableTimer);
     level = 0;
-    setMouth(0);
     if (note && state !== 'idle') addLine('note', note);
     mode = null;
     muted = false;

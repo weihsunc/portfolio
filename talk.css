@@ -106,32 +106,10 @@
   height: 220px;
   border-radius: 50%;
   overflow: hidden;
-  background: var(--card);
-  /* Where the mouth sits on the face crop, as a fraction of the avatar box */
-  --mouth-x: 46.5%;
-  --mouth-y: 65.6%;
-  --mouth-w: 17%;
+  background: transparent;
 }
-.talk-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-.talk-mouth {
-  position: absolute;
-  left: var(--mouth-x);
-  top: var(--mouth-y);
-  width: var(--mouth-w);
-  height: auto;
-  /* seam of the lips sits at 30% of the SVG height */
-  transform: translate(-50%, -30%);
-  overflow: visible;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
-  pointer-events: none;
-}
+/* The photo is only sampled by the dot renderer, never shown */
+.talk-avatar img { display: none; }
 
 /* ─── Status + transcript ────────────────────────────── */
 .talk-status {
@@ -244,51 +222,21 @@
   .talk-avatar { width: 180px; height: 180px; }
 }
 
-/* ─── Avatar style toggle (photo vs dots) ────────────── */
-.talk-avatar-toggle {
-  display: inline-flex;
-  padding: 2px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-full);
-  gap: 2px;
-}
-.talk-avatar-toggle button {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border: none;
-  border-radius: var(--radius-full);
-  background: transparent;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-.talk-avatar-toggle button:hover { color: var(--foreground); }
-.talk-avatar-toggle button.is-on {
-  background: var(--foreground);
-  color: var(--background);
-}
-
 .talk-dots {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  display: none;
+  display: block;
   color: var(--foreground); /* dot colour, read by the renderer */
   cursor: grab;
   touch-action: none; /* drag rotates instead of scrolling the page */
   user-select: none;
 }
 .talk-dots:active { cursor: grabbing; }
-.talk-panel[data-avatar="dots"] .talk-dots { display: block; }
-.talk-panel[data-avatar="dots"] .talk-avatar img,
-.talk-panel[data-avatar="dots"] .talk-mouth { visibility: hidden; }
-.talk-panel[data-avatar="dots"] .talk-avatar { background: transparent; }
 
-/* Dots mode: the dots carry the state, so the ring steps back. */
-.talk-panel[data-avatar="dots"] .talk-avatar-wrap::after {
+/* The dots carry the state, so there is no ring. */
+.talk-avatar-wrap::after {
   border-color: transparent !important;
   animation: none !important;
   box-shadow: none !important;
