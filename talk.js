@@ -268,8 +268,9 @@
       if (!user.dragging) return;
       const now = performance.now(), dt = Math.max(1, now - user.lastT);
       const dx = x - user.lastX, dy = y - user.lastY;
-      user.ry += dx * 0.012; user.rx += dy * 0.012;
-      user.vy = dx * 0.012 / dt * 16; user.vx = dy * 0.012 / dt * 16; // per frame at 60 fps
+      // negative: the front surface should follow the pointer, not run against it
+      user.ry -= dx * 0.012; user.rx -= dy * 0.012;
+      user.vy = -dx * 0.012 / dt * 16; user.vx = -dy * 0.012 / dt * 16; // per frame at 60 fps
       user.lastX = x; user.lastY = y; user.lastT = now;
     });
     const release = () => { user.dragging = false; };
