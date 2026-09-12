@@ -447,8 +447,9 @@
       const n = out.length, R = DOT.sphereRadius, phi = Math.PI * (3 - Math.sqrt(5));
       const order = out.map((_, i) => i).sort(() => Math.random() - 0.5);
       const every = Math.max(1, Math.round(n / DOT.sphereDots));
-      // scatter each seat by most of a dot spacing so the lattice's spiral pattern dissolves
-      const jitter = 0.8 * Math.sqrt(4 * Math.PI * R * R / DOT.sphereDots);
+      // nudge each seat by a fraction of a dot spacing: the lattice's spiral arms stay
+      // readable but lose their machine-perfect regularity
+      const jitter = 0.32 * Math.sqrt(4 * Math.PI * R * R / DOT.sphereDots);
       order.forEach((idx, i) => {
         const p = out[idx];
         const yy = 1 - (i / Math.max(1, n - 1)) * 2;
