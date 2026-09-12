@@ -476,7 +476,7 @@
       // head while thinking, organic blob while speaking
       morph += ((thinking ? 1 : 0) - morph) * 0.05;
       if (Math.abs((thinking ? 1 : 0) - morph) < 0.002) morph = thinking ? 1 : 0;
-      blob += ((speaking ? 1 : 0) - blob) * 0.025;
+      blob += ((speaking ? 1 : 0) - blob) * (speaking ? 0.08 : 0.04);
       if (Math.abs((speaking ? 1 : 0) - blob) < 0.002) blob = speaking ? 1 : 0;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -484,13 +484,13 @@
 
       const t = now / 1000;
       // sphere: steady turn, pulsing while thinking
-      const rotY = t * 0.18, rotX = Math.sin(t * 0.15) * 0.22;
+      const rotY = t * 0.26, rotX = Math.sin(t * 0.2) * 0.25;
       const cy1 = Math.cos(rotY), sy1 = Math.sin(rotY), cx1 = Math.cos(rotX), sx1 = Math.sin(rotX);
-      // the blob follows a slow envelope of the voice: quick to rise a little, slow to settle
-      voice += (lvl - voice) * (lvl > voice ? 0.08 : 0.03);
-      const sScale = (1 + Math.sin(t * 0.2 * 6.2832) * 0.01) * (1 + blob * voice * 0.05);
-      // blob: deformation strength grows with the voice; a quiet floor keeps it alive
-      const amp = blob * DOT.blobAmp * (0.45 + 0.55 * voice);
+      // two layers: a fast swell that tracks the voice, and a slower envelope for the shape
+      voice += (lvl - voice) * (lvl > voice ? 0.35 : 0.1);
+      const sScale = (1 + Math.sin(t * 0.2 * 6.2832) * 0.01) * (1 + blob * lvl * 0.12);
+      // blob: base shape at a quiet floor, lobes grow with the voice
+      const amp = blob * DOT.blobAmp * (0.35 + 0.65 * voice);
       const invR = 1 / DOT.sphereRadius;
       // head: turns side to side so the face stays in view, with a small nod
       const yaw = Math.sin(t * 0.45) * 0.55, pitch = Math.sin(t * 0.35) * 0.06;
@@ -503,9 +503,9 @@
         let bx = p.sx, by = p.sy, bz = p.sz;
         if (amp > 0) {
           const ux = bx * invR, uy = by * invR, uz = bz * invR;
-          const n = (Math.sin(ux * 1.6 + t * 0.45) * Math.cos(uy * 1.4 - t * 0.35)
-                   + 0.7 * Math.sin(uz * 2.2 + uy * 1.1 - t * 0.6)
-                   + 0.35 * Math.sin((ux + uy + uz) * 3.1 + t * 0.85)) * 0.49;
+          const n = (Math.sin(ux * 1.6 + t * 0.7) * Math.cos(uy * 1.4 - t * 0.55)
+                   + 0.7 * Math.sin(uz * 2.2 + uy * 1.1 - t * 0.9)
+                   + 0.35 * Math.sin((ux + uy + uz) * 3.1 + t * 1.3)) * 0.49;
           const f = 1 + amp * n;
           bx *= f; by *= f; bz *= f;
         }
