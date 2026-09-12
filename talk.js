@@ -207,7 +207,7 @@
     grid: 96,        // sampling cells per side
     faceDots: 1500,  // dots on the front of the head
     backDots: 520,   // sparse dots on the back of the head
-    sphereDots: 380, // dots visible on the resting sphere (the rest fade in as shapes form)
+    sphereDots: 620, // dots visible on the resting sphere (the rest fade in as the head forms)
     sphereRadius: 72,
     blobAmp: 0.55,   // how far the sphere deforms while speaking, fraction of its radius
     cubeness: 0.82,  // how square the thinking shape gets, 0 sphere .. 1 sharp cube
@@ -548,12 +548,9 @@
 
         const m = ease(clamp(morph * 1.35 - p.stagger * 0.35));
         const X = ox + (fx - ox) * m, Y = oy + (fy - oy) * m;
-        const grow = Math.max(blob, cube);
-        const r = ((0.3 + sdepth * 0.75) * (1 + grow * 0.25)) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
+        const r = (0.35 + sdepth * 0.95) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
         // sphere: core dots, plus the rest fading in as the blob forms; head: everything
-        const aSphere = p.core
-          ? (0.12 + sdepth * 0.6) * (1 + grow * 0.45)
-          : grow * (0.08 + sdepth * 0.5);
+        const aSphere = (p.core ? 0.18 + sdepth * 0.82 : Math.max(blob, cube * 0.6) * (0.1 + sdepth * 0.5));
         const aHead = (p.back ? 0.5 : 0.5 + p.d * 0.5) * (0.12 + hdepth * 0.88);
         const a = aSphere * (1 - m) + aHead * m;
         if (a < 0.02) continue;
