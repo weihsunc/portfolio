@@ -277,7 +277,11 @@
   height: 100%;
   display: none;
   color: var(--foreground); /* dot colour, read by the renderer */
+  cursor: grab;
+  touch-action: none; /* drag rotates instead of scrolling the page */
+  user-select: none;
 }
+.talk-dots:active { cursor: grabbing; }
 .talk-panel[data-avatar="dots"] .talk-dots { display: block; }
 .talk-panel[data-avatar="dots"] .talk-avatar img,
 .talk-panel[data-avatar="dots"] .talk-mouth { visibility: hidden; }

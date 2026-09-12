@@ -141,7 +141,9 @@
     setAvatarMode(saved);
 
     q('.talk-close').addEventListener('click', close);
-    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    let downOnBackdrop = false;
+    overlay.addEventListener('pointerdown', e => { downOnBackdrop = e.target === overlay; });
+    overlay.addEventListener('click', e => { if (e.target === overlay && downOnBackdrop) close(); downOnBackdrop = false; });
     el.startBtn.addEventListener('click', start);
     el.endBtn.addEventListener('click', () => end('Conversation ended.'));
     el.muteBtn.addEventListener('click', toggleMute);
@@ -241,6 +243,38 @@
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = DOT.size * dpr;
     canvas.height = DOT.size * dpr;
+
+    /* ─── Pointer: drag to rotate, hover to attract ─────────
+       User rotation is added on top of the idle turn. Releasing a drag keeps
+       its momentum and lets it decay. The pointer position (in canvas px)
+       pulls nearby dots toward it like a magnet; -1 means no pointer. */
+    const user = { rx: 0, ry: 0, vx: 0, vy: 0, dragging: false, lastX: 0, lastY: 0, lastT: 0 };
+    let ptrX = -1, ptrY = -1;
+    let pull = 0; // eased 0..1 presence of the pointer, so the magnet fades in and out
+    const toLocal = e => {
+      const b = canvas.getBoundingClientRect();
+      return [(e.clientX - b.left) * DOT.size / b.width, (e.clientY - b.top) * DOT.size / b.height];
+    };
+    canvas.addEventListener('pointerdown', e => {
+      user.dragging = true; user.vx = 0; user.vy = 0;
+      [user.lastX, user.lastY] = toLocal(e); user.lastT = performance.now();
+      try { canvas.setPointerCapture(e.pointerId); } catch (_) { /* synthetic event */ }
+      e.preventDefault();
+    });
+    canvas.addEventListener('pointermove', e => {
+      const [x, y] = toLocal(e);
+      ptrX = x; ptrY = y;
+      if (!user.dragging) return;
+      const now = performance.now(), dt = Math.max(1, now - user.lastT);
+      const dx = x - user.lastX, dy = y - user.lastY;
+      user.ry += dx * 0.012; user.rx += dy * 0.012;
+      user.vy = dx * 0.012 / dt * 16; user.vx = dy * 0.012 / dt * 16; // per frame at 60 fps
+      user.lastX = x; user.lastY = y; user.lastT = now;
+    });
+    const release = () => { user.dragging = false; };
+    canvas.addEventListener('pointerup', release);
+    canvas.addEventListener('pointercancel', release);
+    canvas.addEventListener('pointerleave', () => { ptrX = -1; ptrY = -1; release(); });
 
     const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
@@ -499,8 +533,20 @@
       const t = now / 1000;
       // sphere: steady turn. As the cube forms the axis tilts and the turn slows a touch,
       // so the cube spins on a leaning axis with its corners rising and falling, no tumble.
-      const rotY = t * (0.26 - cube * 0.08);
-      const rotX = Math.sin(t * 0.2) * 0.25 * (1 - cube) + cube * 0.62;
+      // user rotation: momentum decays after a drag; a slow spring eases the tilt back
+      if (!user.dragging) {
+        user.ry += user.vy; user.rx += user.vx;
+        user.vy *= 0.94; user.vx *= 0.94;
+        user.rx *= 0.985;
+        if (Math.abs(user.vy) < 1e-4) user.vy = 0;
+        if (Math.abs(user.vx) < 1e-4) user.vx = 0;
+      }
+      user.rx = Math.max(-1.2, Math.min(1.2, user.rx));
+      const rotY = t * (0.26 - cube * 0.08) + user.ry;
+      const rotX = Math.sin(t * 0.2) * 0.25 * (1 - cube) + cube * 0.62 + user.rx;
+      // magnet presence eases in and out
+      pull += ((ptrX >= 0 ? 1 : 0) - pull) * 0.12;
+      const magnetR = DOT.size * 0.22, magnetR2 = magnetR * magnetR;
       const breath = 1 + cube * Math.sin(t * 1.4) * 0.05;
       // superellipsoid: pull each unit direction toward the cube surface
       const sq = cube * DOT.cubeness;
@@ -512,7 +558,7 @@
       const amp = blob * DOT.blobAmp * (0.35 + 0.65 * voice);
       const invR = 1 / DOT.sphereRadius;
       // head: turns side to side so the face stays in view, with a small nod
-      const yaw = Math.sin(t * 0.45) * 0.55, pitch = Math.sin(t * 0.35) * 0.06;
+      const yaw = Math.sin(t * 0.45) * 0.55 + user.ry, pitch = Math.sin(t * 0.35) * 0.06 + user.rx * 0.6;
       const cyw = Math.cos(yaw), syw = Math.sin(yaw), cpt = Math.cos(pitch), spt = Math.sin(pitch);
       const ink = `${rgb[0] | 0},${rgb[1] | 0},${rgb[2] | 0}`;
       const maxDepth = head ? head.maxDepth : 60;
@@ -556,7 +602,16 @@
         const hdepth = clamp((hz2 / maxDepth + 1) / 2);
 
         const m = ease(clamp(morph * 1.35 - p.stagger * 0.35));
-        const X = ox + (fx - ox) * m, Y = oy + (fy - oy) * m;
+        let X = ox + (fx - ox) * m, Y = oy + (fy - oy) * m;
+        // magnet: dots within reach ease toward the pointer, strongest near it
+        if (pull > 0.01) {
+          const ddx = ptrX - X, ddy = ptrY - Y, d2 = ddx * ddx + ddy * ddy;
+          if (d2 < magnetR2) {
+            const k = (1 - d2 / magnetR2);
+            const g = k * k * 0.45 * pull;
+            X += ddx * g; Y += ddy * g;
+          }
+        }
         const r = (0.35 + sdepth * 0.95) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
         // sphere: core dots, plus the rest fading in as the blob forms; head: everything
         const aSphere = p.core ? (0.18 + sdepth * 0.82) * (1 - cube * 0.25) : 0;
