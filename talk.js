@@ -49,14 +49,20 @@
     container.dataset.state = 'idle';
     container.innerHTML = `
       <div class="talk-stage">
-        <div class="talk-avatar-wrap">
-          <div class="talk-avatar">
-            <img src="images/avatar-face.jpg" alt="" hidden draggable="false" />
-            <canvas class="talk-dots" aria-label="Wei, as a cloud of dots"></canvas>
+        <div class="talk-hero">
+          <div class="talk-avatar-wrap">
+            <div class="talk-avatar">
+              <img src="images/avatar-face.jpg" alt="" hidden draggable="false" />
+              <canvas class="talk-dots" aria-label="Wei, as a cloud of dots"></canvas>
+            </div>
+          </div>
+          <div class="talk-hero-text">
+            <p class="talk-status">Start a conversation. Your mic is only used while it is on.</p>
+            <p class="talk-caption" aria-live="polite"></p>
           </div>
         </div>
-        <p class="talk-status">Start a conversation. Your mic is only used while it is on.</p>
-        <div class="talk-transcript" aria-live="polite"></div>
+        <div class="talk-transcript"></div>
+        <button type="button" class="talk-transcript-toggle" hidden>Show transcript</button>
       </div>
       <div class="talk-foot">
         <div class="talk-controls">
@@ -77,7 +83,9 @@
     el = {
       panel: container,
       status: q('.talk-status'),
+      caption: q('.talk-caption'),
       transcript: q('.talk-transcript'),
+      transcriptToggle: q('.talk-transcript-toggle'),
       startBtn: q('.talk-start'),
       muteBtn: q('.talk-mute'),
       endBtn: q('.talk-end'),
@@ -89,6 +97,11 @@
 
     dots = createDotAvatar(el.canvas, el.img);
 
+    el.transcriptToggle.addEventListener('click', () => {
+      const on = container.classList.toggle('show-transcript');
+      el.transcriptToggle.textContent = on ? 'Hide transcript' : 'Show transcript';
+      if (on) el.transcript.scrollTop = el.transcript.scrollHeight;
+    });
     el.startBtn.addEventListener('click', start);
     el.endBtn.addEventListener('click', () => end('Conversation ended.'));
     el.muteBtn.addEventListener('click', toggleMute);
@@ -591,7 +604,19 @@
     div.textContent = text;
     el.transcript.appendChild(div);
     el.transcript.scrollTop = el.transcript.scrollHeight;
+    setCaption(who, text);
+    if (who !== 'note') el.transcriptToggle.hidden = false;
     return div;
+  }
+
+  /* The caption shows only the current line under the ball, crossfading per turn.
+     The full log lives in the transcript behind the Show transcript toggle. */
+  function setCaption(who, text) {
+    el.caption.dataset.who = who;
+    el.caption.textContent = text;
+    el.caption.classList.remove('is-in');
+    void el.caption.offsetWidth; // restart the fade
+    el.caption.classList.add('is-in');
   }
 
   function lastLine(who) {

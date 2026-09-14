@@ -8,7 +8,9 @@
 (function () {
   'use strict';
 
-  const MINIMIZE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
+  const CHEVRON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>`;
+  const EXPAND_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
+  const COLLAPSE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
 
   /* ─── Dot ball icon ─────────────────────────────────── */
   // A small live dot ball (same lattice as Talk to Wei), turning slowly.
@@ -66,7 +68,8 @@
     trigger.setAttribute('aria-expanded', 'false');
     trigger.innerHTML = `
       <span class="chat-trigger-icon"><canvas class="chat-ball" aria-hidden="true"></canvas></span>
-      <span>Agent Wei</span>`;
+      <span class="chat-trigger-label">Agent Wei</span>
+      <span class="chat-trigger-close">${CHEVRON_SVG}</span>`;
 
     win = document.createElement('div');
     win.className = 'chat-window';
@@ -78,7 +81,10 @@
           <span class="chat-header-icon"><canvas class="chat-ball" aria-hidden="true"></canvas></span>
           <h3>Agent Wei</h3>
         </div>
-        <button class="chat-minimize-btn" aria-label="Minimize">${MINIMIZE_SVG}</button>
+        <button class="chat-expand-btn" aria-label="Expand" aria-pressed="false">
+          <span class="chat-expand-icon">${EXPAND_SVG}</span>
+          <span class="chat-collapse-icon">${COLLAPSE_SVG}</span>
+        </button>
       </div>
       <div class="chat-body"></div>`;
 
@@ -87,8 +93,13 @@
     body = win.querySelector('.chat-body');
     document.querySelectorAll('.chat-ball').forEach(startBall);
 
-    trigger.addEventListener('click', open);
-    win.querySelector('.chat-minimize-btn').addEventListener('click', close);
+    trigger.addEventListener('click', () => (win.classList.contains('open') ? close() : open()));
+    const expandBtn = win.querySelector('.chat-expand-btn');
+    expandBtn.addEventListener('click', () => {
+      const on = win.classList.toggle('expanded');
+      expandBtn.setAttribute('aria-pressed', String(on));
+      expandBtn.setAttribute('aria-label', on ? 'Collapse' : 'Expand');
+    });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && win.classList.contains('open')) close();
     });
@@ -101,6 +112,7 @@
     win.classList.add('open');
     trigger.classList.add('active');
     trigger.setAttribute('aria-expanded', 'true');
+    trigger.setAttribute('aria-label', 'Close Agent Wei');
     if (window.TalkToWei) window.TalkToWei.activate();
     const start = body.querySelector('.talk-start');
     setTimeout(() => { if (start && !start.hidden) start.focus(); }, 60);
@@ -112,6 +124,7 @@
     win.classList.remove('open');
     trigger.classList.remove('active');
     trigger.setAttribute('aria-expanded', 'false');
+    trigger.setAttribute('aria-label', 'Open Agent Wei');
     if (lastFocus && lastFocus.focus && document.contains(lastFocus)) lastFocus.focus();
     else trigger.focus();
   }
