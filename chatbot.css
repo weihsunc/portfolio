@@ -14,9 +14,9 @@
   padding: 12px;
   border-radius: 14px;
   border: none;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.97);
+  /* no backdrop blur: the ball repaints inside the chip, and a blur surface
+     over a live canvas is re-rendered every frame */
   color: rgba(0, 0, 0, 0.9);
   cursor: pointer;
   display: flex;
@@ -121,7 +121,8 @@
   width: 360px;
   height: min(540px, calc(100vh - 56px));
   transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+              transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              visibility 0s linear 0.3s;
   border-radius: 14px;
   border: none;
   background: rgba(255, 255, 255, 0.88);
@@ -139,11 +140,17 @@
   transform: translateY(8px) scale(0.95);
   transform-origin: bottom right;
   pointer-events: none;
+  /* Closed, the window is fully out of the render tree. It sits above the
+     custom cursor, so an invisible blur layer here would still re-render its
+     backdrop every time the cursor moved beneath it. */
+  visibility: hidden;
 }
 .chat-window.open {
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
+  visibility: visible;
+  transition-delay: 0s;
 }
 
 /* ─── Minimize, floating top right ──────────────────── */

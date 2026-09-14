@@ -12,6 +12,11 @@
 
   /* ─── Dot ball icon ─────────────────────────────────── */
   // A small live dot ball (same lattice as Talk to Wei), turning slowly.
+  // Draws at 30fps and only while it can be seen: it stops while the canvas
+  // is off screen, the tab is hidden, or the owner has paused it (the chip
+  // pauses itself while the window is open or the footer is in view).
+  // Returns { pause, resume }.
+  const FRAME_MS = 1000 / 30;
   function startBall(canvas) {
     // Fine and sparse like the big avatar: few dots, and a dot size fixed in
     // screen pixels (the canvas is drawn at 64 logical px and scaled to its box).
@@ -28,11 +33,11 @@
       pts.push([Math.cos(th) * rad * R, y * R, Math.sin(th) * rad * R]);
     }
     const tilt = 0.25, ct = Math.cos(tilt), st = Math.sin(tilt);
-    let rgb = '255,255,255', rgbAt = -1e9;
+    let rgb = '255,255,255', rgbAt = -1e9, drawnAt = -1e9;
     const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    function frame(now) {
-      if (now - rgbAt > 500) {
+    function draw(now) {
+      if (now - rgbAt > 1000) {
         rgbAt = now;
         const m = getComputedStyle(canvas).color.match(/\d+(\.\d+)?/g);
         if (m && m.length >= 3) rgb = m.slice(0, 3).join(',');
@@ -40,24 +45,44 @@
       const a = still ? 0.6 : now / 1000 * 0.35, ca = Math.cos(a), sa = Math.sin(a);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
+      ctx.fillStyle = `rgb(${rgb})`;
       for (const [x, y, z] of pts) {
         const x2 = x * ca - z * sa, zr = x * sa + z * ca;
         const y2 = y * ct - zr * st, z2 = y * st + zr * ct;
         const d = (z2 / R + 1) / 2;
         ctx.globalAlpha = 0.15 + d * 0.85;
-        ctx.fillStyle = `rgb(${rgb})`;
         ctx.beginPath();
         ctx.arc(c + x2, c + y2, (0.35 + d * 0.45) * px, 0, 6.2832);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
-      if (!still) requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
+
+    // Run only while every gate is open
+    let paused = false, onScreen = true, rafId = 0;
+    function shouldRun() { return !still && !paused && onScreen && !document.hidden; }
+    function frame(now) {
+      rafId = 0;
+      if (!shouldRun()) return;
+      if (now - drawnAt >= FRAME_MS - 1) { drawnAt = now; draw(now); }
+      rafId = requestAnimationFrame(frame);
+    }
+    function kick() { if (!rafId && shouldRun()) rafId = requestAnimationFrame(frame); }
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(entries => { onScreen = entries[0].isIntersecting; kick(); }).observe(canvas);
+    }
+    document.addEventListener('visibilitychange', kick);
+    draw(performance.now()); // one frame so the ball is never blank
+    kick();
+    return {
+      pause() { paused = true; },
+      resume() { paused = false; kick(); },
+    };
   }
 
   /* ─── Shell ─────────────────────────────────────────── */
-  let trigger, win, body, mounted = false, lastFocus = null;
+  let trigger, win, body, mounted = false, lastFocus = null, syncChipBall = () => {};
 
   function build() {
     trigger = document.createElement('button');
@@ -79,7 +104,17 @@
     document.body.appendChild(trigger);
     document.body.appendChild(win);
     body = win.querySelector('.chat-body');
-    document.querySelectorAll('.chat-ball').forEach(startBall);
+    let chipBall = null;
+    document.querySelectorAll('.chat-ball').forEach(canvas => {
+      const ball = startBall(canvas);
+      if (trigger.contains(canvas)) chipBall = ball;
+    });
+    // The chip ball only turns while the chip can be seen
+    syncChipBall = () => {
+      if (!chipBall) return;
+      const hidden = trigger.classList.contains('active') || trigger.classList.contains('docked');
+      hidden ? chipBall.pause() : chipBall.resume();
+    };
 
     trigger.addEventListener('click', open);
     win.querySelector('.chat-minimize-btn').addEventListener('click', close);
@@ -99,6 +134,7 @@
     if (footer && 'IntersectionObserver' in window) {
       new IntersectionObserver(entries => {
         trigger.classList.toggle('docked', entries[0].isIntersecting);
+        syncChipBall();
       }, { threshold: 0.25 }).observe(footer);
     }
     document.addEventListener('keydown', e => {
@@ -113,6 +149,7 @@
     win.classList.add('open');
     trigger.classList.add('active');
     trigger.setAttribute('aria-expanded', 'true');
+    syncChipBall();
     if (window.TalkToWei) window.TalkToWei.activate();
     const call = body.querySelector('.talk-call');
     setTimeout(() => { if (call && !call.hidden) call.focus(); }, 60);
@@ -124,6 +161,7 @@
     win.classList.remove('open');
     trigger.classList.remove('active');
     trigger.setAttribute('aria-expanded', 'false');
+    syncChipBall();
     if (lastFocus && lastFocus.focus && document.contains(lastFocus)) lastFocus.focus();
     else trigger.focus();
   }
