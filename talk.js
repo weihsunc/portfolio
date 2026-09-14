@@ -5,7 +5,8 @@
    /api/chat and the reply is read aloud with the browser voice.
    A monochrome 3D dot avatar reacts to the call: sphere at rest, soft
    cube while thinking, organic blob pulsing with the voice while speaking.
-   Exposes window.TalkToWei = { open, close }.
+   Lives inside the Agent Wei window (chatbot.js builds the shell and calls
+   mount / activate / deactivate). window.TalkToWei.open() opens that window.
    ═══════════════════════════════════════════════════════ */
 
 (function () {
@@ -36,21 +37,18 @@
   let syllableTimer = 0;
   let muted = false;
   let history = [];        // demo-mode chat turns for /api/chat
-  let lastFocus = null;
   let dots = null;          // dot avatar renderer
 
   const clamp = v => Math.max(0, Math.min(1, v));
 
   /* ─── DOM ────────────────────────────────────────────── */
-  function build() {
-    const overlay = document.createElement('div');
-    overlay.className = 'talk-overlay';
-    overlay.innerHTML = `
-      <div class="talk-panel" role="dialog" aria-modal="true" aria-label="Talk to Wei" data-state="idle">
-        <div class="talk-top">
-          <h3 class="talk-title">Talk to Wei</h3>
-          <button class="talk-close" aria-label="Close">${CLOSE_SVG}</button>
-        </div>
+  const ARROW_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="13" x2="13" y2="3"/><polyline points="6 3 13 3 13 10"/></svg>`;
+
+  function mount(container) {
+    container.classList.add('talk-panel');
+    container.dataset.state = 'idle';
+    container.innerHTML = `
+      <div class="talk-stage">
         <div class="talk-avatar-wrap">
           <div class="talk-avatar">
             <img src="images/avatar-face.jpg" alt="" hidden draggable="false" />
@@ -59,23 +57,25 @@
         </div>
         <p class="talk-status">Start a conversation. Your mic is only used while it is on.</p>
         <div class="talk-transcript" aria-live="polite"></div>
+      </div>
+      <div class="talk-foot">
         <div class="talk-controls">
-          <button class="btn primary talk-start">${MIC_SVG}<span>Start talking</span></button>
-          <button class="btn talk-mute" hidden>Mute</button>
-          <button class="btn danger talk-end" hidden>End</button>
+          <button class="talk-btn primary talk-start">${MIC_SVG}<span>Start talking</span></button>
+          <button class="talk-btn talk-mute" hidden>Mute</button>
+          <button class="talk-btn talk-end" hidden>End</button>
         </div>
         <form class="talk-composer" hidden>
-          <input type="text" maxlength="500" placeholder="Or type a question" aria-label="Type a question" autocomplete="off" />
-          <button type="submit" class="btn">Send</button>
+          <div class="chat-input-wrap">
+            <input class="chat-input" type="text" maxlength="500" placeholder="Or type a question" aria-label="Type a question" autocomplete="off" />
+            <button type="submit" class="chat-send" aria-label="Send">${ARROW_SVG}</button>
+          </div>
         </form>
         <p class="talk-disclosure">An AI version of Wei, trained on his notes. For anything important, email <a href="mailto:weihsunc@gmail.com">weihsunc@gmail.com</a>.</p>
       </div>`;
-    document.body.appendChild(overlay);
 
-    const q = s => overlay.querySelector(s);
+    const q = sel => container.querySelector(sel);
     el = {
-      overlay,
-      panel: q('.talk-panel'),
+      panel: container,
       status: q('.talk-status'),
       transcript: q('.talk-transcript'),
       startBtn: q('.talk-start'),
@@ -89,10 +89,6 @@
 
     dots = createDotAvatar(el.canvas, el.img);
 
-    q('.talk-close').addEventListener('click', close);
-    let downOnBackdrop = false;
-    overlay.addEventListener('pointerdown', e => { downOnBackdrop = e.target === overlay; });
-    overlay.addEventListener('click', e => { if (e.target === overlay && downOnBackdrop) close(); downOnBackdrop = false; });
     el.startBtn.addEventListener('click', start);
     el.endBtn.addEventListener('click', () => end('Conversation ended.'));
     el.muteBtn.addEventListener('click', toggleMute);
@@ -102,9 +98,6 @@
       if (!text) return;
       el.input.value = '';
       ask(text);
-    });
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && overlay.classList.contains('open')) close();
     });
   }
 
@@ -774,27 +767,25 @@
   }
 
   /* ─── Public API ─────────────────────────────────────── */
-  function open() {
-    if (!el) build();
-    lastFocus = document.activeElement;
-    el.transcript.innerHTML = '';
-    el.overlay.classList.add('open');
+  // The Agent Wei window owns open and close; these run when it shows or hides.
+  function activate() {
+    if (!el) return;
     setState('idle');
     startLoop();
-    setTimeout(() => el.startBtn.focus(), 60);
   }
 
-  function close() {
+  function deactivate() {
     if (!el) return;
     end();
     stopLoop();
-    el.overlay.classList.remove('open');
-    if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
+
+  function open() { if (window.AgentWei) window.AgentWei.open(); }
+  function close() { if (window.AgentWei) window.AgentWei.close(); }
 
   if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => {};
 
-  window.TalkToWei = { open, close };
+  window.TalkToWei = { mount, activate, deactivate, open, close };
   // Local-only hook so the avatar states can be previewed without a call
   if (location.hostname === 'localhost') {
     window.TalkToWei._setState = s => { if (el) setState(s); };
