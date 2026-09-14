@@ -271,7 +271,50 @@
 
   /* ─── Icons ────────────────────────────────────────── */
 
-  const AVATAR_IMG = `<div style="position:absolute;width:96px;height:64px;left:calc(50% - 2px);top:50%;transform:translate(-50%,-50%);"><img src="images/wei-avatar.png" alt="" style="width:100%;height:100%;object-fit:cover;pointer-events:none;" /></div>`;
+  // The avatar is a small live dot ball (same lattice as Talk to Wei), turning slowly.
+  const AVATAR_IMG = `<canvas class="chat-ball" aria-hidden="true"></canvas>`;
+
+  /* ─── Dot ball icon ─────────────────────────────────── */
+
+  function startBall(canvas) {
+    const DOTS = 220, size = 64, R = size * 0.42, c = size / 2;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = size * dpr; canvas.height = size * dpr;
+    const ctx = canvas.getContext('2d');
+    const phi = Math.PI * (3 - Math.sqrt(5));
+    const pts = [];
+    for (let i = 0; i < DOTS; i++) {
+      const y = 1 - (i / (DOTS - 1)) * 2, rad = Math.sqrt(1 - y * y), th = phi * i;
+      pts.push([Math.cos(th) * rad * R, y * R, Math.sin(th) * rad * R]);
+    }
+    const tilt = 0.25, ct = Math.cos(tilt), st = Math.sin(tilt);
+    let rgb = '255,255,255', rgbAt = -1e9;
+    const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function frame(now) {
+      if (now - rgbAt > 500) {
+        rgbAt = now;
+        const m = getComputedStyle(canvas).color.match(/\d+(\.\d+)?/g);
+        if (m && m.length >= 3) rgb = m.slice(0, 3).join(',');
+      }
+      const a = still ? 0.6 : now / 1000 * 0.35, ca = Math.cos(a), sa = Math.sin(a);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, size, size);
+      for (const [x, y, z] of pts) {
+        const x2 = x * ca - z * sa, zr = x * sa + z * ca;
+        const y2 = y * ct - zr * st, z2 = y * st + zr * ct;
+        const d = (z2 / R + 1) / 2;
+        ctx.globalAlpha = 0.12 + d * 0.88;
+        ctx.fillStyle = `rgb(${rgb})`;
+        ctx.beginPath();
+        ctx.arc(c + x2, c + y2, 0.9 + d * 0.9, 0, 6.2832);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      if (!still) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
 
   // shadcn Minimize2 icon (two inward-pointing arrows)
   const MIC_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></svg>`;
@@ -336,6 +379,7 @@
 
     document.body.appendChild(trigger);
     document.body.appendChild(win);
+    document.querySelectorAll('.chat-ball').forEach(startBall);
 
     const messages = win.querySelector('.chat-messages');
     const input = win.querySelector('.chat-input');

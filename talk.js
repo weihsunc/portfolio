@@ -145,7 +145,7 @@
     grid: 96,        // sampling cells per side
     faceDots: 1500,  // dots on the front of the head
     backDots: 520,   // sparse dots on the back of the head
-    sphereDots: 620, // dots visible on the resting sphere (the rest fade in as the head forms)
+    sphereDots: 340, // dots visible on the resting sphere (the rest fade in as shapes form)
     sphereRadius: 72,
     blobAmp: 0.55,   // how far the sphere deforms while speaking, fraction of its radius
     cubeness: 0.7,   // how square the thinking shape gets, 0 sphere .. 1 sharp cube
@@ -550,7 +550,7 @@
             X += ddx * g; Y += ddy * g;
           }
         }
-        const r = (0.35 + sdepth * 0.95) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
+        const r = (0.45 + sdepth * 0.5) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
         // sphere: core dots, plus the rest fading in as the blob forms; head: everything
         const aSphere = p.core ? (0.18 + sdepth * 0.82) * (1 - cube * 0.25) : 0;
         if (aSphere === 0 && m === 0) continue;
