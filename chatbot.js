@@ -110,7 +110,7 @@
     else trigger.focus();
   }
 
-  window.AgentWei = { open, close };
+  window.AgentWei = { open, close, ball: startBall };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build);
   else build();

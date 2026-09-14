@@ -43,9 +43,9 @@
   /* ─── DOM ────────────────────────────────────────────── */
   const ARROW_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="13" x2="13" y2="3"/><polyline points="6 3 13 3 13 10"/></svg>`;
 
-  const CHAT_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1.5-4.5A8 8 0 1 1 21 12z"/></svg>`;
+  const CHAT_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.0052 12H12.0142M16.0007 12H16.0097M8.00973 12H8.0187M12 21.5C17.2467 21.5 21.5 17.2467 21.5 12C21.5 6.75329 17.2467 2.5 12 2.5C6.75329 2.5 2.5 6.75329 2.5 12C2.5 13.0483 2.6698 14.057 2.98341 15C3.5282 16.6382 3.12865 18.5818 2.6935 19.6074C2.59266 19.8451 2.62741 20.1274 2.80997 20.31C2.93024 20.4302 3.09774 20.4913 3.26592 20.4658C4.37462 20.2979 5.63177 19.362 7.5 20.3687C8.8394 21.0904 10.3719 21.5 12 21.5Z"/></svg>`;
   const BACK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 6 9 12 15 18"/></svg>`;
-  const END_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.7 13.3a15 15 0 0 1-2.9-4.1l1.7-1.7a1 1 0 0 0 .2-1L8.5 3.1a1 1 0 0 0-1-.7H4a2 2 0 0 0-2 2 17 17 0 0 0 9.8 15.6"/><path d="M15.2 16.9a15 15 0 0 0 1.7-1.2l1.7 1.7a1 1 0 0 0 1 .2l3.4-1.2a1 1 0 0 0 .7-1V12a2 2 0 0 0-2-2"/><line x1="2" y1="2" x2="22" y2="22"/></svg>`;
+  const END_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6799 13.3101C11.6948 14.3258 12.8418 15.2004 14.0899 15.9101L15.3599 14.6401C15.6318 14.3712 15.9751 14.1859 16.3491 14.1062C16.723 14.0264 17.112 14.0556 17.4699 14.1901C18.3772 14.5286 19.3199 14.7635 20.2799 14.8901C20.7605 14.958 21.1999 15.1984 21.5164 15.5663C21.8329 15.9343 22.0047 16.4048 21.9999 16.8901V19.8901C22.0011 20.1686 21.944 20.4443 21.8324 20.6994C21.7209 20.9546 21.5572 21.1837 21.352 21.372C21.1468 21.5602 20.9045 21.7036 20.6407 21.7928C20.3769 21.882 20.0973 21.9152 19.8199 21.8901C16.7428 21.5557 13.7869 20.5042 11.1899 18.8201C9.9852 18.0552 8.86846 17.1597 7.85993 16.1501M5.18993 12.8101C3.50579 10.2131 2.45429 7.25726 2.11993 4.1801C2.09494 3.90356 2.12781 3.62486 2.21643 3.36172C2.30506 3.09859 2.4475 2.85679 2.6347 2.65172C2.82189 2.44665 3.04974 2.28281 3.30372 2.17062C3.55771 2.05843 3.83227 2.00036 4.10993 2.0001H7.10993C7.59524 1.99532 8.06572 2.16718 8.43369 2.48363C8.80166 2.80008 9.04201 3.23954 9.10993 3.7201C9.23656 4.68016 9.47138 5.62282 9.80993 6.5301C9.94448 6.88802 9.9736 7.27701 9.89384 7.65098C9.81408 8.02494 9.6288 8.36821 9.35993 8.6401L8.08993 9.9101M22 2L2 22"/></svg>`;
 
   function mount(container) {
     container.classList.add('talk-panel');
@@ -53,17 +53,20 @@
     container.dataset.view = 'orb';
     container.innerHTML = `
       <button type="button" class="talk-mode-btn" aria-label="Text chat">${CHAT_SVG}</button>
+      <button type="button" class="talk-back" aria-label="Back to the ball">
+        <canvas class="chat-ball" aria-hidden="true"></canvas>
+        <span class="talk-back-icon">${BACK_SVG}</span>
+      </button>
+      <p class="talk-status"></p>
       <div class="talk-avatar-wrap">
         <div class="talk-avatar">
           <img src="images/avatar-face.jpg" alt="" hidden draggable="false" />
           <canvas class="talk-dots" aria-label="Wei, as a cloud of dots"></canvas>
         </div>
-        <button type="button" class="talk-call" aria-label="Start talking">${MIC_SVG}</button>
-        <button type="button" class="talk-back" aria-label="Back to the ball">${BACK_SVG}</button>
       </div>
-      <p class="talk-status"></p>
       <div class="talk-stage">
         <p class="talk-tagline">Ask me anything about my work.</p>
+        <button type="button" class="talk-call">${MIC_SVG}<span>Start talking</span></button>
         <div class="talk-transcript" aria-live="polite"></div>
       </div>
       <div class="talk-foot">
@@ -85,6 +88,7 @@
       transcript: q('.talk-transcript'),
       callBtn: q('.talk-call'),
       backBtn: q('.talk-back'),
+      miniBall: q('.talk-back .chat-ball'),
       modeBtn: q('.talk-mode-btn'),
       endBtn: q('.talk-end'),
       composer: q('.talk-composer'),
@@ -94,6 +98,7 @@
     };
 
     dots = createDotAvatar(el.canvas, el.img);
+    if (window.AgentWei && window.AgentWei.ball) window.AgentWei.ball(el.miniBall);
 
     el.callBtn.addEventListener('click', start);
     el.endBtn.addEventListener('click', () => end('Call ended.'));
@@ -592,9 +597,9 @@
     el.panel.dataset.state = next;
     const active = next !== 'idle' && next !== 'connecting';
     el.status.textContent = STATUS[next] || '';
-    el.tagline.textContent = next === 'connecting' ? 'Connecting…' : TAGLINE;
     el.callBtn.hidden = active;
     el.callBtn.disabled = next === 'connecting';
+    el.callBtn.querySelector('span').textContent = next === 'connecting' ? 'Connecting…' : 'Start talking';
     el.endBtn.hidden = !active;
     if (active) setView('chat');
   }
