@@ -18,6 +18,7 @@
   const MAX_HISTORY = 16;
 
   const DEMO_GREETING = "Hey, I'm the AI version of Wei. This is demo mode, so you are hearing a browser voice for now. Once my voice agent is connected you will be able to talk to me out loud. In the meantime, type a question below.";
+  const CHAT_GREETING = "Hey, I'm the AI version of Wei. Ask me anything about my work, what I'm building now, or how I think about design.";
   const OFFLINE_ANSWER = "I can't reach my brain right now, but here is the short version: I'm a product designer who ships with AI. I'm driving design at Illoca and co-founding Lofi. Ask me again once the site is deployed.";
 
   const CLOSE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>`;
@@ -102,7 +103,12 @@
 
     el.callBtn.addEventListener('click', start);
     el.endBtn.addEventListener('click', () => end('Call ended.'));
-    el.modeBtn.addEventListener('click', () => { setView('chat'); el.input.focus(); });
+    el.modeBtn.addEventListener('click', () => {
+      // Entering chat mode with nothing said yet: Wei opens, like a real chat
+      if (!el.transcript.children.length) addLine('wei', CHAT_GREETING);
+      setView('chat');
+      el.input.focus();
+    });
     el.backBtn.addEventListener('click', () => setView('orb'));
     el.composer.addEventListener('submit', e => {
       e.preventDefault();
