@@ -129,12 +129,18 @@
   document.addEventListener('mouseleave', () => el.classList.remove('visible'));
   document.addEventListener('mouseenter', () => el.classList.add('visible'));
 
-  (function loop() {
-    curX += (mouseX - curX) * 0.13;
-    curY += (mouseY - curY) * 0.13;
+  // The ring closes most of the gap to the pointer every frame: a hint of
+  // trail, never a lag. Time based, so 60Hz and 120Hz screens feel the same.
+  const FOLLOW = 0.4; // share of the remaining distance covered per 60Hz frame
+  let lastT = performance.now();
+  (function loop(now) {
+    const dt = Math.min(48, now - lastT); lastT = now;
+    const k = 1 - Math.pow(1 - FOLLOW, dt / 16.67);
+    curX += (mouseX - curX) * k;
+    curY += (mouseY - curY) * k;
     el.style.transform = `translate(${curX}px, ${curY}px)`;
     requestAnimationFrame(loop);
-  })();
+  })(lastT);
 
   // Call from page script to enable the "View" pill on hover targets.
   // Targets with data-cursor="locked" get the yellow "Password protected" pill.
