@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════
    AGENT WEI — the floating window in the bottom right
-   Builds the trigger chip and the window shell (header with the dot ball,
-   minimize button, body). The body is the voice experience from talk.js,
+   Builds the trigger chip and the window shell (a floating expand toggle
+   and the body). The body is the voice experience from talk.js,
    mounted on first open. Exposes window.AgentWei = { open, close }.
    ═══════════════════════════════════════════════════════ */
 
@@ -76,16 +76,10 @@
     win.setAttribute('role', 'dialog');
     win.setAttribute('aria-label', 'Agent Wei');
     win.innerHTML = `
-      <div class="chat-header">
-        <div class="chat-header-left">
-          <span class="chat-header-icon"><canvas class="chat-ball" aria-hidden="true"></canvas></span>
-          <h3>Agent Wei</h3>
-        </div>
-        <button class="chat-expand-btn" aria-label="Expand" aria-pressed="false">
-          <span class="chat-expand-icon">${EXPAND_SVG}</span>
-          <span class="chat-collapse-icon">${COLLAPSE_SVG}</span>
-        </button>
-      </div>
+      <button class="chat-expand-btn" aria-label="Expand" aria-pressed="false">
+        <span class="chat-expand-icon">${EXPAND_SVG}</span>
+        <span class="chat-collapse-icon">${COLLAPSE_SVG}</span>
+      </button>
       <div class="chat-body"></div>`;
 
     document.body.appendChild(trigger);

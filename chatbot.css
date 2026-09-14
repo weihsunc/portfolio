@@ -145,37 +145,12 @@
   max-height: calc(100vh - 128px);
 }
 
-/* ─── Header ────────────────────────────────────────── */
-.chat-header {
-  padding: 8px 8px 8px 16px;
-  border-bottom: 1px solid var(--panel-border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-}
-.chat-header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.chat-header-icon {
-  position: relative;
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  min-height: 28px;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-.chat-header h3 {
-  font-family: var(--font-sans);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--panel-fg);
-  margin: 0;
-}
+/* ─── Expand toggle, floating top right ─────────────── */
 .chat-expand-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
   width: 36px;
   height: 36px;
   border-radius: 8px;
@@ -187,7 +162,6 @@
   align-items: center;
   justify-content: center;
   transition: color 0.15s ease, background 0.15s ease;
-  flex-shrink: 0;
 }
 .chat-expand-btn svg { width: 16px; height: 16px; }
 .chat-expand-btn:hover { background: var(--panel-fill); }

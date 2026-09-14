@@ -19,7 +19,8 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 16px 16px 8px;
+  padding: 24px 16px 8px;
+  overflow: hidden; /* never bleed under the foot's top border */
 }
 
 .talk-hero {
@@ -88,7 +89,7 @@
   color: var(--panel-fg);
   max-width: 30em;
   display: -webkit-box;
-  -webkit-line-clamp: 6;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
   opacity: 0;
@@ -107,7 +108,7 @@
 
 .talk-transcript-toggle {
   flex-shrink: 0;
-  margin-top: auto;
+  margin-top: 4px;
   padding: 6px 10px;
   border: none;
   background: transparent;
@@ -133,12 +134,14 @@
   scrollbar-width: thin;
 }
 .talk-panel.show-transcript .talk-transcript { display: flex; }
-.talk-panel.show-transcript .talk-hero { flex-direction: row; gap: 10px; justify-content: flex-start; }
+.talk-panel.show-transcript .talk-hero { flex-direction: row; gap: 10px; justify-content: flex-start; padding-right: 36px; }
 .talk-panel.show-transcript .talk-hero-text { align-items: flex-start; }
 .talk-panel.show-transcript .talk-status { text-align: left; }
 .talk-panel.show-transcript .talk-caption { display: none; }
 .talk-panel.show-transcript .talk-avatar,
-.chat-window.expanded .talk-panel.show-transcript .talk-avatar { width: 44px; height: 44px; }
+.chat-window.expanded .talk-panel.show-transcript .talk-avatar { width: 40px; height: 40px; }
+.talk-panel.show-transcript .talk-stage { padding-top: 12px; }
+.talk-panel.show-transcript .talk-transcript-toggle { margin-top: auto; }
 .talk-panel.show-transcript .talk-avatar-wrap { padding: 0; }
 
 .talk-line {
