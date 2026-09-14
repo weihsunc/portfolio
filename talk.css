@@ -272,6 +272,15 @@
 }
 .talk-disclosure a { color: inherit; }
 
-/* About page entry point */
+/* About page entry point: the chip's ball inside a site button */
 .about-actions { display: flex; gap: 8px; align-items: center; }
-.about-actions .btn svg { width: 18px; height: 18px; }
+.btn-agent { gap: 10px; padding-left: 12px; }
+.btn-agent-ball {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  overflow: hidden;
+  color: var(--foreground); /* dot colour, read by the renderer */
+}
+.btn-agent-ball .chat-ball { position: absolute; inset: 0; width: 100%; height: 100%; }
