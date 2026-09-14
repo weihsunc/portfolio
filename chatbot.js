@@ -83,6 +83,24 @@
 
     trigger.addEventListener('click', open);
     win.querySelector('.chat-minimize-btn').addEventListener('click', close);
+
+    // Over the widget: hide the site's custom cursor and drop any View pill it is showing
+    const cursor = () => document.getElementById('custom-cursor');
+    for (const node of [trigger, win]) {
+      node.addEventListener('mouseenter', () => {
+        const c = cursor();
+        if (c) c.classList.add('over-widget'), c.classList.remove('is-view', 'is-locked');
+      });
+      node.addEventListener('mouseleave', () => { const c = cursor(); if (c) c.classList.remove('over-widget'); });
+    }
+
+    // Tuck the chip away while the footer is in view, so it does not sit on the contact links
+    const footer = document.querySelector('footer#contact') || document.querySelector('footer');
+    if (footer && 'IntersectionObserver' in window) {
+      new IntersectionObserver(entries => {
+        trigger.classList.toggle('docked', entries[0].isIntersecting);
+      }, { threshold: 0.25 }).observe(footer);
+    }
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && win.classList.contains('open')) close();
     });

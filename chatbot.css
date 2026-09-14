@@ -10,7 +10,7 @@
   position: fixed;
   bottom: 28px;
   right: 28px;
-  z-index: 9998;
+  z-index: 100001; /* above the site's custom cursor, so its pill never covers the chip */
   padding: 12px;
   border-radius: 14px;
   border: none;
@@ -72,11 +72,23 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 .chat-trigger:active { transform: scale(0.97); }
-/* Hidden while the window is open */
-.chat-trigger.active {
+/* Hidden while the window is open, and while the footer is in view */
+.chat-trigger.active,
+.chat-trigger.docked {
   opacity: 0;
   pointer-events: none;
   transform: scale(0.9);
+}
+
+/* The site hides the system cursor in favour of its own; over the widget
+   the system cursor comes back and the custom one steps aside. */
+@media (pointer: fine) {
+  .chat-window, .chat-window * { cursor: default !important; }
+  .chat-trigger, .chat-trigger *, .chat-window button, .chat-window a { cursor: pointer !important; }
+  .chat-window input { cursor: text !important; }
+  .chat-window .talk-dots { cursor: grab !important; }
+  .chat-window .talk-dots:active { cursor: grabbing !important; }
+  #custom-cursor.over-widget { opacity: 0 !important; }
 }
 .chat-trigger-icon {
   position: relative;
@@ -105,7 +117,7 @@
   position: fixed;
   bottom: 28px;
   right: 28px;
-  z-index: 9997;
+  z-index: 100000; /* above the custom cursor; the system cursor is used over the window */
   width: 360px;
   height: min(540px, calc(100vh - 56px));
   transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1),
