@@ -29,7 +29,7 @@ The repo is public, so keep everything here interview-safe.
 - Email: weihsunc@gmail.com
 - LinkedIn: https://www.linkedin.com/in/weihsunchen/
 - Instagram: https://www.instagram.com/weiweistreet/
-- Resume: https://drive.google.com/file/d/19ksAgx9szwyxqmvfr-EajPPbOLni0T4s/view?usp=sharing
+- Resume: https://drive.google.com/file/d/17B3OpiTCQ_joCC2AuKuUdBs1w2T4iT-V/view?usp=sharing
 
 ## Design Community
 - Wei co-runs UX East Meets West (https://medium.com/uxeastmeetswest), one of the largest design communities for Taiwanese designers. They run mentorship programs and meetups.
