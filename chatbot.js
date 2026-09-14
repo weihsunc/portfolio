@@ -13,7 +13,11 @@
   /* ─── Dot ball icon ─────────────────────────────────── */
   // A small live dot ball (same lattice as Talk to Wei), turning slowly.
   function startBall(canvas) {
-    const DOTS = 220, size = 64, R = size * 0.42, c = size / 2;
+    // Fine and sparse like the big avatar: few dots, and a dot size fixed in
+    // screen pixels (the canvas is drawn at 64 logical px and scaled to its box).
+    const box = (canvas.parentElement && canvas.parentElement.getBoundingClientRect().width) || 36;
+    const size = 64, R = size * 0.42, c = size / 2, DOTS = 110;
+    const px = 64 / box; // one screen pixel, in logical units
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = size * dpr; canvas.height = size * dpr;
     const ctx = canvas.getContext('2d');
@@ -40,10 +44,10 @@
         const x2 = x * ca - z * sa, zr = x * sa + z * ca;
         const y2 = y * ct - zr * st, z2 = y * st + zr * ct;
         const d = (z2 / R + 1) / 2;
-        ctx.globalAlpha = 0.12 + d * 0.88;
+        ctx.globalAlpha = 0.15 + d * 0.85;
         ctx.fillStyle = `rgb(${rgb})`;
         ctx.beginPath();
-        ctx.arc(c + x2, c + y2, 0.9 + d * 0.9, 0, 6.2832);
+        ctx.arc(c + x2, c + y2, (0.35 + d * 0.45) * px, 0, 6.2832);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
