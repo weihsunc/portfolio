@@ -35,7 +35,6 @@
   let pulse = 0;           // demo-mode syllable energy
   let rafId = 0;
   let syllableTimer = 0;
-  let muted = false;
   let history = [];        // demo-mode chat turns for /api/chat
   let dots = null;          // dot avatar renderer
 
@@ -44,50 +43,49 @@
   /* ─── DOM ────────────────────────────────────────────── */
   const ARROW_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="13" x2="13" y2="3"/><polyline points="6 3 13 3 13 10"/></svg>`;
 
+  const CHAT_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H8l-5 3 1.5-4.5A8 8 0 1 1 21 12z"/></svg>`;
+  const BACK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 6 9 12 15 18"/></svg>`;
+  const END_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.7 13.3a15 15 0 0 1-2.9-4.1l1.7-1.7a1 1 0 0 0 .2-1L8.5 3.1a1 1 0 0 0-1-.7H4a2 2 0 0 0-2 2 17 17 0 0 0 9.8 15.6"/><path d="M15.2 16.9a15 15 0 0 0 1.7-1.2l1.7 1.7a1 1 0 0 0 1 .2l3.4-1.2a1 1 0 0 0 .7-1V12a2 2 0 0 0-2-2"/><line x1="2" y1="2" x2="22" y2="22"/></svg>`;
+
   function mount(container) {
     container.classList.add('talk-panel');
     container.dataset.state = 'idle';
+    container.dataset.view = 'orb';
     container.innerHTML = `
-      <div class="talk-stage">
-        <div class="talk-hero">
-          <div class="talk-avatar-wrap">
-            <div class="talk-avatar">
-              <img src="images/avatar-face.jpg" alt="" hidden draggable="false" />
-              <canvas class="talk-dots" aria-label="Wei, as a cloud of dots"></canvas>
-            </div>
-          </div>
-          <div class="talk-hero-text">
-            <p class="talk-status">Start a conversation. Your mic is only used while it is on.</p>
-            <p class="talk-caption" aria-live="polite"></p>
-          </div>
+      <button type="button" class="talk-mode-btn" aria-label="Text chat">${CHAT_SVG}</button>
+      <div class="talk-avatar-wrap">
+        <div class="talk-avatar">
+          <img src="images/avatar-face.jpg" alt="" hidden draggable="false" />
+          <canvas class="talk-dots" aria-label="Wei, as a cloud of dots"></canvas>
         </div>
-        <div class="talk-transcript"></div>
-        <button type="button" class="talk-transcript-toggle" hidden>Show transcript</button>
+        <button type="button" class="talk-call" aria-label="Start talking">${MIC_SVG}</button>
+        <button type="button" class="talk-back" aria-label="Back to the ball">${BACK_SVG}</button>
+      </div>
+      <p class="talk-status"></p>
+      <div class="talk-stage">
+        <p class="talk-tagline">Ask me anything about my work.</p>
+        <div class="talk-transcript" aria-live="polite"></div>
       </div>
       <div class="talk-foot">
-        <div class="talk-controls">
-          <button class="talk-btn primary talk-start">${MIC_SVG}<span>Start talking</span></button>
-          <button class="talk-btn talk-mute" hidden>Mute</button>
-          <button class="talk-btn talk-end" hidden>End</button>
-        </div>
-        <form class="talk-composer" hidden>
+        <form class="talk-composer">
           <div class="chat-input-wrap">
             <input class="chat-input" type="text" maxlength="500" placeholder="Or type a question" aria-label="Type a question" autocomplete="off" />
             <button type="submit" class="chat-send" aria-label="Send">${ARROW_SVG}</button>
           </div>
+          <button type="button" class="talk-end" hidden aria-label="End call">${END_SVG}</button>
         </form>
-        <p class="talk-disclosure">An AI version of Wei, trained on his notes. For anything important, email <a href="mailto:weihsunc@gmail.com">weihsunc@gmail.com</a>.</p>
+        <p class="talk-disclosure">AI version of Wei, from his notes. Anything important, email <a href="mailto:weihsunc@gmail.com">weihsunc@gmail.com</a>.</p>
       </div>`;
 
     const q = sel => container.querySelector(sel);
     el = {
       panel: container,
       status: q('.talk-status'),
-      caption: q('.talk-caption'),
+      tagline: q('.talk-tagline'),
       transcript: q('.talk-transcript'),
-      transcriptToggle: q('.talk-transcript-toggle'),
-      startBtn: q('.talk-start'),
-      muteBtn: q('.talk-mute'),
+      callBtn: q('.talk-call'),
+      backBtn: q('.talk-back'),
+      modeBtn: q('.talk-mode-btn'),
       endBtn: q('.talk-end'),
       composer: q('.talk-composer'),
       input: q('.talk-composer input'),
@@ -97,14 +95,10 @@
 
     dots = createDotAvatar(el.canvas, el.img);
 
-    el.transcriptToggle.addEventListener('click', () => {
-      const on = container.classList.toggle('show-transcript');
-      el.transcriptToggle.textContent = on ? 'Hide transcript' : 'Show transcript';
-      if (on) el.transcript.scrollTop = el.transcript.scrollHeight;
-    });
-    el.startBtn.addEventListener('click', start);
-    el.endBtn.addEventListener('click', () => end('Conversation ended.'));
-    el.muteBtn.addEventListener('click', toggleMute);
+    el.callBtn.addEventListener('click', start);
+    el.endBtn.addEventListener('click', () => end('Call ended.'));
+    el.modeBtn.addEventListener('click', () => { setView('chat'); el.input.focus(); });
+    el.backBtn.addEventListener('click', () => setView('orb'));
     el.composer.addEventListener('submit', e => {
       e.preventDefault();
       const text = el.input.value.trim();
@@ -578,45 +572,56 @@
 
   /* ─── UI helpers ─────────────────────────────────────── */
   const STATUS = {
-    idle: 'Start a conversation. Your mic is only used while it is on.',
+    idle: '',
     connecting: 'Connecting…',
-    listening: 'Listening. Go ahead.',
+    listening: 'Listening',
     thinking: 'Thinking…',
-    speaking: 'Wei is speaking.'
+    speaking: 'Speaking'
   };
+  const TAGLINE = 'Ask me anything about my work.';
+
+  /* Two views. 'orb': the big ball with the call button, one line, the input.
+     'chat': the ball small in the corner, the conversation in the body. */
+  function setView(view) {
+    el.panel.dataset.view = view;
+    if (view === 'chat') el.transcript.scrollTop = el.transcript.scrollHeight;
+  }
 
   function setState(next) {
     state = next;
     el.panel.dataset.state = next;
-    el.status.textContent = mode === 'demo' && next === 'listening'
-      ? 'Your turn. Type a question below.'
-      : STATUS[next];
-    const active = next !== 'idle';
-    el.startBtn.hidden = active;
+    const active = next !== 'idle' && next !== 'connecting';
+    el.status.textContent = STATUS[next] || '';
+    el.tagline.textContent = next === 'connecting' ? 'Connecting…' : TAGLINE;
+    el.callBtn.hidden = active;
+    el.callBtn.disabled = next === 'connecting';
     el.endBtn.hidden = !active;
-    el.muteBtn.hidden = !(active && mode === 'live');
-    el.composer.hidden = !active;
+    if (active) setView('chat');
   }
 
   function addLine(who, text) {
+    clearPending();
     const div = document.createElement('div');
     div.className = `talk-line ${who}`;
     div.textContent = text;
     el.transcript.appendChild(div);
+    setView('chat');
     el.transcript.scrollTop = el.transcript.scrollHeight;
-    setCaption(who, text);
-    if (who !== 'note') el.transcriptToggle.hidden = false;
     return div;
   }
 
-  /* The caption shows only the current line under the ball, crossfading per turn.
-     The full log lives in the transcript behind the Show transcript toggle. */
-  function setCaption(who, text) {
-    el.caption.dataset.who = who;
-    el.caption.textContent = text;
-    el.caption.classList.remove('is-in');
-    void el.caption.offsetWidth; // restart the fade
-    el.caption.classList.add('is-in');
+  // The "…" bubble while a typed question waits for its answer
+  function showPending() {
+    clearPending();
+    const div = document.createElement('div');
+    div.className = 'talk-line wei pending';
+    div.textContent = '…';
+    el.transcript.appendChild(div);
+    el.transcript.scrollTop = el.transcript.scrollHeight;
+  }
+  function clearPending() {
+    const p = el.transcript.querySelector('.talk-line.pending');
+    if (p) p.remove();
   }
 
   function lastLine(who) {
@@ -693,8 +698,7 @@
 
   function startDemo() {
     mode = 'demo';
-    history = [];
-    addLine('note', 'Demo mode: browser voice, typed questions.');
+    addLine('note', 'Demo mode: browser voice.');
     say(DEMO_GREETING);
     setTimeout(() => el.input.focus(), 50);
   }
@@ -708,19 +712,9 @@
     clearInterval(syllableTimer);
     level = 0;
     if (note && state !== 'idle') addLine('note', note);
+    if (mode !== 'text') history = [];
     mode = null;
-    muted = false;
-    el.muteBtn.classList.remove('is-muted');
-    el.muteBtn.textContent = 'Mute';
     setState('idle');
-  }
-
-  function toggleMute() {
-    if (!conversation) return;
-    muted = !muted;
-    try { conversation.setMicMuted(muted); } catch (_) { /* older sdk */ }
-    el.muteBtn.classList.toggle('is-muted', muted);
-    el.muteBtn.textContent = muted ? 'Unmute' : 'Mute';
   }
 
   /* ─── Typed questions ────────────────────────────────── */
@@ -730,10 +724,12 @@
       try { conversation.sendUserMessage(text); } catch (err) { console.warn(err); }
       return;
     }
-    if (mode !== 'demo') return;
+    // No call running (or the browser-voice demo): answer as text from /api/chat
+    if (!mode) mode = 'text';
     history.push({ role: 'user', content: text });
     history = history.slice(-MAX_HISTORY);
-    setState('thinking');
+    const speak = mode === 'demo';
+    if (speak) setState('thinking'); else showPending();
     let reply = '';
     try {
       const r = await fetch(CHAT_URL, {
@@ -746,10 +742,11 @@
         reply = typeof data.text === 'string' ? data.text.trim() : '';
       }
     } catch (_) { /* fall through */ }
-    if (mode !== 'demo') return; // ended while waiting
+    if (mode !== 'demo' && mode !== 'text') return; // ended while waiting
     if (!reply) reply = OFFLINE_ANSWER;
     history.push({ role: 'assistant', content: reply });
-    say(toSpeech(reply));
+    if (speak) say(toSpeech(reply));
+    else addLine('wei', toSpeech(reply));
   }
 
   /* ─── Demo speech (browser voice + synthetic mouth energy) ── */
@@ -796,6 +793,7 @@
   function activate() {
     if (!el) return;
     setState('idle');
+    if (!el.transcript.children.length) setView('orb');
     startLoop();
   }
 

@@ -1,9 +1,13 @@
 /* ═══════════════════════════════════════════════════════
    TALK TO WEI — the voice panel inside the Agent Wei window
    Uses the --panel-* palette set on .chat-window (chatbot.css).
+   Two views on data-view: 'orb' (big ball, call button, one line) and
+   'chat' (small ball in the corner, conversation in the body). The
+   input is always there.
    ═══════════════════════════════════════════════════════ */
 
 .talk-panel {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -11,52 +15,57 @@
 }
 .talk-panel [hidden] { display: none !important; }
 
-/* ─── Stage: hero (ball, status, caption) and the hidden transcript ─── */
-.talk-stage {
-  flex: 1;
-  min-height: 0;
+/* ─── Top-left: text-chat button (orb view) ─────────── */
+.talk-mode-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--panel-fg);
+  cursor: pointer;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 24px 16px 8px;
-  overflow: hidden; /* never bleed under the foot's top border */
+  justify-content: center;
+  transition: background 0.15s ease, opacity 0.2s ease;
 }
+.talk-mode-btn svg { width: 18px; height: 18px; }
+.talk-mode-btn:hover { background: var(--panel-fill); }
+.talk-panel[data-view="chat"] .talk-mode-btn { opacity: 0; pointer-events: none; }
 
-.talk-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  flex-shrink: 0;
-  transition: gap 0.3s ease;
-}
-.talk-hero-text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  width: 100%;
-}
-
+/* ─── The ball: centred and big, or small in the corner ─── */
 .talk-avatar-wrap {
-  position: relative;
-  padding: 4px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.talk-avatar {
-  position: relative;
+  position: absolute;
+  z-index: 2;
+  top: 64px;
+  left: 50%;
   width: 150px;
   height: 150px;
+  transform: translateX(-50%);
+  transition: top 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              left 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.talk-panel[data-view="chat"] .talk-avatar-wrap {
+  top: 8px;
+  left: 8px;
+  width: 36px;
+  height: 36px;
+  transform: none;
+}
+.talk-avatar {
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
   overflow: hidden;
   background: transparent;
-  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1), height 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.chat-window.expanded .talk-avatar { width: 200px; height: 200px; }
 /* The photo is only sampled by the dot renderer, never shown */
 .talk-avatar img { display: none; }
 .talk-dots {
@@ -67,63 +76,91 @@
   display: block;
   color: var(--panel-fg); /* dot colour, read by the renderer */
   cursor: grab;
-  touch-action: none; /* drag rotates instead of scrolling the page */
+  touch-action: none;
   user-select: none;
 }
 .talk-dots:active { cursor: grabbing; }
+.talk-panel[data-view="chat"] .talk-dots { cursor: default; pointer-events: none; }
 
+/* Call button in the middle of the ball */
+.talk-call {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 52px;
+  height: 52px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: none;
+  background: var(--panel-solid);
+  color: var(--panel-on-solid);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+.talk-call svg { width: 22px; height: 22px; }
+.talk-call:hover { transform: translate(-50%, -50%) scale(1.06); }
+.talk-call:disabled { opacity: 0.6; cursor: progress; }
+.talk-panel[data-view="chat"] .talk-call { display: none; }
+
+/* Back chevron over the small ball in chat view */
+.talk-back {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: var(--panel-fill-strong);
+  color: var(--panel-fg);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.talk-back svg { width: 16px; height: 16px; }
+.talk-panel[data-view="chat"] .talk-back { display: flex; }
+.talk-panel[data-view="chat"] .talk-avatar-wrap:hover .talk-back,
+.talk-panel[data-view="chat"] .talk-back:focus-visible { opacity: 1; }
+
+/* Status next to the small ball in chat view */
 .talk-status {
+  position: absolute;
+  top: 17px;
+  left: 52px;
+  margin: 0;
   font-size: 13px;
   color: var(--panel-muted);
-  text-align: center;
-  min-height: 18px;
-  margin: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
+.talk-panel[data-view="chat"] .talk-status { opacity: 1; }
 
-/* Caption: the current line only, clamped, fading in per turn */
-.talk-caption {
+/* ─── Stage ─────────────────────────────────────────── */
+.talk-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 236px 16px 8px;
+  transition: padding-top 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.talk-panel[data-view="chat"] .talk-stage { padding-top: 56px; }
+
+.talk-tagline {
   margin: 0;
   font-size: 15px;
   line-height: 1.5;
   text-align: center;
-  color: var(--panel-fg);
-  max-width: 30em;
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(4px);
-}
-.talk-caption.is-in {
-  animation: talk-caption-in 0.35s ease forwards;
-}
-@keyframes talk-caption-in {
-  to { opacity: 1; transform: none; }
-}
-.talk-caption[data-who="you"] { color: var(--panel-muted); }
-.talk-caption[data-who="you"]::before { content: 'You: '; }
-.talk-caption[data-who="note"] { font-size: 12px; color: var(--panel-muted); }
-.talk-caption:empty { display: none; }
-
-.talk-transcript-toggle {
-  flex-shrink: 0;
-  margin-top: 4px;
-  padding: 6px 10px;
-  border: none;
-  background: transparent;
-  font-family: var(--font-sans);
-  font-size: 12px;
   color: var(--panel-muted);
-  cursor: pointer;
-  border-radius: 6px;
 }
-.talk-transcript-toggle:hover { color: var(--panel-fg); background: var(--panel-fill); }
+.talk-panel[data-view="chat"] .talk-tagline { display: none; }
 
-/* Transcript: hidden until toggled; then the ball shrinks into a row and the log takes the body */
 .talk-transcript {
   display: none;
-  width: 100%;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -133,21 +170,12 @@
   line-height: 1.45;
   scrollbar-width: thin;
 }
-.talk-panel.show-transcript .talk-transcript { display: flex; }
-.talk-panel.show-transcript .talk-hero { flex-direction: row; gap: 10px; justify-content: flex-start; padding-right: 36px; }
-.talk-panel.show-transcript .talk-hero-text { align-items: flex-start; }
-.talk-panel.show-transcript .talk-status { text-align: left; }
-.talk-panel.show-transcript .talk-caption { display: none; }
-.talk-panel.show-transcript .talk-avatar,
-.chat-window.expanded .talk-panel.show-transcript .talk-avatar { width: 40px; height: 40px; }
-.talk-panel.show-transcript .talk-stage { padding-top: 12px; }
-.talk-panel.show-transcript .talk-transcript-toggle { margin-top: auto; }
-.talk-panel.show-transcript .talk-avatar-wrap { padding: 0; }
+.talk-panel[data-view="chat"] .talk-transcript { display: flex; }
 
 .talk-line {
-  max-width: 88%;
+  max-width: 86%;
   padding: 8px 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   white-space: pre-wrap;
   word-break: break-word;
   color: var(--panel-fg);
@@ -170,49 +198,39 @@
   padding: 0;
   text-align: center;
 }
+.talk-line.pending { color: var(--panel-muted); letter-spacing: 2px; }
 
-/* ─── Foot: controls, composer, disclosure ──────────── */
+/* ─── Foot: input, end-call, disclosure ─────────────── */
 .talk-foot {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 8px 12px 12px;
-  border-top: 1px solid var(--panel-border);
+  gap: 6px;
+  padding: 8px 12px 10px;
 }
-.talk-controls {
+.talk-composer {
+  margin: 0;
   display: flex;
+  align-items: center;
   gap: 8px;
-  justify-content: center;
 }
-.talk-btn {
-  display: inline-flex;
+.talk-composer .chat-input-wrap { flex: 1; min-width: 0; }
+.talk-end {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background: #e5484d;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 14px;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 500;
-  border: 1px solid var(--panel-border);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--panel-fg);
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
-.talk-btn:hover { background: var(--panel-fill); }
-.talk-btn svg { width: 16px; height: 16px; }
-.talk-btn.primary {
-  background: var(--panel-solid);
-  color: var(--panel-on-solid);
-  border-color: var(--panel-solid);
-}
-.talk-btn.primary:hover { opacity: 0.9; background: var(--panel-solid); }
-.talk-btn.is-muted { color: #e5484d; border-color: #e5484d; }
-
-.talk-composer { margin: 0; }
+.talk-end svg { width: 20px; height: 20px; }
+.talk-end:hover { transform: scale(1.05); }
 
 .talk-disclosure {
   font-size: 11px;
