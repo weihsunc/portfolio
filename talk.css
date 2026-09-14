@@ -1,243 +1,286 @@
 /* ═══════════════════════════════════════════════════════
-   TALK TO WEI — voice panel with the animated-mouth avatar
-   Opened from the About page and from the Agent Wei header.
-   Mouth position is tunable via --mouth-x / --mouth-y / --mouth-w.
+   TALK TO WEI — the voice panel inside the Agent Wei window
+   Uses the --panel-* palette set on .chat-window (chatbot.css).
+   Two views on data-view: 'orb' (big ball, call button, one line) and
+   'chat' (small ball in the corner, conversation in the body). The
+   input is always there.
    ═══════════════════════════════════════════════════════ */
 
-.talk-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-}
-.talk-overlay.open { opacity: 1; pointer-events: auto; }
-.talk-panel [hidden] { display: none !important; }
-
 .talk-panel {
-  width: min(440px, 100%);
-  max-height: 100%;
-  background: var(--background);
-  color: var(--foreground);
-  border: 1px solid var(--border-subtle);
-  border-radius: 20px;
-  padding: 16px 20px 18px;
+  position: relative;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  font-family: var(--font-sans);
-  transform: translateY(12px) scale(0.97);
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  overflow: hidden;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
 }
-.talk-overlay.open .talk-panel { transform: none; }
+.talk-panel [hidden] { display: none !important; }
 
-.talk-top {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.talk-title { font-size: 16px; font-weight: 600; margin: 0; }
-.talk-close {
+/* ─── Top-left: text-chat button (orb view) ─────────── */
+.talk-mode-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
   width: 36px;
   height: 36px;
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: var(--foreground);
+  color: var(--panel-fg);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, opacity 0.2s ease;
 }
-.talk-close:hover { background: var(--muted); }
-.talk-close svg { width: 16px; height: 16px; }
+.talk-mode-btn svg { width: 18px; height: 18px; }
+.talk-mode-btn:hover { background: var(--panel-fill); }
+.talk-panel[data-view="chat"] .talk-mode-btn { opacity: 0; pointer-events: none; }
 
-/* ─── Avatar ─────────────────────────────────────────── */
+/* ─── The big ball (orb view only) ──────────────────── */
 .talk-avatar-wrap {
-  position: relative;
-  padding: 8px;
-  border-radius: 50%;
+  position: absolute;
+  z-index: 2;
+  top: 56px;
+  left: 50%;
+  width: 150px;
+  height: 150px;
+  transform: translateX(-50%);
 }
-.talk-avatar-wrap::after {
-  content: '';
+.talk-panel[data-view="chat"] .talk-avatar-wrap { display: none; }
+.talk-avatar {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  pointer-events: none;
-}
-.talk-panel[data-state="listening"] .talk-avatar-wrap::after {
-  border-color: #2ecc71;
-  animation: talk-pulse 1.6s ease-in-out infinite;
-}
-.talk-panel[data-state="speaking"] .talk-avatar-wrap::after {
-  border-color: #ff7a1a;
-  box-shadow: 0 0 0 6px rgba(255, 122, 26, 0.18);
-}
-.talk-panel[data-state="thinking"] .talk-avatar-wrap::after,
-.talk-panel[data-state="connecting"] .talk-avatar-wrap::after {
-  border-color: var(--muted-foreground);
-  animation: talk-spin 1.2s linear infinite;
-  border-top-color: transparent;
-}
-@keyframes talk-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.35); }
-  50%      { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
-}
-@keyframes talk-spin { to { transform: rotate(360deg); } }
-
-.talk-avatar {
-  position: relative;
-  width: 220px;
-  height: 220px;
   border-radius: 50%;
   overflow: hidden;
   background: transparent;
 }
 /* The photo is only sampled by the dot renderer, never shown */
 .talk-avatar img { display: none; }
-
-/* ─── Status + transcript ────────────────────────────── */
-.talk-status {
-  font-size: 14px;
-  color: var(--muted-foreground);
-  text-align: center;
-  min-height: 20px;
-  margin: 0;
-}
-.talk-transcript {
-  width: 100%;
-  max-height: 150px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 14px;
-  line-height: 1.45;
-  scrollbar-width: thin;
-}
-.talk-transcript:empty { display: none; }
-.talk-line {
-  max-width: 88%;
-  padding: 8px 12px;
-  border-radius: 12px;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.talk-line.wei {
-  align-self: flex-start;
-  background: var(--muted);
-  border-bottom-left-radius: 4px;
-}
-.talk-line.you {
-  align-self: flex-end;
-  background: var(--foreground);
-  color: var(--background);
-  border-bottom-right-radius: 4px;
-}
-.talk-line.note {
-  align-self: center;
-  color: var(--muted-foreground);
-  font-size: 12px;
-  padding: 0;
-  text-align: center;
-}
-
-/* ─── Controls ───────────────────────────────────────── */
-.talk-controls {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.talk-controls .btn {
-  font-size: 15px;
-  padding: 8px 16px;
-}
-.talk-controls .btn.primary {
-  background: var(--foreground);
-  color: var(--background);
-  border-color: var(--foreground);
-}
-.talk-controls .btn.primary:hover { opacity: 0.9; }
-.talk-controls .btn.danger:hover { border-color: #e5484d; color: #e5484d; }
-.talk-controls .btn svg { width: 16px; height: 16px; }
-.talk-controls .btn.is-muted { color: #e5484d; border-color: #e5484d; }
-
-.talk-composer {
-  width: 100%;
-  display: flex;
-  gap: 8px;
-}
-.talk-composer input {
-  flex: 1;
-  min-width: 0;
-  font-family: var(--font-sans);
-  font-size: 15px;
-  padding: 9px 12px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--foreground);
-  outline: none;
-}
-.talk-composer input:focus { border-color: var(--ring); }
-.talk-composer .btn { font-size: 15px; padding: 8px 14px; }
-
-.talk-disclosure {
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--muted-foreground);
-  text-align: center;
-  margin: 0;
-}
-.talk-disclosure a { color: inherit; }
-
-/* About page entry point */
-.about-actions { display: flex; gap: 8px; align-items: center; }
-.about-actions .btn svg { width: 18px; height: 18px; }
-
-@media (max-width: 520px) {
-  .talk-overlay { padding: 0; align-items: flex-end; }
-  .talk-panel {
-    width: 100%;
-    max-height: 92vh;
-    border-radius: 20px 20px 0 0;
-    padding-bottom: max(18px, env(safe-area-inset-bottom));
-  }
-  .talk-avatar { width: 180px; height: 180px; }
-}
-
 .talk-dots {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
-  color: var(--foreground); /* dot colour, read by the renderer */
+  color: var(--panel-fg); /* dot colour, read by the renderer */
   cursor: grab;
-  touch-action: none; /* drag rotates instead of scrolling the page */
+  touch-action: none;
   user-select: none;
 }
 .talk-dots:active { cursor: grabbing; }
 
-/* The dots carry the state, so there is no ring. */
-.talk-avatar-wrap::after {
-  border-color: transparent !important;
-  animation: none !important;
-  box-shadow: none !important;
+/* ─── Small ball top left (chat view): the chip's ball, doubles as Back ─── */
+.talk-back {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--panel-fg);
+  cursor: pointer;
+  display: none;
+  overflow: hidden;
 }
+.talk-panel[data-view="chat"] .talk-back { display: block; }
+.talk-back .chat-ball { position: absolute; inset: 0; width: 100%; height: 100%; }
+.talk-back-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--panel-fill-strong);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.talk-back-icon svg { width: 16px; height: 16px; }
+.talk-back:hover .talk-back-icon,
+.talk-back:focus-visible .talk-back-icon { opacity: 1; }
+
+/* Status next to the small ball in chat view */
+.talk-status {
+  position: absolute;
+  top: 17px;
+  left: 52px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--panel-muted);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.talk-panel[data-view="chat"] .talk-status { opacity: 1; }
+
+/* ─── Stage ─────────────────────────────────────────── */
+.talk-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 222px 16px 8px;
+}
+.talk-panel[data-view="chat"] .talk-stage { padding-top: 56px; align-items: stretch; gap: 0; }
+
+.talk-tagline {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--panel-muted);
+}
+.talk-panel[data-view="chat"] .talk-tagline { display: none; }
+
+/* Start talking: icon + text, same shape as the site buttons, with the
+   chip's gradient flash on hover */
+.talk-call {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px 0 16px;
+  border-radius: 12px;
+  border: none;
+  background: var(--panel-solid);
+  color: var(--panel-on-solid);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+.talk-call > * { position: relative; z-index: 2; }
+.talk-call svg { width: 18px; height: 18px; }
+.talk-call::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(223, 58, 88, 0.35) 15%,
+    rgba(244, 136, 74, 0.35) 35%,
+    rgba(252, 195, 92, 0.35) 55%,
+    rgba(74, 141, 168, 0.3) 80%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-position: -100% 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+.talk-call:hover::before {
+  opacity: 1;
+  animation: gradientFlash 0.8s ease-out forwards;
+}
+.talk-call:disabled { opacity: 0.6; cursor: progress; }
+.talk-call:disabled::before { display: none; }
+.talk-panel[data-view="chat"] .talk-call { display: none; }
+
+.talk-transcript {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  scrollbar-width: thin;
+}
+.talk-panel[data-view="chat"] .talk-transcript { display: flex; }
+
+.talk-line {
+  max-width: 86%;
+  padding: 8px 12px;
+  border-radius: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--panel-fg);
+}
+.talk-line.wei {
+  align-self: flex-start;
+  background: var(--panel-fill);
+  border-bottom-left-radius: 4px;
+}
+.talk-line.you {
+  align-self: flex-end;
+  background: var(--panel-solid);
+  color: var(--panel-on-solid);
+  border-bottom-right-radius: 4px;
+}
+.talk-line.note {
+  align-self: center;
+  color: var(--panel-muted);
+  font-size: 12px;
+  padding: 0;
+  text-align: center;
+}
+.talk-line.pending { color: var(--panel-muted); letter-spacing: 2px; }
+
+/* ─── Foot: input, end-call, disclosure ─────────────── */
+.talk-foot {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px 10px;
+}
+.talk-composer {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.talk-composer .chat-input-wrap { flex: 1; min-width: 0; }
+.talk-panel[data-view="chat"] .talk-dots { pointer-events: none; }
+.talk-end {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background: #e5484d;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.talk-end svg { width: 20px; height: 20px; }
+.talk-end:hover { transform: scale(1.05); }
+
+.talk-disclosure {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--panel-muted);
+  text-align: center;
+  margin: 0;
+}
+.talk-disclosure a { color: inherit; }
+
+/* About page entry point: the chip's ball inside a site button */
+.about-actions { display: flex; gap: 8px; align-items: center; }
+.btn-agent { gap: 10px; padding-left: 12px; }
+.btn-agent-ball {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  overflow: hidden;
+  color: var(--foreground); /* dot colour, read by the renderer */
+}
+.btn-agent-ball .chat-ball { position: absolute; inset: 0; width: 100%; height: 100%; }

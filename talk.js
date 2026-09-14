@@ -5,7 +5,8 @@
    /api/chat and the reply is read aloud with the browser voice.
    A monochrome 3D dot avatar reacts to the call: sphere at rest, soft
    cube while thinking, organic blob pulsing with the voice while speaking.
-   Exposes window.TalkToWei = { open, close }.
+   Lives inside the Agent Wei window (chatbot.js builds the shell and calls
+   mount / activate / deactivate). window.TalkToWei.open() opens that window.
    ═══════════════════════════════════════════════════════ */
 
 (function () {
@@ -17,6 +18,7 @@
   const MAX_HISTORY = 16;
 
   const DEMO_GREETING = "Hey, I'm the AI version of Wei. This is demo mode, so you are hearing a browser voice for now. Once my voice agent is connected you will be able to talk to me out loud. In the meantime, type a question below.";
+  const CHAT_GREETING = "Hey, I'm the AI version of Wei. Ask me anything about my work, what I'm building now, or how I think about design.";
   const OFFLINE_ANSWER = "I can't reach my brain right now, but here is the short version: I'm a product designer who ships with AI. I'm driving design at Illoca and co-founding Lofi. Ask me again once the site is deployed.";
 
   const CLOSE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>`;
@@ -34,52 +36,61 @@
   let pulse = 0;           // demo-mode syllable energy
   let rafId = 0;
   let syllableTimer = 0;
-  let muted = false;
   let history = [];        // demo-mode chat turns for /api/chat
-  let lastFocus = null;
   let dots = null;          // dot avatar renderer
 
   const clamp = v => Math.max(0, Math.min(1, v));
 
   /* ─── DOM ────────────────────────────────────────────── */
-  function build() {
-    const overlay = document.createElement('div');
-    overlay.className = 'talk-overlay';
-    overlay.innerHTML = `
-      <div class="talk-panel" role="dialog" aria-modal="true" aria-label="Talk to Wei" data-state="idle">
-        <div class="talk-top">
-          <h3 class="talk-title">Talk to Wei</h3>
-          <button class="talk-close" aria-label="Close">${CLOSE_SVG}</button>
-        </div>
-        <div class="talk-avatar-wrap">
-          <div class="talk-avatar">
-            <img src="images/avatar-face.jpg" alt="" hidden draggable="false" />
-            <canvas class="talk-dots" aria-label="Wei, as a cloud of dots"></canvas>
-          </div>
-        </div>
-        <p class="talk-status">Start a conversation. Your mic is only used while it is on.</p>
-        <div class="talk-transcript" aria-live="polite"></div>
-        <div class="talk-controls">
-          <button class="btn primary talk-start">${MIC_SVG}<span>Start talking</span></button>
-          <button class="btn talk-mute" hidden>Mute</button>
-          <button class="btn danger talk-end" hidden>End</button>
-        </div>
-        <form class="talk-composer" hidden>
-          <input type="text" maxlength="500" placeholder="Or type a question" aria-label="Type a question" autocomplete="off" />
-          <button type="submit" class="btn">Send</button>
-        </form>
-        <p class="talk-disclosure">An AI version of Wei, trained on his notes. For anything important, email <a href="mailto:weihsunc@gmail.com">weihsunc@gmail.com</a>.</p>
-      </div>`;
-    document.body.appendChild(overlay);
+  const ARROW_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="13" x2="13" y2="3"/><polyline points="6 3 13 3 13 10"/></svg>`;
 
-    const q = s => overlay.querySelector(s);
+  const CHAT_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.0052 12H12.0142M16.0007 12H16.0097M8.00973 12H8.0187M12 21.5C17.2467 21.5 21.5 17.2467 21.5 12C21.5 6.75329 17.2467 2.5 12 2.5C6.75329 2.5 2.5 6.75329 2.5 12C2.5 13.0483 2.6698 14.057 2.98341 15C3.5282 16.6382 3.12865 18.5818 2.6935 19.6074C2.59266 19.8451 2.62741 20.1274 2.80997 20.31C2.93024 20.4302 3.09774 20.4913 3.26592 20.4658C4.37462 20.2979 5.63177 19.362 7.5 20.3687C8.8394 21.0904 10.3719 21.5 12 21.5Z"/></svg>`;
+  const BACK_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 6 9 12 15 18"/></svg>`;
+  const END_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6799 13.3101C11.6948 14.3258 12.8418 15.2004 14.0899 15.9101L15.3599 14.6401C15.6318 14.3712 15.9751 14.1859 16.3491 14.1062C16.723 14.0264 17.112 14.0556 17.4699 14.1901C18.3772 14.5286 19.3199 14.7635 20.2799 14.8901C20.7605 14.958 21.1999 15.1984 21.5164 15.5663C21.8329 15.9343 22.0047 16.4048 21.9999 16.8901V19.8901C22.0011 20.1686 21.944 20.4443 21.8324 20.6994C21.7209 20.9546 21.5572 21.1837 21.352 21.372C21.1468 21.5602 20.9045 21.7036 20.6407 21.7928C20.3769 21.882 20.0973 21.9152 19.8199 21.8901C16.7428 21.5557 13.7869 20.5042 11.1899 18.8201C9.9852 18.0552 8.86846 17.1597 7.85993 16.1501M5.18993 12.8101C3.50579 10.2131 2.45429 7.25726 2.11993 4.1801C2.09494 3.90356 2.12781 3.62486 2.21643 3.36172C2.30506 3.09859 2.4475 2.85679 2.6347 2.65172C2.82189 2.44665 3.04974 2.28281 3.30372 2.17062C3.55771 2.05843 3.83227 2.00036 4.10993 2.0001H7.10993C7.59524 1.99532 8.06572 2.16718 8.43369 2.48363C8.80166 2.80008 9.04201 3.23954 9.10993 3.7201C9.23656 4.68016 9.47138 5.62282 9.80993 6.5301C9.94448 6.88802 9.9736 7.27701 9.89384 7.65098C9.81408 8.02494 9.6288 8.36821 9.35993 8.6401L8.08993 9.9101M22 2L2 22"/></svg>`;
+
+  function mount(container) {
+    container.classList.add('talk-panel');
+    container.dataset.state = 'idle';
+    container.dataset.view = 'orb';
+    container.innerHTML = `
+      <button type="button" class="talk-mode-btn" aria-label="Text chat">${CHAT_SVG}</button>
+      <button type="button" class="talk-back" aria-label="Back to the ball">
+        <canvas class="chat-ball" aria-hidden="true"></canvas>
+        <span class="talk-back-icon">${BACK_SVG}</span>
+      </button>
+      <p class="talk-status"></p>
+      <div class="talk-avatar-wrap">
+        <div class="talk-avatar">
+          <img src="images/avatar-face.jpg" alt="" hidden draggable="false" />
+          <canvas class="talk-dots" aria-label="Wei, as a cloud of dots"></canvas>
+        </div>
+      </div>
+      <div class="talk-stage">
+        <p class="talk-tagline">Ask me anything about my work.</p>
+        <button type="button" class="talk-call">${MIC_SVG}<span>Start talking</span></button>
+        <div class="talk-transcript" aria-live="polite"></div>
+      </div>
+      <div class="talk-foot">
+        <form class="talk-composer">
+          <div class="chat-input-wrap">
+            <input class="chat-input" type="text" maxlength="500" placeholder="Or type a question" aria-label="Type a question" autocomplete="off" />
+            <button type="submit" class="chat-send" aria-label="Send">${ARROW_SVG}</button>
+          </div>
+          <button type="button" class="talk-end" hidden aria-label="End call">${END_SVG}</button>
+        </form>
+        <p class="talk-disclosure">AI version of Wei, from his notes. Anything important, email <a href="mailto:weihsunc@gmail.com">weihsunc@gmail.com</a>.</p>
+      </div>`;
+
+    const q = sel => container.querySelector(sel);
     el = {
-      overlay,
-      panel: q('.talk-panel'),
+      panel: container,
       status: q('.talk-status'),
+      tagline: q('.talk-tagline'),
       transcript: q('.talk-transcript'),
-      startBtn: q('.talk-start'),
-      muteBtn: q('.talk-mute'),
+      callBtn: q('.talk-call'),
+      backBtn: q('.talk-back'),
+      miniBall: q('.talk-back .chat-ball'),
+      modeBtn: q('.talk-mode-btn'),
       endBtn: q('.talk-end'),
       composer: q('.talk-composer'),
       input: q('.talk-composer input'),
@@ -88,23 +99,23 @@
     };
 
     dots = createDotAvatar(el.canvas, el.img);
+    if (window.AgentWei && window.AgentWei.ball) window.AgentWei.ball(el.miniBall);
 
-    q('.talk-close').addEventListener('click', close);
-    let downOnBackdrop = false;
-    overlay.addEventListener('pointerdown', e => { downOnBackdrop = e.target === overlay; });
-    overlay.addEventListener('click', e => { if (e.target === overlay && downOnBackdrop) close(); downOnBackdrop = false; });
-    el.startBtn.addEventListener('click', start);
-    el.endBtn.addEventListener('click', () => end('Conversation ended.'));
-    el.muteBtn.addEventListener('click', toggleMute);
+    el.callBtn.addEventListener('click', start);
+    el.endBtn.addEventListener('click', () => end('Call ended.'));
+    el.modeBtn.addEventListener('click', () => {
+      // Entering chat mode with nothing said yet: Wei opens, like a real chat
+      if (!el.transcript.children.length) addLine('wei', CHAT_GREETING);
+      setView('chat');
+      el.input.focus();
+    });
+    el.backBtn.addEventListener('click', () => setView('orb'));
     el.composer.addEventListener('submit', e => {
       e.preventDefault();
       const text = el.input.value.trim();
       if (!text) return;
       el.input.value = '';
       ask(text);
-    });
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && overlay.classList.contains('open')) close();
     });
   }
 
@@ -145,7 +156,7 @@
     grid: 96,        // sampling cells per side
     faceDots: 1500,  // dots on the front of the head
     backDots: 520,   // sparse dots on the back of the head
-    sphereDots: 620, // dots visible on the resting sphere (the rest fade in as the head forms)
+    sphereDots: 340, // dots visible on the resting sphere (the rest fade in as shapes form)
     sphereRadius: 72,
     blobAmp: 0.55,   // how far the sphere deforms while speaking, fraction of its radius
     cubeness: 0.7,   // how square the thinking shape gets, 0 sphere .. 1 sharp cube
@@ -550,7 +561,7 @@
             X += ddx * g; Y += ddy * g;
           }
         }
-        const r = (0.35 + sdepth * 0.95) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
+        const r = (0.45 + sdepth * 0.5) * (1 - m) + (p.r * (0.6 + hdepth * 0.6)) * m;
         // sphere: core dots, plus the rest fading in as the blob forms; head: everything
         const aSphere = p.core ? (0.18 + sdepth * 0.82) * (1 - cube * 0.25) : 0;
         if (aSphere === 0 && m === 0) continue;
@@ -572,33 +583,56 @@
 
   /* ─── UI helpers ─────────────────────────────────────── */
   const STATUS = {
-    idle: 'Start a conversation. Your mic is only used while it is on.',
+    idle: '',
     connecting: 'Connecting…',
-    listening: 'Listening. Go ahead.',
+    listening: 'Listening',
     thinking: 'Thinking…',
-    speaking: 'Wei is speaking.'
+    speaking: 'Speaking'
   };
+  const TAGLINE = 'Ask me anything about my work.';
+
+  /* Two views. 'orb': the big ball with the call button, one line, the input.
+     'chat': the ball small in the corner, the conversation in the body. */
+  function setView(view) {
+    el.panel.dataset.view = view;
+    if (view === 'chat') el.transcript.scrollTop = el.transcript.scrollHeight;
+  }
 
   function setState(next) {
     state = next;
     el.panel.dataset.state = next;
-    el.status.textContent = mode === 'demo' && next === 'listening'
-      ? 'Your turn. Type a question below.'
-      : STATUS[next];
-    const active = next !== 'idle';
-    el.startBtn.hidden = active;
+    const active = next !== 'idle' && next !== 'connecting';
+    el.status.textContent = STATUS[next] || '';
+    el.callBtn.hidden = active;
+    el.callBtn.disabled = next === 'connecting';
+    el.callBtn.querySelector('span').textContent = next === 'connecting' ? 'Connecting…' : 'Start talking';
     el.endBtn.hidden = !active;
-    el.muteBtn.hidden = !(active && mode === 'live');
-    el.composer.hidden = !active;
+    if (active) setView('chat');
   }
 
   function addLine(who, text) {
+    clearPending();
     const div = document.createElement('div');
     div.className = `talk-line ${who}`;
     div.textContent = text;
     el.transcript.appendChild(div);
+    setView('chat');
     el.transcript.scrollTop = el.transcript.scrollHeight;
     return div;
+  }
+
+  // The "…" bubble while a typed question waits for its answer
+  function showPending() {
+    clearPending();
+    const div = document.createElement('div');
+    div.className = 'talk-line wei pending';
+    div.textContent = '…';
+    el.transcript.appendChild(div);
+    el.transcript.scrollTop = el.transcript.scrollHeight;
+  }
+  function clearPending() {
+    const p = el.transcript.querySelector('.talk-line.pending');
+    if (p) p.remove();
   }
 
   function lastLine(who) {
@@ -675,8 +709,7 @@
 
   function startDemo() {
     mode = 'demo';
-    history = [];
-    addLine('note', 'Demo mode: browser voice, typed questions.');
+    addLine('note', 'Demo mode: browser voice.');
     say(DEMO_GREETING);
     setTimeout(() => el.input.focus(), 50);
   }
@@ -690,19 +723,9 @@
     clearInterval(syllableTimer);
     level = 0;
     if (note && state !== 'idle') addLine('note', note);
+    if (mode !== 'text') history = [];
     mode = null;
-    muted = false;
-    el.muteBtn.classList.remove('is-muted');
-    el.muteBtn.textContent = 'Mute';
     setState('idle');
-  }
-
-  function toggleMute() {
-    if (!conversation) return;
-    muted = !muted;
-    try { conversation.setMicMuted(muted); } catch (_) { /* older sdk */ }
-    el.muteBtn.classList.toggle('is-muted', muted);
-    el.muteBtn.textContent = muted ? 'Unmute' : 'Mute';
   }
 
   /* ─── Typed questions ────────────────────────────────── */
@@ -712,10 +735,12 @@
       try { conversation.sendUserMessage(text); } catch (err) { console.warn(err); }
       return;
     }
-    if (mode !== 'demo') return;
+    // No call running (or the browser-voice demo): answer as text from /api/chat
+    if (!mode) mode = 'text';
     history.push({ role: 'user', content: text });
     history = history.slice(-MAX_HISTORY);
-    setState('thinking');
+    const speak = mode === 'demo';
+    if (speak) setState('thinking'); else showPending();
     let reply = '';
     try {
       const r = await fetch(CHAT_URL, {
@@ -728,10 +753,11 @@
         reply = typeof data.text === 'string' ? data.text.trim() : '';
       }
     } catch (_) { /* fall through */ }
-    if (mode !== 'demo') return; // ended while waiting
+    if (mode !== 'demo' && mode !== 'text') return; // ended while waiting
     if (!reply) reply = OFFLINE_ANSWER;
     history.push({ role: 'assistant', content: reply });
-    say(toSpeech(reply));
+    if (speak) say(toSpeech(reply));
+    else addLine('wei', toSpeech(reply));
   }
 
   /* ─── Demo speech (browser voice + synthetic mouth energy) ── */
@@ -774,27 +800,26 @@
   }
 
   /* ─── Public API ─────────────────────────────────────── */
-  function open() {
-    if (!el) build();
-    lastFocus = document.activeElement;
-    el.transcript.innerHTML = '';
-    el.overlay.classList.add('open');
+  // The Agent Wei window owns open and close; these run when it shows or hides.
+  function activate() {
+    if (!el) return;
     setState('idle');
+    if (!el.transcript.children.length) setView('orb');
     startLoop();
-    setTimeout(() => el.startBtn.focus(), 60);
   }
 
-  function close() {
+  function deactivate() {
     if (!el) return;
     end();
     stopLoop();
-    el.overlay.classList.remove('open');
-    if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
+
+  function open() { if (window.AgentWei) window.AgentWei.open(); }
+  function close() { if (window.AgentWei) window.AgentWei.close(); }
 
   if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => {};
 
-  window.TalkToWei = { open, close };
+  window.TalkToWei = { mount, activate, deactivate, open, close };
   // Local-only hook so the avatar states can be previewed without a call
   if (location.hostname === 'localhost') {
     window.TalkToWei._setState = s => { if (el) setState(s); };
