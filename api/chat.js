@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════ */
 
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 const MODEL = 'claude-haiku-4-5-20251001';
 const MAX_MESSAGES = 20;        // conversation turns kept per request
@@ -32,15 +32,26 @@ const RULES = `## Rules
 
 /* The knowledge file is plain markdown that Wei edits directly. It is read on
    every request so edits show up without a restart. vercel.json includes it
-   in the function bundle. */
-const KNOWLEDGE_PATH = fileURLToPath(new URL('../knowledge/wei.md', import.meta.url));
+   in the function bundle.
+
+   Vercel compiles this file to CommonJS, so import.meta must not appear here:
+   it is a syntax error in that build and took the whole function down. Resolve
+   the path from whatever the runtime gives us instead: __dirname in the
+   CommonJS build, SITE_ROOT from the local harness, or the working directory. */
+const KNOWLEDGE_CANDIDATES = [
+  typeof __dirname === 'string' ? join(__dirname, '..') : null,
+  process.env.SITE_ROOT,
+  process.cwd(),
+].filter(Boolean).map(root => join(root, 'knowledge', 'wei.md'));
+
 function loadKnowledge() {
-  try {
-    return readFileSync(KNOWLEDGE_PATH, 'utf8').trim();
-  } catch (e) {
-    console.error('Knowledge file missing', e);
-    return '';
+  for (const file of KNOWLEDGE_CANDIDATES) {
+    try {
+      return readFileSync(file, 'utf8').trim();
+    } catch (_) { /* try the next location */ }
   }
+  console.error('Knowledge file missing, looked in', KNOWLEDGE_CANDIDATES);
+  return '';
 }
 
 function buildSystemPrompt(pageKey) {
