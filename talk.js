@@ -38,6 +38,7 @@
   let syllableTimer = 0;
   let history = [];        // demo-mode chat turns for /api/chat
   let dots = null;          // dot avatar renderer
+  let miniBall = null;      // the small chip ball in chat view, from AgentWei.ball
 
   const clamp = v => Math.max(0, Math.min(1, v));
 
@@ -99,7 +100,7 @@
     };
 
     dots = createDotAvatar(el.canvas, el.img);
-    if (window.AgentWei && window.AgentWei.ball) window.AgentWei.ball(el.miniBall);
+    if (window.AgentWei && window.AgentWei.ball) miniBall = window.AgentWei.ball(el.miniBall);
 
     el.callBtn.addEventListener('click', start);
     el.endBtn.addEventListener('click', () => end('Call ended.'));
@@ -806,12 +807,14 @@
     setState('idle');
     if (!el.transcript.children.length) setView('orb');
     startLoop();
+    if (miniBall) miniBall.resume();
   }
 
   function deactivate() {
     if (!el) return;
     end();
     stopLoop();
+    if (miniBall) miniBall.pause(); // the window is hidden, nothing inside needs to turn
   }
 
   function open() { if (window.AgentWei) window.AgentWei.open(); }
