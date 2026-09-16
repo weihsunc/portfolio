@@ -25,8 +25,9 @@ export const config = {
      * - /favicon.ico, /favicon-32x32.png, /apple-touch-icon.png
      * - /shared.css, /shared.js, /chatbot.css, /chatbot.js (assets needed by pages)
      * - /password and /password.html (the password page itself)
+     * - /_vercel/* (Web Analytics script and beacon)
      */
-    '/((?!api|images|favicon|shared\\.|chatbot\\.|talk\\.|password).*)',
+    '/((?!api|images|favicon|shared\\.|chatbot\\.|talk\\.|password|_vercel).*)',
   ],
 };
 
