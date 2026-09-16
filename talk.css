@@ -215,6 +215,7 @@
   background: var(--panel-fill);
   border-bottom-left-radius: 4px;
 }
+.talk-line.wei a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .talk-line.you {
   align-self: flex-end;
   background: var(--panel-solid);

@@ -611,11 +611,32 @@
     if (active) setView('chat');
   }
 
+  // Wei's bubbles: the address as written, as a mailto link, and links for
+  // any URL. The voice agent spells the address out so it is spoken clearly
+  // ("wei h sun c at gmail dot com"); the transcript shows the real one.
+  const SPOKEN_EMAIL = /wei\s*[- ]?h\s*[- ]?sun\s*[- ]?c\s*(?:at|@)\s*gmail\s*(?:dot|\.)\s*com/gi;
+  const LINK = /([\w.+-]+@[\w-]+(?:\.[\w-]+)+)|(https?:\/\/[^\s<>"')\]]+[^\s<>"')\].,!?])/g;
+  function renderRich(node, text) {
+    text = text.replace(SPOKEN_EMAIL, 'weihsunc@gmail.com');
+    let last = 0, m;
+    while ((m = LINK.exec(text))) {
+      if (m.index > last) node.appendChild(document.createTextNode(text.slice(last, m.index)));
+      const a = document.createElement('a');
+      a.textContent = m[0];
+      if (m[1]) a.href = `mailto:${m[1]}`;
+      else { a.href = m[2]; a.target = '_blank'; a.rel = 'noopener'; }
+      node.appendChild(a);
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) node.appendChild(document.createTextNode(text.slice(last)));
+  }
+
   function addLine(who, text) {
     clearPending();
     const div = document.createElement('div');
     div.className = `talk-line ${who}`;
-    div.textContent = text;
+    if (who === 'wei') renderRich(div, text);
+    else div.textContent = text;
     el.transcript.appendChild(div);
     setView('chat');
     el.transcript.scrollTop = el.transcript.scrollHeight;
@@ -642,14 +663,18 @@
   }
 
   /* Strip markup and links so the voice reads plain sentences. */
-  function toSpeech(text) {
+  // Plain text for a bubble: no HTML or markdown, links kept (addLine makes them clickable)
+  function toText(text) {
     return String(text)
       .replace(/<[^>]+>/g, '')
       .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-      .replace(/https?:\/\/\S+/g, '')
       .replace(/[*_`#]+/g, '')
       .replace(/\s+/g, ' ')
       .trim();
+  }
+  // The same for the browser voice, minus URLs, which read badly aloud
+  function toSpeech(text) {
+    return toText(text).replace(/https?:\/\/\S+/g, '').replace(/\s+/g, ' ').trim();
   }
 
   /* ─── Session control ────────────────────────────────── */
@@ -758,7 +783,7 @@
     if (!reply) reply = OFFLINE_ANSWER;
     history.push({ role: 'assistant', content: reply });
     if (speak) say(toSpeech(reply));
-    else addLine('wei', toSpeech(reply));
+    else addLine('wei', toText(reply));
   }
 
   /* ─── Demo speech (browser voice + synthetic mouth energy) ── */
