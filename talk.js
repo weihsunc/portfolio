@@ -690,8 +690,9 @@
     } catch (_) { /* no session endpoint: demo mode */ }
 
     if (creds && (creds.signedUrl || creds.agentId)) {
-      const ok = await startLive(creds);
-      if (ok) return;
+      const outcome = await startLive(creds); // 'live' | 'demo' | 'text'
+      if (outcome === 'live') return;
+      if (outcome === 'text') { end(); setTimeout(() => el.input.focus(), 50); return; }
     }
     startDemo();
   }
@@ -702,6 +703,10 @@
       const { Conversation } = await import(SDK_URL);
       conversation = await Conversation.startSession({
         ...(creds.signedUrl ? { signedUrl: creds.signedUrl } : { agentId: creds.agentId }),
+        // Websocket, not the SDK's WebRTC default: when ElevenLabs refuses a
+        // call (no credits, agent missing) it says so at once, where WebRTC
+        // retries the room for half a minute and then ends with no reason.
+        connectionType: 'websocket',
         onModeChange: ({ mode: m }) => setState(m === 'speaking' ? 'speaking' : 'listening'),
         onMessage: ({ message, source }) => {
           if (!message) return;
@@ -711,8 +716,16 @@
             addLine('wei', message);
           }
         },
+        // The SDK reports 'disconnected' first and the reason right after, so
+        // the status handler waits a tick and only acts if nothing else did.
+        onDisconnect: details => {
+          if (state === 'idle') return;
+          if (details && details.reason === 'user') { end(); return; }
+          const text = String((details && (details.message || details.closeReason || (details.context && details.context.reason))) || '');
+          end(endNote(text));
+        },
         onStatusChange: ({ status }) => {
-          if (status === 'disconnected' && state !== 'idle') end('Call ended.');
+          if (status === 'disconnected') setTimeout(() => { if (state !== 'idle' && mode === 'live') end('Call ended.'); }, 0);
         },
         onError: err => {
           console.error('Talk to Wei: agent error', err);
@@ -721,16 +734,29 @@
       });
       mode = 'live';
       setState('listening');
-      return true;
+      return 'live';
     } catch (err) {
-      console.warn('Talk to Wei: live session unavailable, using demo', err);
+      console.warn('Talk to Wei: live session unavailable', err);
       conversation = null;
       const micBlocked = err && (err.name === 'NotAllowedError' || err.name === 'NotFoundError');
-      addLine('note', micBlocked
-        ? 'Microphone blocked. Allow mic access in your browser to talk out loud, or type below.'
-        : 'Voice call unavailable right now, showing the demo instead.');
-      return false;
+      if (micBlocked) {
+        addLine('note', 'Microphone blocked. Allow mic access in your browser to talk out loud, or type below.');
+        return 'demo';
+      }
+      // ElevenLabs refused the call (no credits, agent missing): typed chat still works
+      const refused = endNote(String((err && (err.message || err.closeReason)) || ''));
+      if (refused !== 'Call ended.') { addLine('note', refused); return 'text'; }
+      addLine('note', 'Voice call unavailable right now, showing the demo instead.');
+      return 'demo';
     }
+  }
+
+  // What to tell the visitor when ElevenLabs closes the call on its side
+  function endNote(reason) {
+    if (/quota_exceeded|out of credits/i.test(reason)) return 'Voice is out of minutes for now. Type your question below instead.';
+    if (/agent.*(not found|unpublished)|does not exist/i.test(reason)) return 'Voice is unavailable right now. Type your question below instead.';
+    if (/timeout|silence/i.test(reason)) return 'Call ended after a quiet spell.';
+    return 'Call ended.';
   }
 
   function startDemo() {
