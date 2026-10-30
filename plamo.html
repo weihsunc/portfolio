@@ -198,41 +198,16 @@
     }
     .pp-img-pair--ui .pp-img-pair-item img { object-fit: contain; object-position: center; }
 
-    /* ─── Brand strip ────────────────────────────────────── */
-    .pp-brand {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .pp-swatch {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .pp-swatch-chip {
-      aspect-ratio: 1 / 1;
+    /* ─── Homepage video ─────────────────────────────────── */
+    .pp-video {
+      aspect-ratio: 4 / 3;
+      width: 100%;
+      overflow: hidden;
       border-radius: 4px;
-      border: 1px solid var(--border);
-    }
-    .pp-swatch-name { font-size: 16px; line-height: 20px; }
-    .pp-swatch-hex {
-      font-size: 13px;
-      line-height: 16px;
-      color: var(--muted-foreground);
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.02em;
-    }
-    .pp-brand-type {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 40px;
-      font-size: 16px;
-      line-height: 24px;
-      color: var(--muted-foreground);
       margin-bottom: 64px;
+      background: var(--card);
     }
-    .pp-brand-type strong { color: var(--foreground); font-weight: 500; }
+    .pp-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
 
     /* ─── Caption ────────────────────────────────────────── */
     .pp-caption {
@@ -241,6 +216,12 @@
       color: var(--muted-foreground);
       margin: -44px 0 64px;
     }
+    .pp-caption a {
+      color: var(--foreground);
+      border-bottom: 1px solid var(--muted-foreground);
+      transition: border-color 150ms ease;
+    }
+    .pp-caption a:hover { border-color: var(--foreground); }
 
     /* ─── Stats row ──────────────────────────────────────── */
     .pp-stats {
@@ -386,7 +367,6 @@
       .pp-stat:last-child { border-bottom: none; }
       .pp-stat-number { font-size: 64px; }
       .pp-impact li { grid-template-columns: 1fr; gap: 6px; }
-      .pp-brand { grid-template-columns: repeat(3, 1fr); }
       .pp-quote p { font-size: 24px; line-height: 32px; }
       .footer-row { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
       .footer-social, .footer-end { justify-self: unset; }
@@ -497,24 +477,16 @@
       <div class="pp-title-section reveal">
         <h2 class="pp-section-title">Brand and positioning</h2>
         <div class="pp-section-desc">
-          <p>Plamo lives under the illoca brand: blueprint blue, rust orange and warm paper grounds that read like a drafting table. I directed an external agency on the identity and the marketing site, owned the positioning against Revit, Motif and Navisworks, and revamped illoca.com so Plamo is what visitors meet first.</p>
+          <p>Plamo lives under the illoca brand: blueprint blue, rust orange and warm paper grounds that read like a drafting table. I directed an external agency on the identity and the <a href="https://www.awwwards.com/sites/illoca" target="_blank" rel="noopener">marketing site</a>, owned the positioning against Revit, Motif and Navisworks, and revamped illoca.com so Plamo is what visitors meet first.</p>
         </div>
       </div>
 
-      <div class="pp-brand reveal">
-        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#203A6E"></div><span class="pp-swatch-name">Blueprint</span><span class="pp-swatch-hex">#203A6E</span></div>
-        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#3B60C5"></div><span class="pp-swatch-name">Cobalt</span><span class="pp-swatch-hex">#3B60C5</span></div>
-        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#EC633D"></div><span class="pp-swatch-name">Rust orange</span><span class="pp-swatch-hex">#EC633D</span></div>
-        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#E2D2B3"></div><span class="pp-swatch-name">Sand</span><span class="pp-swatch-hex">#E2D2B3</span></div>
-        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#FEF9F1"></div><span class="pp-swatch-name">Off-white</span><span class="pp-swatch-hex">#FEF9F1</span></div>
-        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#0B0B10"></div><span class="pp-swatch-name">Carbon</span><span class="pp-swatch-hex">#0B0B10</span></div>
+      <div class="pp-video reveal">
+        <video autoplay muted loop playsinline preload="metadata" aria-label="Scrolling through the illoca.com homepage">
+          <source src="images/plamo-home-scroll.mp4" type="video/mp4">
+        </video>
       </div>
-      <div class="pp-brand-type reveal">
-        <span><strong>F37 Analog</strong> display</span>
-        <span><strong>Graphik</strong> interface</span>
-        <span><strong>Geist Mono</strong> numbers and labels</span>
-        <span><strong>Architect Pro</strong> notes</span>
-      </div>
+      <p class="pp-caption">illoca.com after the revamp, Plamo first. <a href="https://www.awwwards.com/sites/illoca" target="_blank" rel="noopener">Featured on Awwwards ↗</a></p>
 
       <!-- Problems -->
       <div class="pp-title-section reveal">
