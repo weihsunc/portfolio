@@ -24,6 +24,9 @@
   <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 
   <style>
+    /* ─── Plamo brand accent (illoca rust orange) ───────────── */
+    :root { --plamo: #EC633D; --plamo-paper: #FEF9F1; }
+
     /* ─── Wider nav + content for project pages ───────────── */
     nav { padding: 64px 80px 0; }
     .pp-content { padding: 0 80px; }
@@ -54,7 +57,7 @@
 
     /* ─── Cover image ────────────────────────────────────── */
     .pp-cover {
-      aspect-ratio: 1280 / 720;
+      aspect-ratio: 16 / 9;
       width: 100%;
       overflow: hidden;
       border-radius: 4px;
@@ -144,7 +147,7 @@
       flex: 0 0 auto;
       font-size: 16px;
       line-height: 28px;
-      color: var(--muted-foreground);
+      color: var(--plamo);
       font-variant-numeric: tabular-nums;
       min-width: 32px;
     }
@@ -170,6 +173,7 @@
       background: var(--card);
     }
     .pp-img-full img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    .pp-img-full--tall { aspect-ratio: 1440 / 1170; background: var(--plamo-paper); }
 
     /* ─── Image pair ─────────────────────────────────────── */
     .pp-img-pair {
@@ -189,11 +193,47 @@
     /* UI detail variant: narrow components shown whole on the product's own paper color */
     .pp-img-pair--ui .pp-img-pair-item {
       aspect-ratio: 1 / 1;
-      background: #FEF9F1;
+      background: var(--plamo-paper);
       border: 1px solid var(--border);
       padding: 40px;
     }
     .pp-img-pair--ui .pp-img-pair-item img { object-fit: contain; object-position: center; }
+
+    /* ─── Brand strip ────────────────────────────────────── */
+    .pp-brand {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .pp-swatch {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pp-swatch-chip {
+      aspect-ratio: 1 / 1;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .pp-swatch-name { font-size: 16px; line-height: 20px; }
+    .pp-swatch-hex {
+      font-size: 13px;
+      line-height: 16px;
+      color: var(--muted-foreground);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+    }
+    .pp-brand-type {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 40px;
+      font-size: 16px;
+      line-height: 24px;
+      color: var(--muted-foreground);
+      margin-bottom: 64px;
+    }
+    .pp-brand-type strong { color: var(--foreground); font-weight: 500; }
 
     /* ─── Caption ────────────────────────────────────────── */
     .pp-caption {
@@ -264,7 +304,7 @@
       position: absolute;
       left: 0; top: 0; bottom: 0;
       width: 4px;
-      background: var(--foreground);
+      background: var(--plamo);
       border-radius: 999px;
     }
     .pp-quote p {
@@ -336,7 +376,6 @@
       .pp-content { padding: 0 20px; }
       footer { padding: 0 20px 100px; }
       .pp-overview { flex-direction: column; gap: 32px; padding: 48px 0 60px; }
-      .pp-cover { aspect-ratio: 1280 / 832; }
       .pp-title-section { flex-direction: column; gap: 24px; padding: 48px 0; }
       .pp-direction { gap: 16px; }
       .pp-direction-body h3 { font-size: 24px; }
@@ -348,6 +387,7 @@
       .pp-stat:last-child { border-bottom: none; }
       .pp-stat-number { font-size: 64px; }
       .pp-impact li { grid-template-columns: 1fr; gap: 6px; }
+      .pp-brand { grid-template-columns: repeat(3, 1fr); }
       .pp-quote p { font-size: 24px; line-height: 32px; }
       .footer-row { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
       .footer-social, .footer-end { justify-self: unset; }
@@ -398,7 +438,7 @@
 
       <!-- Cover Image -->
       <div class="pp-cover">
-        <img src="images/plamo-tweaks.png" alt="Plamo workspace: agent chat on the left, a two-tower brick loft model in the center, and parametric tweak sliders on the right" />
+        <img src="images/plamo-cover.webp" alt="Collage of Plamo screens: skills, home, sign in, layers panel, the workspace with a brick loft model, and the illoca marketing site" />
       </div>
 
       <!-- Meta Row -->
@@ -455,6 +495,35 @@
         </div>
       </div>
 
+      <!-- Brand and positioning -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Brand and positioning</h2>
+        <div class="pp-section-desc">
+          <p>Plamo ships under the illoca brand: blueprint blue for the wordmark, rust orange for the mark and for Plamo's own accent, and warm paper grounds that read like a drafting table rather than a dashboard. I directed an external agency on the identity and the marketing site, and owned the messaging and the positioning against Revit, Motif and Navisworks.</p>
+          <p>The nav revamp made illoca.com front Plamo, moved Tracing Paper one level down, and made the nav, CTA and pricing contextual per product. Placeholder visuals on the landing page were replaced with real example projects, each one opening a live Plamo file.</p>
+        </div>
+      </div>
+
+      <div class="pp-brand reveal">
+        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#203A6E"></div><span class="pp-swatch-name">Blueprint</span><span class="pp-swatch-hex">#203A6E</span></div>
+        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#3B60C5"></div><span class="pp-swatch-name">Cobalt</span><span class="pp-swatch-hex">#3B60C5</span></div>
+        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#EC633D"></div><span class="pp-swatch-name">Rust orange</span><span class="pp-swatch-hex">#EC633D</span></div>
+        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#E2D2B3"></div><span class="pp-swatch-name">Sand</span><span class="pp-swatch-hex">#E2D2B3</span></div>
+        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#FEF9F1"></div><span class="pp-swatch-name">Off-white</span><span class="pp-swatch-hex">#FEF9F1</span></div>
+        <div class="pp-swatch"><div class="pp-swatch-chip" style="background:#0B0B10"></div><span class="pp-swatch-name">Carbon</span><span class="pp-swatch-hex">#0B0B10</span></div>
+      </div>
+      <div class="pp-brand-type reveal">
+        <span><strong>F37 Analog</strong> display</span>
+        <span><strong>Graphik</strong> interface</span>
+        <span><strong>Geist Mono</strong> numbers and labels</span>
+        <span><strong>Architect Pro</strong> notes</span>
+      </div>
+
+      <div class="pp-img-full pp-img-full--tall">
+        <img src="images/plamo-competitors.webp" alt="Competitor analysis table: eight tools across BIM authoring, early-stage massing and AI layout, with their hero headline, primary CTA, overlap with Plamo and threat level" />
+      </div>
+      <p class="pp-caption">The competitive scan behind the positioning: where Plamo overlaps, and where it hands off. Revit is the export target, not the enemy.</p>
+
       <!-- Problems -->
       <div class="pp-title-section reveal">
         <h2 class="pp-section-title">Problems</h2>
@@ -484,10 +553,10 @@
       </div>
       <div class="pp-img-pair">
         <div class="pp-img-pair-item">
-          <img src="images/plamo-home.png" alt="Plamo home screen with the prompt 'What are we designing today?' and four quick-start options" />
+          <img src="images/plamo-home.webp" alt="Plamo home screen with the prompt 'What are we designing today?' and four quick-start options" />
         </div>
         <div class="pp-img-pair-item">
-          <img src="images/plamo-prompt.png" alt="Plamo home screen with an image attached and a prompt to design a high-rise from it" />
+          <img src="images/plamo-prompt.webp" alt="Plamo home screen with an image attached and a prompt to design a high-rise from it" />
         </div>
       </div>
 
@@ -500,7 +569,7 @@
         </div>
       </div>
       <div class="pp-img-full">
-        <img src="images/plamo-generating.png" alt="Plamo generating a model: the agent explains its plan in the chat while the tower massing builds in the canvas" />
+        <img src="images/plamo-generating.webp" alt="Plamo generating a model: the agent explains its plan in the chat while the tower massing builds in the canvas" />
       </div>
 
       <!-- 03 Parametric editing -->
@@ -513,10 +582,10 @@
       </div>
       <div class="pp-img-pair">
         <div class="pp-img-pair-item">
-          <img src="images/plamo-layers.png" alt="Plamo Layers panel with grouped layers, lock and visibility toggles on the model" />
+          <img src="images/plamo-layers.webp" alt="Plamo Layers panel with grouped layers, lock and visibility toggles on the model" />
         </div>
         <div class="pp-img-pair-item">
-          <img src="images/plamo-views.png" alt="Plamo Views panel with saved plan and elevation views and a zoom menu" />
+          <img src="images/plamo-views.webp" alt="Plamo Views panel with saved plan and elevation views and a zoom menu" />
         </div>
       </div>
 
@@ -529,7 +598,7 @@
         </div>
       </div>
       <div class="pp-img-full">
-        <img src="images/plamo-export.png" alt="Plamo export dialog with a 3D preview, Rhino 8 format selected, and a choice between selected or all layers" />
+        <img src="images/plamo-export.webp" alt="Plamo export dialog with a 3D preview, Rhino 8 format selected, and a choice between selected or all layers" />
       </div>
 
       <!-- 05 Upgrade -->
@@ -543,10 +612,10 @@
       </div>
       <div class="pp-img-pair pp-img-pair--ui">
         <div class="pp-img-pair-item">
-          <img src="images/plamo-credits.png" alt="Plamo account menu with two credit bars: monthly limit and extra usage, plus an Upgrade plan button" />
+          <img src="images/plamo-credits.webp" alt="Plamo account menu with two credit bars: monthly limit and extra usage, plus an Upgrade plan button" />
         </div>
         <div class="pp-img-pair-item">
-          <img src="images/plamo-credit-limit.png" alt="Plamo chat panel after all monthly credits are used, with an inline upgrade prompt above the composer" />
+          <img src="images/plamo-credit-limit.webp" alt="Plamo chat panel after all monthly credits are used, with an inline upgrade prompt above the composer" />
         </div>
       </div>
       <p class="pp-caption">Left: two bars so users can see when they will start spending paid credits. Right: the limit shows up where the user is working, not on a separate page.</p>
