@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plamo — Wei-Hsun Chen</title>
+  <meta name="description" content="Plamo by Illoca: an agentic 3D workspace that turns sketches, images and prompts into editable, parametric models in the browser. Design lead case study by Wei-Hsun Chen." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="chatbot.css" />
+  <link rel="stylesheet" href="talk.css" />
+
+  <!-- Prevent theme flash -->
+  <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+  <!-- Vercel Web Analytics -->
+  <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+
+  <style>
+    /* ─── Plamo brand accent (illoca rust orange) ───────────── */
+    :root { --plamo: #EC633D; --plamo-paper: #FEF9F1; }
+
+    /* ─── Wider nav + content for project pages ───────────── */
+    nav { padding: 64px 80px 0; }
+    .pp-content { padding: 0 80px; }
+
+    /* ─── Overview ───────────────────────────────────────── */
+    .pp-overview {
+      display: flex;
+      align-items: flex-start;
+      padding: 64px 0 100px;
+    }
+    .pp-overview-title {
+      flex: 1 0 0;
+      font-size: 48px;
+      font-weight: 500;
+      line-height: 1;
+      max-width: 633px;
+    }
+    .pp-overview-right {
+      flex: 1 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 633px;
+      padding-right: 20px;
+    }
+    .pp-overview-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-overview-desc  { font-size: 20px; line-height: 28px; }
+
+    /* ─── Cover image ────────────────────────────────────── */
+    .pp-cover {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 4px;
+      cursor: none !important;
+    }
+    .pp-cover img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+
+    /* ─── Meta row ───────────────────────────────────────── */
+    .pp-meta {
+      display: flex;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 40px 0;
+      padding: 64px 0;
+    }
+    .pp-meta-item {
+      flex: 1 0 0;
+      min-width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding-right: 20px;
+    }
+    .pp-meta-label { font-size: 16px; line-height: 24px; color: var(--muted-foreground); }
+    .pp-meta-value { font-size: 20px; line-height: 28px; }
+    .pp-meta-value a {
+      color: inherit;
+      border-bottom: 1px solid var(--muted-foreground);
+      transition: border-color 150ms ease;
+    }
+    .pp-meta-value a:hover { border-color: var(--foreground); }
+
+    /* ─── Two-col section ────────────────────────────────── */
+    .pp-title-section {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 64px 0;
+    }
+    .pp-section-title {
+      flex: 1 0 0;
+      font-size: 48px;
+      font-weight: 500;
+      line-height: 1;
+    }
+    .pp-section-desc {
+      flex: 1 0 0;
+      font-size: 20px;
+      line-height: 28px;
+      max-width: 720px;
+    }
+    .pp-section-desc p + p { margin-top: 24px; }
+    .pp-section-desc ul { list-style: disc; padding-left: 30px; margin-top: 16px; }
+    .pp-section-desc ul li { font-size: 20px; line-height: 28px; margin-bottom: 8px; }
+    .pp-section-desc ul li:last-child { margin-bottom: 0; }
+    .pp-section-desc strong { font-weight: 600; }
+    .pp-section-desc a {
+      color: inherit;
+      border-bottom: 1px solid var(--muted-foreground);
+      transition: border-color 150ms ease;
+    }
+    .pp-section-desc a:hover { border-color: var(--foreground); }
+
+    /* ─── Text blocks ────────────────────────────────────── */
+    .pp-text { padding-bottom: 64px; }
+    .pp-text p { font-size: 20px; line-height: 28px; }
+    .pp-text p + p { margin-top: 24px; }
+    .pp-text ul { list-style: disc; padding-left: 30px; margin: 24px 0 0; }
+    .pp-text ul li { font-size: 20px; line-height: 28px; margin-bottom: 8px; }
+    .pp-text ul li:last-child { margin-bottom: 0; }
+    .pp-text strong { font-weight: 600; }
+    .pp-text .pp-eyebrow {
+      font-size: 16px;
+      line-height: 24px;
+      color: var(--muted-foreground);
+      margin-bottom: 12px;
+    }
+
+    /* ─── Design direction: label above each visual ──────── */
+    .pp-direction {
+      display: flex;
+      align-items: flex-start;
+      gap: 40px;
+      padding-bottom: 24px;
+    }
+    .pp-direction-num {
+      flex: 0 0 auto;
+      font-size: 16px;
+      line-height: 28px;
+      color: var(--plamo);
+      font-variant-numeric: tabular-nums;
+      min-width: 32px;
+    }
+    .pp-direction-body { flex: 1 0 0; max-width: 880px; }
+    .pp-direction-body h3 {
+      font-size: 28px;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      margin-bottom: 12px;
+    }
+    .pp-direction-body p { font-size: 20px; line-height: 28px; }
+    .pp-direction-body p + p { margin-top: 16px; }
+
+    /* ─── Full-width image ───────────────────────────────── */
+    .pp-img-full {
+      aspect-ratio: 1280 / 832;
+      width: 100%;
+      overflow: hidden;
+      margin-bottom: 64px;
+      border-radius: 4px;
+      cursor: none !important;
+      background: var(--card);
+    }
+    .pp-img-full img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+    /* ─── Image pair ─────────────────────────────────────── */
+    .pp-img-pair {
+      display: flex;
+      gap: 16px;
+      padding-bottom: 64px;
+    }
+    .pp-img-pair-item {
+      flex: 1 0 0;
+      aspect-ratio: 1280 / 832;
+      overflow: hidden;
+      border-radius: 4px;
+      cursor: none !important;
+      background: var(--card);
+    }
+    .pp-img-pair-item img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    /* UI detail variant: narrow components shown whole on the product's own paper color */
+    .pp-img-pair--ui .pp-img-pair-item {
+      aspect-ratio: 1 / 1;
+      background: var(--plamo-paper);
+      border: 1px solid var(--border);
+      padding: 40px;
+    }
+    .pp-img-pair--ui .pp-img-pair-item img { object-fit: contain; object-position: center; }
+
+    /* ─── Homepage video ─────────────────────────────────── */
+    .pp-video {
+      aspect-ratio: 4 / 3;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 4px;
+      margin-bottom: 64px;
+      background: var(--card);
+    }
+    .pp-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* ─── Caption ────────────────────────────────────────── */
+    .pp-caption {
+      font-size: 16px;
+      line-height: 24px;
+      color: var(--muted-foreground);
+      margin: -44px 0 64px;
+    }
+    .pp-caption a {
+      color: var(--foreground);
+      border-bottom: 1px solid var(--muted-foreground);
+      transition: border-color 150ms ease;
+    }
+    .pp-caption a:hover { border-color: var(--foreground); }
+
+    /* ─── Stats row ──────────────────────────────────────── */
+    .pp-stats {
+      display: flex;
+      gap: 20px;
+      padding: 32px 15px 64px;
+    }
+    .pp-stat {
+      flex: 1 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 16px 16px 16px 0;
+      border-right: 1px solid var(--border);
+    }
+    .pp-stat:last-child { border-right: none; }
+    .pp-stat-number {
+      font-size: 96px;
+      line-height: 1;
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .pp-stat-number small { font-size: 0.42em; letter-spacing: 0; margin-left: 6px; }
+    .pp-stat-label { font-size: 20px; line-height: 28px; }
+
+    /* ─── Impact list ────────────────────────────────────── */
+    .pp-impact {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 64px;
+      border-top: 1px solid var(--border);
+    }
+    .pp-impact li {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 24px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 20px;
+      line-height: 28px;
+    }
+    .pp-impact-num {
+      font-size: 32px;
+      line-height: 28px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── Pull quote ─────────────────────────────────────── */
+    .pp-quote {
+      position: relative;
+      padding: 8px 0 8px 24px;
+      margin: 0 0 64px;
+    }
+    .pp-quote::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--plamo);
+      border-radius: 999px;
+    }
+    .pp-quote p {
+      font-size: 28px;
+      line-height: 36px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+    .pp-quote cite {
+      display: block;
+      margin-top: 12px;
+      font-size: 16px;
+      line-height: 24px;
+      font-style: normal;
+      color: var(--muted-foreground);
+    }
+
+    /* ─── Bottom navigation ──────────────────────────────── */
+    .pp-nav {
+      display: flex;
+      align-items: center;
+      padding-bottom: 120px;
+      padding-top: 32px;
+    }
+    .pp-nav-back,
+    .pp-nav-next {
+      display: flex; gap: 4px; align-items: center;
+      color: var(--muted-foreground); font-size: 20px;
+      transition: color 150ms ease;
+    }
+    .pp-nav-back:hover,
+    .pp-nav-next:hover { color: var(--foreground); }
+    .pp-nav-spacer { flex: 1; }
+
+    /* ─── Footer ─────────────────────────────────────────── */
+    footer { padding: 0 80px 120px; }
+    .footer-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+    }
+    .footer-cta {
+      font-size: var(--text-body); font-weight: 400;
+      text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
+    }
+    .footer-social { display: flex; gap: 8px; justify-self: center; }
+    .footer-end {
+      display: flex; align-items: baseline;
+      justify-self: end; gap: 12px;
+    }
+    .footer-credit { font-size: var(--text-body); color: var(--muted-foreground); }
+
+    /* ─── Scroll reveal ──────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 600ms ease, transform 600ms ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── Responsive ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 40px 20px 0; }
+      .pp-content { padding: 0 20px; }
+      footer { padding: 0 20px 100px; }
+      .pp-overview { flex-direction: column; gap: 32px; padding: 48px 0 60px; }
+      .pp-title-section { flex-direction: column; gap: 24px; padding: 48px 0; }
+      .pp-direction { gap: 16px; }
+      .pp-direction-body h3 { font-size: 24px; }
+      .pp-img-pair { flex-direction: column; }
+      .pp-img-pair-item { flex: 0 0 auto; width: 100%; }
+      .pp-img-pair--ui .pp-img-pair-item { aspect-ratio: 4 / 5; padding: 24px; }
+      .pp-stats { flex-direction: column; padding: 24px 0; }
+      .pp-stat { border-right: none; border-bottom: 1px solid var(--border); padding: 16px 0; }
+      .pp-stat:last-child { border-bottom: none; }
+      .pp-stat-number { font-size: 64px; }
+      .pp-impact li { grid-template-columns: 1fr; gap: 6px; }
+      .pp-quote p { font-size: 24px; line-height: 32px; }
+      .footer-row { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+      .footer-social, .footer-end { justify-self: unset; }
+    }
+    @media (max-width: 480px) {
+      .pp-overview-title { font-size: 36px; }
+      .pp-section-title  { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+    <button class="drawer-close" onclick="closeDrawer()">Close</button>
+    <a href="index.html" class="drawer-item" onclick="closeDrawer()">Work</a>
+    <a href="about.html" class="drawer-item" onclick="closeDrawer()">About</a>
+    <a href="https://drive.google.com/file/d/17B3OpiTCQ_joCC2AuKuUdBs1w2T4iT-V/view?usp=sharing" target="_blank" rel="noopener" class="drawer-item" onclick="closeDrawer()">Resume ↗</a>
+  </div>
+
+  <!-- Navigation -->
+  <nav>
+    <a href="mailto:weihsunc@gmail.com" class="nav-email" target="_blank" rel="noopener">weihsunc@gmail.com</a>
+    <div class="nav-tabs-group">
+      <a href="index.html" class="nav-tab">Work</a>
+      <a href="about.html" class="nav-tab">About</a>
+      <a href="https://drive.google.com/file/d/17B3OpiTCQ_joCC2AuKuUdBs1w2T4iT-V/view?usp=sharing" target="_blank" rel="noopener" class="nav-tab">Resume ↗</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-menu" onclick="openDrawer()" aria-label="Open menu">Menu</button>
+      <button class="btn-ghost" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span class="theme-icon">◑</span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="pp-content">
+
+      <!-- Overview -->
+      <div class="pp-overview">
+        <h1 class="pp-overview-title">Plamo</h1>
+        <div class="pp-overview-right">
+          <p class="pp-overview-label">Overview</p>
+          <p class="pp-overview-desc">An agentic 3D workspace that turns sketches, images and prompts into editable, parametric models, right in the browser.</p>
+        </div>
+      </div>
+
+      <!-- Cover Image -->
+      <div class="pp-cover">
+        <img src="images/plamo-cover.webp" alt="Collage of Plamo screens: skills, home, sign in, layers panel, the workspace with a brick loft model, and the illoca marketing site" />
+      </div>
+
+      <!-- Meta Row -->
+      <div class="pp-meta">
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">YEAR</p>
+          <p class="pp-meta-value">2026</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">TIMELINE</p>
+          <p class="pp-meta-value">Ongoing</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">COMPANY</p>
+          <p class="pp-meta-value">Illoca</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">ROLE</p>
+          <p class="pp-meta-value">Design Lead</p>
+        </div>
+        <div class="pp-meta-item">
+          <p class="pp-meta-label">LIVE</p>
+          <p class="pp-meta-value"><a href="https://illoca.com" target="_blank" rel="noopener">illoca.com ↗</a></p>
+        </div>
+      </div>
+
+      <!-- Goal -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Goal</h2>
+        <p class="pp-section-desc">Illoca started with Tracing Paper, an AI drafting tool for architects. When Plamo pulled stronger traction with EPC and BIM teams, the company bet on it. My job: make it a product people can discover, try, understand and pay for, with geometry they can trust and keep editing.</p>
+      </div>
+
+      <!-- My role -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">My role</h2>
+        <div class="pp-section-desc">
+          <p>All design for Plamo, from the first marketing touchpoint to the core modeling experience.</p>
+          <ul>
+            <li><strong>Pivot:</strong> Reframed the product from a 2D architect canvas to an agentic 3D workspace, under one brand with two products.</li>
+            <li><strong>Brand and marketing:</strong> Directed an external agency, owned messaging and positioning, revamped illoca.com to front Plamo.</li>
+            <li><strong>Product:</strong> Sign up, onboarding, first model, the workspace and the upgrade flow.</li>
+            <li><strong>Monetization:</strong> The credit system and plan tiers (Free, Explore, Team, Enterprise).</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- The pivot -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">The pivot</h2>
+        <div class="pp-section-desc">
+          <!-- TODO(Wei): replace the first sentence with the pivot trigger in your own words. -->
+          <p>The demos that turned into real conversations were the ones where a sketch became a model someone could open in Rhino the same day. Customer learning showed Plamo pulling strongly from the GC, EPC, developer and owner side, so we kept the shared foundations, gave each product its own audience, and made Plamo the lead.</p>
+        </div>
+      </div>
+
+      <!-- Brand and positioning -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Brand and positioning</h2>
+        <div class="pp-section-desc">
+          <p>illoca's general brand and original home page positioned the company as helping architects design: blueprint blue, rust orange and warm paper grounds that read like a drafting table. I directed an external agency on the identity and the <a href="https://www.awwwards.com/sites/illoca" target="_blank" rel="noopener">marketing site</a>. When Plamo became the lead product, I revamped illoca.com so visitors meet Plamo first and repositioned it against Revit, Motif and Navisworks.</p>
+        </div>
+      </div>
+
+      <div class="pp-video reveal">
+        <video autoplay muted loop playsinline preload="metadata" aria-label="Scrolling through the illoca.com homepage">
+          <source src="images/plamo-home-scroll.mp4" type="video/mp4">
+        </video>
+      </div>
+      <p class="pp-caption">The original illoca.com, built around architects. <a href="https://www.awwwards.com/sites/illoca" target="_blank" rel="noopener">Featured on Awwwards ↗</a></p>
+
+      <!-- Problems -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Problems</h2>
+        <div class="pp-section-desc">
+          <ul style="margin-top:0;">
+            <li><strong>Trust:</strong> AI 3D usually means a dead mesh. These users need geometry they can keep editing.</li>
+            <li><strong>Learning curve:</strong> They know Revit and Rhino, not prompting.</li>
+            <li><strong>Agent vs. controls:</strong> What belongs to the agent, what to the panels, and does the agent know what you changed by hand?</li>
+            <li><strong>Value before paywall:</strong> Credits are abstract. Users need to feel what one buys before they upgrade.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Design directions -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Design directions</h2>
+        <p class="pp-section-desc">Five moments carry the experience. Each one got its own design pass.</p>
+      </div>
+
+      <!-- 01 Sign up to first model -->
+      <div class="pp-direction reveal">
+        <span class="pp-direction-num">01</span>
+        <div class="pp-direction-body">
+          <h3>Sign up to first model</h3>
+          <p>1,000 starter credits and a guided first prompt get users to editable geometry in a median of 9 minutes.</p>
+        </div>
+      </div>
+      <div class="pp-img-pair">
+        <div class="pp-img-pair-item">
+          <img src="images/plamo-home.webp" alt="Plamo home screen with the prompt 'What are we designing today?' and four quick-start options" />
+        </div>
+        <div class="pp-img-pair-item">
+          <img src="images/plamo-prompt.webp" alt="Plamo home screen with an image attached and a prompt to design a high-rise from it" />
+        </div>
+      </div>
+
+      <!-- 02 Agentic planning -->
+      <div class="pp-direction reveal">
+        <span class="pp-direction-num">02</span>
+        <div class="pp-direction-body">
+          <h3>Agentic planning</h3>
+          <p>The agent shows its plan before building, so users can steer before credits are spent.</p>
+        </div>
+      </div>
+      <div class="pp-img-full">
+        <img src="images/plamo-generating.webp" alt="Plamo generating a model: the agent explains its plan in the chat while the tower massing builds in the canvas" />
+      </div>
+
+      <!-- 03 Parametric editing -->
+      <div class="pp-direction reveal">
+        <span class="pp-direction-num">03</span>
+        <div class="pp-direction-body">
+          <h3>Parametric editing</h3>
+          <p>Tweaks, layers, section cuts and saved views keep the model a working file, not a render.</p>
+        </div>
+      </div>
+      <div class="pp-img-pair">
+        <div class="pp-img-pair-item">
+          <img src="images/plamo-layers.webp" alt="Plamo Layers panel with grouped layers, lock and visibility toggles on the model" />
+        </div>
+        <div class="pp-img-pair-item">
+          <img src="images/plamo-views.webp" alt="Plamo Views panel with saved plan and elevation views and a zoom menu" />
+        </div>
+      </div>
+
+      <!-- 04 Seamless export -->
+      <div class="pp-direction reveal">
+        <span class="pp-direction-num">04</span>
+        <div class="pp-direction-body">
+          <h3>Seamless export</h3>
+          <p>Rhino, Grasshopper, SketchUp, STEP, DWG and more, with layer selection, so Plamo fits the tools teams already use.</p>
+        </div>
+      </div>
+      <div class="pp-img-full">
+        <img src="images/plamo-export.webp" alt="Plamo export dialog with a 3D preview, Rhino 8 format selected, and a choice between selected or all layers" />
+      </div>
+
+      <!-- 05 Upgrade -->
+      <div class="pp-direction reveal">
+        <span class="pp-direction-num">05</span>
+        <div class="pp-direction-body">
+          <h3>Upgrade</h3>
+          <p>Prompts appear at natural limits and lead with what you unlock. The credit meter separates monthly credits from purchased ones. Every upgrader visited pricing in the 24 hours before paying, most of them mid-session.</p>
+        </div>
+      </div>
+      <div class="pp-img-pair pp-img-pair--ui">
+        <div class="pp-img-pair-item">
+          <img src="images/plamo-credits.webp" alt="Plamo account menu with two credit bars: monthly limit and extra usage, plus an Upgrade plan button" />
+        </div>
+        <div class="pp-img-pair-item">
+          <img src="images/plamo-credit-limit.webp" alt="Plamo chat panel after all monthly credits are used, with an inline upgrade prompt above the composer" />
+        </div>
+      </div>
+      <p class="pp-caption">Two bars, so users see when paid credits start. The limit shows up where the user is working.</p>
+
+      <!-- Stats -->
+      <div class="pp-stats reveal">
+        <div class="pp-stat">
+          <span class="pp-stat-number" data-target="1518" data-decimals="0">0</span>
+          <span class="pp-stat-label">users built a model</span>
+        </div>
+        <div class="pp-stat">
+          <span class="pp-stat-number" data-target="9" data-decimals="0" data-suffix=" min">0</span>
+          <span class="pp-stat-label">median time to first model</span>
+        </div>
+        <div class="pp-stat">
+          <span class="pp-stat-number" data-target="88.6" data-decimals="1" data-suffix="%">0</span>
+          <span class="pp-stat-label">week 1 retention</span>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">Impact</h2>
+        <p class="pp-section-desc">Public beta since August 21, 2026. The first ten weeks:</p>
+      </div>
+
+      <ul class="pp-impact reveal">
+        <li><span class="pp-impact-num">2,129</span><span>sign ups across the platform, 1,518 of them built a Plamo model</span></li>
+        <li><span class="pp-impact-num">35.4%</span><span>week 4 retention</span></li>
+        <li><span class="pp-impact-num">2 days</span><span>median from sign up to paid upgrade, self-serve MRR up 17% month over month</span></li>
+        <li><span class="pp-impact-num">263</span><span>companies, mostly AEC firms</span></li>
+        <li><span class="pp-impact-num">1,121</span><span>models exported, Rhino first</span></li>
+        <li><span class="pp-impact-num">8</span><span>enterprise PoC contracts across the US, Japan, Taiwan and Canada</span></li>
+      </ul>
+
+      <div class="pp-quote reveal">
+        <p>"A configurable engineering layer upstream of Revit."</p>
+        <cite>How an enterprise customer described Plamo</cite>
+      </div>
+
+      <!-- What's next -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">What's next</h2>
+        <p class="pp-section-desc">The moment a user runs out of free credits. 925 people viewed pricing, 69 clicked "get plan," and 5 to 10 users a day exhaust their credits while 0 to 2 upgrade. That moment, plus Team plan and enterprise onboarding, is where design goes next.</p>
+      </div>
+
+      <!-- Bottom Nav -->
+      <div class="pp-nav">
+        <a href="index.html" class="pp-nav-back">← Back to Home</a>
+        <span class="pp-nav-spacer"></span>
+        <a href="lofi.html" class="pp-nav-next">Lofi App →</a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <div class="footer-row">
+      <span class="footer-cta">Let's get in touch</span>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/weiweistreet/" target="_blank" rel="noopener" class="btn">Instagram</a>
+        <a href="https://www.linkedin.com/in/weihsunchen/" target="_blank" rel="noopener" class="btn">Linkedin</a>
+        <a href="mailto:weihsunc@gmail.com" class="btn">Email</a>
+      </div>
+      <div class="footer-end">
+        <a href="https://github.com/weihsunc/portfolio" target="_blank" rel="noopener" class="footer-credit footer-credit-link"><span class="footer-credit-inner"><span class="footer-credit-line">Made by Figma + Claude</span><span class="footer-credit-line">View on GitHub ↗</span></span></a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="shared.js"></script>
+  <script>
+    const IMG_SEL = '.pp-cover, .pp-img-full, .pp-img-pair-item';
+    initViewCursor(IMG_SEL);
+    initLightbox(IMG_SEL);
+
+    initProjectAnimations();
+
+    // Big-number counters: data-target (number), data-decimals, data-suffix.
+    // Formats with thousands separators so 1518 reads as 1,518.
+    const statNums = document.querySelectorAll('.pp-stat-number[data-target]');
+    const statsObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        const target = parseFloat(el.dataset.target);
+        const decimals = parseInt(el.dataset.decimals || '0', 10);
+        const suffix = el.dataset.suffix || '';
+        const duration = 1400;
+        const start = performance.now();
+        function fmt(n) {
+          return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+        function step(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = fmt(eased * target) + suffix;
+          if (progress < 1) requestAnimationFrame(step);
+          else el.textContent = fmt(target) + suffix;
+        }
+        requestAnimationFrame(step);
+        statsObs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    statNums.forEach(el => statsObs.observe(el));
+  </script>
+  <script src="talk.js"></script>
+  <script src="chatbot.js"></script>
+
+</body>
+</html>
