@@ -70,6 +70,7 @@ The visitor is currently viewing ${pageKey}.html (${PAGES[pageKey]}).`;
 const PAGES = {
   'index':                'the home page',
   'about':                'the about page',
+  'plamo':                'the Plamo project page (Illoca, 2026)',
   'lofi':                 'the Lofi App project page (Studio Lofi, 2026)',
   'plan-and-pricing':     'the Plan and Pricing project page (Docusign, 2025)',
   'metric-investigation': 'the Metric Investigation project page (Meta, 2022)',

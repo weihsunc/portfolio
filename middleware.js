@@ -9,6 +9,7 @@
 // application and revoked later) and fall back to SITE_PASSWORD.
 
 const GATED = [
+  '/plamo',
   '/plan-and-pricing',
   '/product-led-growth',
   '/metric-investigation',
