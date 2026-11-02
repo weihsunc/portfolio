@@ -145,6 +145,7 @@
   function open() {
     if (!win) build();
     if (!mounted && window.TalkToWei) { window.TalkToWei.mount(body); mounted = true; }
+    if (window.va) window.va('event', { name: 'agent_wei_open', data: { page: location.pathname } });
     lastFocus = document.activeElement;
     win.classList.add('open');
     trigger.classList.add('active');

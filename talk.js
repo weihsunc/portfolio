@@ -116,6 +116,7 @@
       const text = el.input.value.trim();
       if (!text) return;
       el.input.value = '';
+      if (window.va) window.va('event', { name: 'agent_wei_typed', data: { page: location.pathname } });
       ask(text);
     });
   }
@@ -681,6 +682,7 @@
   async function start() {
     if (state !== 'idle') return;
     mode = null;
+    if (window.va) window.va('event', { name: 'agent_wei_call', data: { page: location.pathname } });
     setState('connecting');
 
     let creds = null;
