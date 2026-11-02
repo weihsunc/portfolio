@@ -25,8 +25,7 @@
 
   <style>
     /* ─── Plamo brand accent (illoca rust orange) ───────────── */
-    :root { --plamo: #EC633D; --plamo-paper: #FEF9F1; --carousel-btn-bg: rgba(15, 15, 15, 0.55); --carousel-btn-bg-hover: rgba(38, 38, 38, 0.75); }
-    [data-theme="light"] { --carousel-btn-bg: rgba(250, 250, 250, 0.6); --carousel-btn-bg-hover: rgba(237, 237, 237, 0.85); }
+    :root { --plamo: #EC633D; --plamo-paper: #FEF9F1; }
 
     /* ─── Wider nav + content for project pages ───────────── */
     nav { padding: 64px 80px 0; }
@@ -172,15 +171,13 @@
     .pp-carousel-btn {
       position: absolute; top: 50%; transform: translateY(calc(-50% - 54px));
       width: 40px; height: 40px; border-radius: 50%;
-      background: var(--carousel-btn-bg); border: 1px solid var(--border);
-      -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+      background: var(--background); border: 1px solid var(--border);
       color: var(--foreground); cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       transition: background 150ms ease, opacity 150ms ease;
       z-index: 1;
     }
-    .pp-carousel-btn:hover { background: var(--carousel-btn-bg-hover); }
+    .pp-carousel-btn:hover { background: var(--muted); }
     .pp-carousel-btn.disabled { opacity: 0.3; pointer-events: none; }
     .pp-carousel-btn-prev { left: -20px; }
     .pp-carousel-btn-next { right: -20px; }
