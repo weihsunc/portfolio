@@ -259,27 +259,22 @@
 
     /* ─── Pull quote ─────────────────────────────────────── */
     .pp-quote {
-      position: relative;
-      padding: 8px 0 8px 24px;
-      margin: 0 0 64px;
-    }
-    .pp-quote::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 4px;
-      background: var(--plamo);
-      border-radius: 999px;
+      padding: 64px 0;
+      margin: 0 0 32px;
+      text-align: center;
     }
     .pp-quote p {
-      font-size: 28px;
-      line-height: 36px;
-      font-weight: 500;
-      letter-spacing: -0.01em;
+      font-size: 48px;
+      font-weight: 400;
+      line-height: 1;
+      text-transform: uppercase;
+      color: var(--foreground);
+      max-width: 900px;
+      margin: 0 auto;
     }
     .pp-quote cite {
       display: block;
-      margin-top: 12px;
+      margin-top: 20px;
       font-size: 16px;
       line-height: 24px;
       font-style: normal;
@@ -350,13 +345,14 @@
       .pp-carousel-btn-next { right: 8px; }
       .pp-carousel-meta { flex-direction: column; gap: 12px; }
       .pp-carousel-label { flex-wrap: wrap; }
-      .pp-quote p { font-size: 24px; line-height: 32px; }
+      .pp-quote p { font-size: 32px; }
       .footer-row { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
       .footer-social, .footer-end { justify-self: unset; }
     }
     @media (max-width: 480px) {
       .pp-overview-title { font-size: 36px; }
       .pp-section-title  { font-size: 36px; }
+      .pp-quote p { font-size: 24px; }
     }
   </style>
 </head>
