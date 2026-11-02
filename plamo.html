@@ -136,67 +136,51 @@
       margin-bottom: 12px;
     }
 
-    /* ─── Design direction: label above each visual ──────── */
-    .pp-direction {
+    /* ─── Flow carousel ──────────────────────────────────── */
+    .pp-carousel { position: relative; padding-bottom: 64px; }
+    .pp-carousel-track-wrap { overflow: hidden; border-radius: 4px; background: var(--card); }
+    .pp-carousel-track {
+      display: flex;
+      transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pp-carousel-slide { flex: 0 0 100%; aspect-ratio: 1280 / 832; cursor: none !important; }
+    .pp-carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pp-carousel-meta {
       display: flex;
       align-items: flex-start;
-      gap: 40px;
-      padding-bottom: 24px;
+      justify-content: space-between;
+      gap: 24px;
+      margin-top: 20px;
     }
-    .pp-direction-num {
-      flex: 0 0 auto;
-      font-size: 16px;
-      line-height: 28px;
-      color: var(--plamo);
-      font-variant-numeric: tabular-nums;
-      min-width: 32px;
-    }
-    .pp-direction-body { flex: 1 0 0; max-width: 880px; }
-    .pp-direction-body h3 {
-      font-size: 28px;
-      font-weight: 500;
-      line-height: 1.2;
-      letter-spacing: -0.01em;
-      margin-bottom: 12px;
-    }
-    .pp-direction-body p { font-size: 20px; line-height: 28px; }
-    .pp-direction-body p + p { margin-top: 16px; }
-
-    /* ─── Full-width image ───────────────────────────────── */
-    .pp-img-full {
-      aspect-ratio: 1280 / 832;
-      width: 100%;
-      overflow: hidden;
-      margin-bottom: 64px;
-      border-radius: 4px;
-      cursor: none !important;
-      background: var(--card);
-    }
-    .pp-img-full img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
-
-    /* ─── Image pair ─────────────────────────────────────── */
-    .pp-img-pair {
+    .pp-carousel-label {
       display: flex;
-      gap: 16px;
-      padding-bottom: 64px;
+      gap: 12px;
+      font-size: 16px;
+      line-height: 24px;
+      color: var(--muted-foreground);
     }
-    .pp-img-pair-item {
-      flex: 1 0 0;
-      aspect-ratio: 1280 / 832;
-      overflow: hidden;
-      border-radius: 4px;
-      cursor: none !important;
-      background: var(--card);
+    .pp-carousel-label strong { color: var(--foreground); font-weight: 500; white-space: nowrap; }
+    .pp-carousel-num { color: var(--plamo); font-variant-numeric: tabular-nums; }
+    .pp-carousel-dots { display: flex; gap: 8px; padding-top: 9px; flex-shrink: 0; }
+    .pp-carousel-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border-subtle); border: none; padding: 0; cursor: pointer;
+      transition: background 200ms ease, transform 200ms ease;
     }
-    .pp-img-pair-item img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
-    /* UI detail variant: narrow components shown whole on the product's own paper color */
-    .pp-img-pair--ui .pp-img-pair-item {
-      aspect-ratio: 1 / 1;
-      background: var(--plamo-paper);
-      border: 1px solid var(--border);
-      padding: 40px;
+    .pp-carousel-dot.active { background: var(--foreground); transform: scale(1.4); }
+    .pp-carousel-btn {
+      position: absolute; top: 50%; transform: translateY(calc(-50% - 54px));
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--background); border: 1px solid var(--border);
+      color: var(--foreground); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 150ms ease, opacity 150ms ease;
+      z-index: 1;
     }
-    .pp-img-pair--ui .pp-img-pair-item img { object-fit: contain; object-position: center; }
+    .pp-carousel-btn:hover { background: var(--muted); }
+    .pp-carousel-btn.disabled { opacity: 0.3; pointer-events: none; }
+    .pp-carousel-btn-prev { left: -20px; }
+    .pp-carousel-btn-next { right: -20px; }
 
     /* ─── Homepage video ─────────────────────────────────── */
     .pp-video {
@@ -357,16 +341,15 @@
       footer { padding: 0 20px 100px; }
       .pp-overview { flex-direction: column; gap: 32px; padding: 48px 0 60px; }
       .pp-title-section { flex-direction: column; gap: 24px; padding: 48px 0; }
-      .pp-direction { gap: 16px; }
-      .pp-direction-body h3 { font-size: 24px; }
-      .pp-img-pair { flex-direction: column; }
-      .pp-img-pair-item { flex: 0 0 auto; width: 100%; }
-      .pp-img-pair--ui .pp-img-pair-item { aspect-ratio: 4 / 5; padding: 24px; }
       .pp-stats { flex-direction: column; padding: 24px 0; }
       .pp-stat { border-right: none; border-bottom: 1px solid var(--border); padding: 16px 0; }
       .pp-stat:last-child { border-bottom: none; }
       .pp-stat-number { font-size: 64px; }
       .pp-impact li { grid-template-columns: 1fr; gap: 6px; }
+      .pp-carousel-btn-prev { left: 8px; }
+      .pp-carousel-btn-next { right: 8px; }
+      .pp-carousel-meta { flex-direction: column; gap: 12px; }
+      .pp-carousel-label { flex-wrap: wrap; }
       .pp-quote p { font-size: 24px; line-height: 32px; }
       .footer-row { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
       .footer-social, .footer-end { justify-self: unset; }
@@ -447,37 +430,27 @@
       <!-- Goal -->
       <div class="pp-title-section reveal">
         <h2 class="pp-section-title">Goal</h2>
-        <p class="pp-section-desc">Illoca started with Tracing Paper, an AI drafting tool for architects. When Plamo pulled stronger traction with EPC and BIM teams, the company bet on it. My job: make it a product people can discover, try, understand and pay for, with geometry they can trust and keep editing.</p>
+        <p class="pp-section-desc">Illoca started with Tracing Paper, an AI drafting tool for architects. When Plamo pulled stronger traction with EPC and BIM teams, the company pivoted in that direction. My job: 0 to 1 design of the end to end flow, so users can create high quality, adjustable models and export them into their own workflow.</p>
       </div>
 
       <!-- My role -->
       <div class="pp-title-section reveal">
         <h2 class="pp-section-title">My role</h2>
         <div class="pp-section-desc">
-          <p>All design for Plamo, from the first marketing touchpoint to the core modeling experience.</p>
+          <p>All design for Plamo, from the first top of funnel touchpoint to the core modeling experience.</p>
           <ul>
-            <li><strong>Pivot:</strong> Reframed the product from a 2D architect canvas to an agentic 3D workspace, under one brand with two products.</li>
-            <li><strong>Brand and marketing:</strong> Directed an external agency, owned messaging and positioning, revamped illoca.com to front Plamo.</li>
-            <li><strong>Product:</strong> Sign up, onboarding, first model, the workspace and the upgrade flow.</li>
-            <li><strong>Monetization:</strong> The credit system and plan tiers (Free, Explore, Team, Enterprise).</li>
+            <li><strong>Pivot:</strong> A new agentic vibe modeling product, under one brand with two products.</li>
+            <li><strong>Brand and marketing:</strong> Directed an external agency to build illoca.com.</li>
+            <li><strong>Product:</strong> From Tracing Paper to Plamo: sign up, onboarding, first model, the workspace and monetization.</li>
           </ul>
         </div>
       </div>
 
-      <!-- The pivot -->
+      <!-- Branding -->
       <div class="pp-title-section reveal">
-        <h2 class="pp-section-title">The pivot</h2>
+        <h2 class="pp-section-title">Branding</h2>
         <div class="pp-section-desc">
-          <!-- TODO(Wei): replace the first sentence with the pivot trigger in your own words. -->
-          <p>The demos that turned into real conversations were the ones where a sketch became a model someone could open in Rhino the same day. Customer learning showed Plamo pulling strongly from the GC, EPC, developer and owner side, so we kept the shared foundations, gave each product its own audience, and made Plamo the lead.</p>
-        </div>
-      </div>
-
-      <!-- Brand and positioning -->
-      <div class="pp-title-section reveal">
-        <h2 class="pp-section-title">Brand and positioning</h2>
-        <div class="pp-section-desc">
-          <p>illoca's general brand and original home page positioned the company as helping architects design: blueprint blue, rust orange and warm paper grounds that read like a drafting table. I directed an external agency on the identity and the <a href="https://www.awwwards.com/sites/illoca" target="_blank" rel="noopener">marketing site</a>. When Plamo became the lead product, I revamped illoca.com so visitors meet Plamo first and repositioned it against Revit, Motif and Navisworks.</p>
+          <p>illoca's general brand and original home page positioned the company as helping architects design. I worked with an external agency on the identity and the <a href="https://www.awwwards.com/sites/illoca" target="_blank" rel="noopener">marketing site</a>. When Plamo became the lead product, I revamped illoca.com so visitors meet Plamo first and find value faster.</p>
         </div>
       </div>
 
@@ -488,6 +461,14 @@
       </div>
       <p class="pp-caption">The original illoca.com, built around architects. <a href="https://www.awwwards.com/sites/illoca" target="_blank" rel="noopener">Featured on Awwwards ↗</a></p>
 
+      <!-- The pivot -->
+      <div class="pp-title-section reveal">
+        <h2 class="pp-section-title">The pivot</h2>
+        <div class="pp-section-desc">
+          <p>After Tracing Paper launched, people were signing up, but conversion was weak. While the team was demoing our research preview of the vibe modeling workflow, we saw a clear need, especially from the GC, EPC, developer and owner side, for a usable model to collaborate on, instead of drafting in 2D first and turning it into 3D.</p>
+        </div>
+      </div>
+
       <!-- Problems -->
       <div class="pp-title-section reveal">
         <h2 class="pp-section-title">Problems</h2>
@@ -496,7 +477,7 @@
             <li><strong>Trust:</strong> AI 3D usually means a dead mesh. These users need geometry they can keep editing.</li>
             <li><strong>Learning curve:</strong> They know Revit and Rhino, not prompting.</li>
             <li><strong>Agent vs. controls:</strong> What belongs to the agent, what to the panels, and does the agent know what you changed by hand?</li>
-            <li><strong>Value before paywall:</strong> Credits are abstract. Users need to feel what one buys before they upgrade.</li>
+            <li><strong>Value before paywall:</strong> Credits are abstract. Users need to feel the value before they upgrade.</li>
           </ul>
         </div>
       </div>
@@ -504,89 +485,45 @@
       <!-- Design directions -->
       <div class="pp-title-section reveal">
         <h2 class="pp-section-title">Design directions</h2>
-        <p class="pp-section-desc">Five moments carry the experience. Each one got its own design pass.</p>
+        <p class="pp-section-desc">The end to end design takes users from getting started, through their first model and its parameters, to quick access to iterations and control panels.</p>
       </div>
 
-      <!-- 01 Sign up to first model -->
-      <div class="pp-direction reveal">
-        <span class="pp-direction-num">01</span>
-        <div class="pp-direction-body">
-          <h3>Sign up to first model</h3>
-          <p>1,000 starter credits and a guided first prompt get users to editable geometry in a median of 9 minutes.</p>
+      <div class="pp-carousel reveal" id="flowCarousel">
+        <button class="pp-carousel-btn pp-carousel-btn-prev disabled" id="carouselPrev" aria-label="Previous screen">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="pp-carousel-track-wrap">
+          <div class="pp-carousel-track" id="carouselTrack">
+            <div class="pp-carousel-slide"><img src="images/plamo-home.webp" alt="Plamo: Getting started" /></div>
+            <div class="pp-carousel-slide"><img src="images/plamo-prompt.webp" alt="Plamo: First model" /></div>
+            <div class="pp-carousel-slide"><img src="images/plamo-generating.webp" alt="Plamo: Plan" /></div>
+            <div class="pp-carousel-slide"><img src="images/plamo-tweaks.webp" alt="Plamo: Model created" /></div>
+            <div class="pp-carousel-slide"><img src="images/plamo-layers.webp" alt="Plamo: Controls" /></div>
+            <div class="pp-carousel-slide"><img src="images/plamo-views.webp" alt="Plamo: Views" /></div>
+            <div class="pp-carousel-slide"><img src="images/plamo-export.webp" alt="Plamo: Export" /></div>
+          </div>
+        </div>
+        <button class="pp-carousel-btn pp-carousel-btn-next" id="carouselNext" aria-label="Next screen">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="pp-carousel-meta">
+          <p class="pp-carousel-label"><span class="pp-carousel-num" id="carouselNum">01</span><strong id="carouselTitle">Getting started</strong><span id="carouselDesc">One question, the unit system in view, and four ways to begin.</span></p>
+          <div class="pp-carousel-dots" id="carouselDots">
+          <button class="pp-carousel-dot active" data-index="0" aria-label="Getting started"></button>
+          <button class="pp-carousel-dot" data-index="1" aria-label="First model"></button>
+          <button class="pp-carousel-dot" data-index="2" aria-label="Plan"></button>
+          <button class="pp-carousel-dot" data-index="3" aria-label="Model created"></button>
+          <button class="pp-carousel-dot" data-index="4" aria-label="Controls"></button>
+          <button class="pp-carousel-dot" data-index="5" aria-label="Views"></button>
+          <button class="pp-carousel-dot" data-index="6" aria-label="Export"></button>
+          </div>
         </div>
       </div>
-      <div class="pp-img-pair">
-        <div class="pp-img-pair-item">
-          <img src="images/plamo-home.webp" alt="Plamo home screen with the prompt 'What are we designing today?' and four quick-start options" />
-        </div>
-        <div class="pp-img-pair-item">
-          <img src="images/plamo-prompt.webp" alt="Plamo home screen with an image attached and a prompt to design a high-rise from it" />
-        </div>
-      </div>
-
-      <!-- 02 Agentic planning -->
-      <div class="pp-direction reveal">
-        <span class="pp-direction-num">02</span>
-        <div class="pp-direction-body">
-          <h3>Agentic planning</h3>
-          <p>The agent shows its plan before building, so users can steer before credits are spent.</p>
-        </div>
-      </div>
-      <div class="pp-img-full">
-        <img src="images/plamo-generating.webp" alt="Plamo generating a model: the agent explains its plan in the chat while the tower massing builds in the canvas" />
-      </div>
-
-      <!-- 03 Parametric editing -->
-      <div class="pp-direction reveal">
-        <span class="pp-direction-num">03</span>
-        <div class="pp-direction-body">
-          <h3>Parametric editing</h3>
-          <p>Tweaks, layers, section cuts and saved views keep the model a working file, not a render.</p>
-        </div>
-      </div>
-      <div class="pp-img-pair">
-        <div class="pp-img-pair-item">
-          <img src="images/plamo-layers.webp" alt="Plamo Layers panel with grouped layers, lock and visibility toggles on the model" />
-        </div>
-        <div class="pp-img-pair-item">
-          <img src="images/plamo-views.webp" alt="Plamo Views panel with saved plan and elevation views and a zoom menu" />
-        </div>
-      </div>
-
-      <!-- 04 Seamless export -->
-      <div class="pp-direction reveal">
-        <span class="pp-direction-num">04</span>
-        <div class="pp-direction-body">
-          <h3>Seamless export</h3>
-          <p>Rhino, Grasshopper, SketchUp, STEP, DWG and more, with layer selection, so Plamo fits the tools teams already use.</p>
-        </div>
-      </div>
-      <div class="pp-img-full">
-        <img src="images/plamo-export.webp" alt="Plamo export dialog with a 3D preview, Rhino 8 format selected, and a choice between selected or all layers" />
-      </div>
-
-      <!-- 05 Upgrade -->
-      <div class="pp-direction reveal">
-        <span class="pp-direction-num">05</span>
-        <div class="pp-direction-body">
-          <h3>Upgrade</h3>
-          <p>Prompts appear at natural limits and lead with what you unlock. The credit meter separates monthly credits from purchased ones. Every upgrader visited pricing in the 24 hours before paying, most of them mid-session.</p>
-        </div>
-      </div>
-      <div class="pp-img-pair pp-img-pair--ui">
-        <div class="pp-img-pair-item">
-          <img src="images/plamo-credits.webp" alt="Plamo account menu with two credit bars: monthly limit and extra usage, plus an Upgrade plan button" />
-        </div>
-        <div class="pp-img-pair-item">
-          <img src="images/plamo-credit-limit.webp" alt="Plamo chat panel after all monthly credits are used, with an inline upgrade prompt above the composer" />
-        </div>
-      </div>
-      <p class="pp-caption">Two bars, so users see when paid credits start. The limit shows up where the user is working.</p>
 
       <!-- Stats -->
       <div class="pp-stats reveal">
         <div class="pp-stat">
-          <span class="pp-stat-number" data-target="1518" data-decimals="0">0</span>
+          <span class="pp-stat-number" data-target="2129" data-decimals="0">0</span>
           <span class="pp-stat-label">users built a model</span>
         </div>
         <div class="pp-stat">
@@ -606,23 +543,14 @@
       </div>
 
       <ul class="pp-impact reveal">
-        <li><span class="pp-impact-num">2,129</span><span>sign ups across the platform, 1,518 of them built a Plamo model</span></li>
         <li><span class="pp-impact-num">35.4%</span><span>week 4 retention</span></li>
         <li><span class="pp-impact-num">2 days</span><span>median from sign up to paid upgrade, self-serve MRR up 17% month over month</span></li>
-        <li><span class="pp-impact-num">263</span><span>companies, mostly AEC firms</span></li>
-        <li><span class="pp-impact-num">1,121</span><span>models exported, Rhino first</span></li>
         <li><span class="pp-impact-num">8</span><span>enterprise PoC contracts across the US, Japan, Taiwan and Canada</span></li>
       </ul>
 
       <div class="pp-quote reveal">
         <p>"A configurable engineering layer upstream of Revit."</p>
         <cite>How an enterprise customer described Plamo</cite>
-      </div>
-
-      <!-- What's next -->
-      <div class="pp-title-section reveal">
-        <h2 class="pp-section-title">What's next</h2>
-        <p class="pp-section-desc">The moment a user runs out of free credits. 925 people viewed pricing, 69 clicked "get plan," and 5 to 10 users a day exhaust their credits while 0 to 2 upgrade. That moment, plus Team plan and enterprise onboarding, is where design goes next.</p>
       </div>
 
       <!-- Bottom Nav -->
@@ -652,11 +580,48 @@
 
   <script src="shared.js"></script>
   <script>
-    const IMG_SEL = '.pp-cover, .pp-img-full, .pp-img-pair-item';
+    const IMG_SEL = '.pp-cover';
     initViewCursor(IMG_SEL);
     initLightbox(IMG_SEL);
 
     initProjectAnimations();
+
+    // Flow carousel
+    (function () {
+      const labels = [["Getting started","One question, the unit system in view, and four ways to begin."],["First model","Drop in an image or a sketch and describe the brief."],["Plan","The agent explains how it read the brief and what it will build before credits are spent."],["Model created","The model lands with the parameters the agent built it from, ready to adjust."],["Controls","Layers lock and hide parts of the model."],["Views","Saved plan and elevation views so the file reads like a drawing set."],["Export","Rhino, Grasshopper, SketchUp, STEP, DWG and more, with layer selection."]];
+      const track = document.getElementById('carouselTrack');
+      const prev  = document.getElementById('carouselPrev');
+      const next  = document.getElementById('carouselNext');
+      const dots  = document.querySelectorAll('.pp-carousel-dot');
+      const num   = document.getElementById('carouselNum');
+      const title = document.getElementById('carouselTitle');
+      const desc  = document.getElementById('carouselDesc');
+      const total = labels.length;
+      let current = 0;
+      function goTo(n) {
+        current = Math.max(0, Math.min(n, total - 1));
+        track.style.transform = `translateX(-${current * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle('active', i === current));
+        prev.classList.toggle('disabled', current === 0);
+        next.classList.toggle('disabled', current === total - 1);
+        num.textContent = String(current + 1).padStart(2, '0');
+        title.textContent = labels[current][0];
+        desc.textContent = labels[current][1];
+      }
+      prev.addEventListener('click', () => goTo(current - 1));
+      next.addEventListener('click', () => goTo(current + 1));
+      dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.index)));
+      let startX = 0;
+      track.parentElement.addEventListener('pointerdown', e => { startX = e.clientX; });
+      track.parentElement.addEventListener('pointerup', e => {
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 40) goTo(dx < 0 ? current + 1 : current - 1);
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight') goTo(current + 1);
+        if (e.key === 'ArrowLeft') goTo(current - 1);
+      });
+    })();
 
     // Big-number counters: data-target (number), data-decimals, data-suffix.
     // Formats with thousands separators so 1518 reads as 1,518.
