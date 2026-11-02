@@ -234,30 +234,6 @@
     .pp-stat-label { font-size: 20px; line-height: 28px; }
 
     /* ─── Impact list ────────────────────────────────────── */
-    .pp-impact {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 64px;
-      border-top: 1px solid var(--border);
-    }
-    .pp-impact li {
-      display: grid;
-      grid-template-columns: 220px 1fr;
-      gap: 24px;
-      padding: 20px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 20px;
-      line-height: 28px;
-    }
-    .pp-impact-num {
-      font-size: 32px;
-      line-height: 28px;
-      font-weight: 500;
-      letter-spacing: -0.02em;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* ─── Pull quote ─────────────────────────────────────── */
     .pp-quote {
       padding: 64px 0;
       margin: 0 0 32px;
@@ -340,7 +316,6 @@
       .pp-stat { border-right: none; border-bottom: 1px solid var(--border); padding: 16px 0; }
       .pp-stat:last-child { border-bottom: none; }
       .pp-stat-number { font-size: 64px; }
-      .pp-impact li { grid-template-columns: 1fr; gap: 6px; }
       .pp-carousel-btn-prev { left: 8px; }
       .pp-carousel-btn-next { right: 8px; }
       .pp-carousel-meta { flex-direction: column; gap: 12px; }
@@ -535,13 +510,8 @@
       <!-- Impact -->
       <div class="pp-title-section reveal">
         <h2 class="pp-section-title">Impact</h2>
-        <p class="pp-section-desc">Public beta since August 21, 2026. The first ten weeks:</p>
+        <p class="pp-section-desc">Public beta since August 21, 2026. In the first ten weeks, week 1 retention held at 88.6% and week 4 at 35.4%. Users who upgraded did so a median of 2 days after sign up, and self-serve MRR grew 17% month over month.</p>
       </div>
-
-      <ul class="pp-impact reveal">
-        <li><span class="pp-impact-num">88.6%</span><span>week 1 retention, 35.4% at week 4</span></li>
-        <li><span class="pp-impact-num">2 days</span><span>median from sign up to paid upgrade, self-serve MRR up 17% month over month</span></li>
-      </ul>
 
       <div class="pp-quote reveal">
         <p>"A configurable engineering layer upstream of Revit."</p>
