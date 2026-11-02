@@ -523,7 +523,7 @@
       <!-- Stats -->
       <div class="pp-stats reveal">
         <div class="pp-stat">
-          <span class="pp-stat-number" data-target="2129" data-decimals="0">0</span>
+          <span class="pp-stat-number" data-target="3" data-decimals="0" data-suffix="k">0</span>
           <span class="pp-stat-label">users built a model</span>
         </div>
         <div class="pp-stat">
@@ -531,8 +531,8 @@
           <span class="pp-stat-label">median time to first model</span>
         </div>
         <div class="pp-stat">
-          <span class="pp-stat-number" data-target="88.6" data-decimals="1" data-suffix="%">0</span>
-          <span class="pp-stat-label">week 1 retention</span>
+          <span class="pp-stat-number" data-target="8" data-decimals="0">0</span>
+          <span class="pp-stat-label">enterprise PoC contracts</span>
         </div>
       </div>
 
@@ -543,9 +543,8 @@
       </div>
 
       <ul class="pp-impact reveal">
-        <li><span class="pp-impact-num">35.4%</span><span>week 4 retention</span></li>
+        <li><span class="pp-impact-num">88.6%</span><span>week 1 retention, 35.4% at week 4</span></li>
         <li><span class="pp-impact-num">2 days</span><span>median from sign up to paid upgrade, self-serve MRR up 17% month over month</span></li>
-        <li><span class="pp-impact-num">8</span><span>enterprise PoC contracts across the US, Japan, Taiwan and Canada</span></li>
       </ul>
 
       <div class="pp-quote reveal">
@@ -624,7 +623,6 @@
     })();
 
     // Big-number counters: data-target (number), data-decimals, data-suffix.
-    // Formats with thousands separators so 1518 reads as 1,518.
     const statNums = document.querySelectorAll('.pp-stat-number[data-target]');
     const statsObs = new IntersectionObserver((entries) => {
       entries.forEach(e => {
